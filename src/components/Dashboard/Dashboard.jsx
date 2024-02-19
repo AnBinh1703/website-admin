@@ -16,10 +16,10 @@ const Dashboard = () => {
         <Link to="/dashboard">
           <FontAwesomeIcon icon={faHome} /> Home
         </Link>
-        <Link to="/dashboard/orgainizations">
+        <Link to="/orgainizations">
           <FontAwesomeIcon icon={faBuilding} />  Orgainization Management
         </Link>
-        <Link to="/dashboard/teams">
+        <Link to="/teams">
           <FontAwesomeIcon icon={faUsers} /> Team Management
         </Link>
   <Link to="/login">
