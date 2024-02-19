@@ -1,0 +1,40 @@
+/* DashboardOrganization.css */
+
+.dashboard-organization {
+  padding: 20px;
+}
+
+.organization-dashboard {
+  display: grid;
+  grid-template-columns: 1fr 2fr; /* Adjust the column widths as needed */
+  grid-gap: 20px;
+}
+
+.button-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* DashboardOrganization.css */
+
+.list-button {
+  margin-bottom: 10px;
+  padding: 5px 10px; /* Adjust padding for a smaller button */
+  min-width: 100px; /* Set a fixed width for the button */
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+
+.list-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-gap: 20px;
+}
+
+.list {
+  border: 1px solid #ddd;
+  padding: 20px;
+}
