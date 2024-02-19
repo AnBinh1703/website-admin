@@ -1,6 +1,8 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 
+const apiUrl = 'https://fptbottournamentweb.azurewebsites.net/api';
+
 const TournamentList = () => {
   const [tournaments, setTournaments] = useState([]);
   const [newTournament, setNewTournament] = useState({
@@ -12,7 +14,7 @@ const TournamentList = () => {
   useEffect(() => {
     const fetchTournaments = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/tournaments');
+        const response = await axios.get(`${apiUrl}/Tournament/get-all-tournaments`);
         setTournaments(response.data);
       } catch (error) {
         console.error(error);
@@ -24,14 +26,13 @@ const TournamentList = () => {
 
   const handleCreateTournament = async () => {
     try {
-      await axios.post('http://localhost:3000/tournaments', newTournament);
-      const response = await axios.get('http://localhost:3000/tournaments');
+      await axios.post(`${apiUrl}/Tournament/create-new-tournament`, newTournament);
+      const response = await axios.get(`${apiUrl}/Tournament/get-all-tournaments`);
       setTournaments(response.data);
       setNewTournament({
         TournamentName: '',
         StartDate: '',
         EndDate: '',
-        // Add other properties as needed
       });
     } catch (error) {
       console.error(error);
@@ -40,8 +41,8 @@ const TournamentList = () => {
 
   const handleUpdateTournament = async (tournamentId, updatedTournamentData) => {
     try {
-      await axios.put(`http://localhost:3000/tournaments/${tournamentId}`, updatedTournamentData);
-      const response = await axios.get('http://localhost:3000/tournaments');
+      await axios.put(`${apiUrl}/Tournament/update-tournament/${tournamentId}`, updatedTournamentData);
+      const response = await axios.get(`${apiUrl}/Tournament/get-all-tournaments`);
       setTournaments(response.data);
     } catch (error) {
       console.error(error);
@@ -50,8 +51,8 @@ const TournamentList = () => {
 
   const handleDeleteTournament = async (tournamentId) => {
     try {
-      await axios.delete(`http://localhost:3000/tournaments/${tournamentId}`);
-      const response = await axios.get('http://localhost:3000/tournaments');
+      await axios.delete(`${apiUrl}/Tournament/delete-tournament/${tournamentId}`);
+      const response = await axios.get(`${apiUrl}/Tournament/get-all-tournaments`);
       setTournaments(response.data);
     } catch (error) {
       console.error(error);

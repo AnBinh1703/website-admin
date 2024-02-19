@@ -1,16 +1,18 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 
+const apiUrl = 'https://fptbottournamentweb.azurewebsites.net/api';
+
 const RoundList = () => {
   const [rounds, setRounds] = useState([]);
   const [newRound, setNewRound] = useState({
     roundName: '',
-   });
+  });
 
   useEffect(() => {
     const fetchRounds = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/rounds');
+        const response = await axios.get(`${apiUrl}/Round/get-all-rounds`);
         setRounds(response.data);
       } catch (error) {
         console.error(error);
@@ -22,8 +24,8 @@ const RoundList = () => {
 
   const handleCreateRound = async () => {
     try {
-      await axios.post('http://localhost:3000/rounds', newRound);
-      const response = await axios.get('http://localhost:3000/rounds');
+      await axios.post(`${apiUrl}/Round/create-new-round`, newRound);
+      const response = await axios.get(`${apiUrl}/Round/get-all-rounds`);
       setRounds(response.data);
       setNewRound({
         roundName: '',
@@ -35,8 +37,8 @@ const RoundList = () => {
 
   const handleUpdateRound = async (roundId, updatedRoundData) => {
     try {
-      await axios.put(`http://localhost:3000/rounds/${roundId}`, updatedRoundData);
-      const response = await axios.get('http://localhost:3000/rounds');
+      await axios.put(`${apiUrl}/Round/update-round/${roundId}`, updatedRoundData);
+      const response = await axios.get(`${apiUrl}/Round/get-all-rounds`);
       setRounds(response.data);
     } catch (error) {
       console.error(error);
@@ -45,8 +47,8 @@ const RoundList = () => {
 
   const handleDeleteRound = async (roundId) => {
     try {
-      await axios.delete(`http://localhost:3000/rounds/${roundId}`);
-      const response = await axios.get('http://localhost:3000/rounds');
+      await axios.delete(`${apiUrl}/Round/delete-round/${roundId}`);
+      const response = await axios.get(`${apiUrl}/Round/get-all-rounds`);
       setRounds(response.data);
     } catch (error) {
       console.error(error);
@@ -64,7 +66,7 @@ const RoundList = () => {
           value={newRound.roundName}
           onChange={(e) => setNewRound({ ...newRound, roundName: e.target.value })}
         />
-         <button onClick={handleCreateRound}>Create Round</button>
+        <button onClick={handleCreateRound}>Create Round</button>
       </div>
 
       {/* Display Rounds */}
@@ -75,7 +77,7 @@ const RoundList = () => {
             <tr>
               <th>ID</th>
               <th>Round Name</th>
-               <th>Actions</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -83,7 +85,7 @@ const RoundList = () => {
               <tr key={round.id}>
                 <td>{round.id}</td>
                 <td>{round.roundName}</td>
-                 <td>
+                <td>
                   <button onClick={() => handleUpdateRound(round.id, { roundName: 'Updated Round Name' })}>
                     Update
                   </button>
