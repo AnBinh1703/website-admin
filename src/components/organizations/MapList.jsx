@@ -1,112 +1,137 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 
 const MapList = () => {
   const [maps, setMaps] = useState([]);
-  const [newMap, setNewMap] = useState({
+  const [formData, setFormData] = useState({
     keyId: '',
-    MapName: '',
+    mapName: '',
   });
 
-  const apiUrl = 'https://fptbottournamentweb.azurewebsites.net/api';
-
   useEffect(() => {
-    const fetchMaps = async () => {
-      try {
-        const response = await axios.get(`${apiUrl}/Map/get-all-maps`);
-        setMaps(response.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
+    // Fetch all maps on component mount
+    getAllMaps();
+  }, []);
 
-    fetchMaps();
-  }, [apiUrl]);
+  const getAllMaps = async () => {
+  try {
+    const response = await fetch('/api/Map/get-all-maps');
+    console.log('Full response:', response);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch maps: ${response.status} - ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    setMaps(data);
+    console.log('Successfully got list of maps', data);
+  } catch (error) {
+    // console.error('Error fetching maps:', error);
+  }
+};
+
+
+  const handleInputChange = (e) => {
+    // Update form data when input fields change
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleCreateMap = async () => {
     try {
-      await axios.post(`${apiUrl}/Map/create-new-map`, newMap);
-      const response = await axios.get(`${apiUrl}/Map/create-new-map`);
-      setMaps(response.data);
-      setNewMap({
-        MapName: '',
+      // Make API call to create a new map
+      await fetch('/api/Map/create-new-map', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      // Refresh map list
+      getAllMaps();
+      // Clear form data
+      setFormData({
+        keyId: '',
+        mapName: '',
       });
     } catch (error) {
-      console.error(error);
+      console.error('Error creating map:', error);
     }
   };
 
-  const handleUpdateMap = async (mapId, updatedMapData) => {
+  const handleUpdateMap = async (id) => {
     try {
-      await axios.put(`${apiUrl}/Map/update-map/${mapId}`, updatedMapData);
-      const response = await axios.get(`${apiUrl}/Map/update-map`);
-      setMaps(response.data);
+      // Make API call to update a map by ID
+      await fetch(`/api/Map/update-map/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      // Refresh map list
+      getAllMaps();
+      // Clear form data
+      setFormData({
+        keyId: '',
+        mapName: '',
+      });
     } catch (error) {
-      console.error(error);
+      console.error('Error updating map:', error);
     }
   };
 
-  const handleDeleteMap = async (mapId) => {
+  const handleDeleteMap = async (id) => {
     try {
-      await axios.delete(`${apiUrl}/Map/delete-map/${mapId}`);
-      const response = await axios.get(`${apiUrl}/Map/delete-map`);
-      setMaps(response.data);
+      // Make API call to delete a map by ID
+      await fetch(`/api/Map/delete-map/${id}`, {
+        method: 'DELETE',
+      });
+
+      // Refresh map list
+      getAllMaps();
     } catch (error) {
-      console.error(error);
+      console.error('Error deleting map:', error);
     }
   };
 
   return (
     <div>
-      {/* Create Map */}
-      <div>
-        
-        <h3>Create Map</h3>
-        <label>Key ID:</label>
-        <input
-          type="text"
-          value={newMap.keyId}
-          onChange={(e) => setNewMap({ ...newMap, keyId: e.target.value })}
-        />
-        <label>Map Name:</label>
-        <input
-          type="text"
-          value={newMap.MapName}
-          onChange={(e) => setNewMap({ ...newMap, MapName: e.target.value })}
-        />
-        <button onClick={handleCreateMap}>Create Map</button>
-      </div>
-
-      
-      {/* Display Maps */}
-      <div>
-        <h3>Maps</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Key ID</th>
-              <th>Map Name</th>
-              <th>Actions</th>
+      <h2>Map List</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>KeyID</th>
+            <th>Name</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {maps.map((map) => (
+            <tr key={map.id}>
+              <td>{map.id}</td>
+              <td>{map.keyId}</td>
+              <td>{map.mapName}</td>
+              <td>
+                <button onClick={() => handleUpdateMap(map.id)}>Update</button>
+                <button onClick={() => handleDeleteMap(map.id)}>Delete</button>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {maps.map((map) => (
-              <tr key={map.id}>
-                <td>{map.id}</td>
-                <td>{map.keyId}</td>
-                <td>{map.MapName}</td>
-                <td>
-                  <button onClick={() => handleUpdateMap(map.id, { MapName: 'Updated Map Name' })}>
-                    Update
-                  </button>
-                  <button onClick={() => handleDeleteMap(map.id)}>Delete</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Form for creating new maps */}
+      <h3>Create New Map</h3>
+      <label>KeyID:</label>
+      <input type="text" name="keyId" value={formData.keyId} onChange={handleInputChange} />
+      <label>Name:</label>
+      <input type="text" name="mapName" value={formData.mapName} onChange={handleInputChange} />
+      <button onClick={handleCreateMap}>Create Map</button>
     </div>
   );
 };
