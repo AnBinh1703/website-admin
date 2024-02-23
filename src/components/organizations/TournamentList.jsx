@@ -1,4 +1,3 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 
 const apiUrl = 'https://fptbottournamentweb.azurewebsites.net/api';
@@ -12,50 +11,81 @@ const TournamentList = () => {
   });
 
   useEffect(() => {
-    const fetchTournaments = async () => {
-      try {
-        const response = await axios.get(`${apiUrl}/Tournament/get-all-tournaments`);
-        setTournaments(response.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
     fetchTournaments();
   }, []);
 
+  const fetchTournaments = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/Tournament/get-all-tournaments`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch tournaments: ${response.status} - ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setTournaments(data);
+    } catch (error) {
+      console.error('Error fetching tournaments:', error);
+    }
+  };
+
   const handleCreateTournament = async () => {
     try {
-      await axios.post(`${apiUrl}/Tournament/create-new-tournament`, newTournament);
-      const response = await axios.get(`${apiUrl}/Tournament/get-all-tournaments`);
-      setTournaments(response.data);
+      const response = await fetch(`${apiUrl}/Tournament/create-new-tournament`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newTournament),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to create tournament: ${response.status} - ${response.statusText}`);
+      }
+
+      await fetchTournaments();
       setNewTournament({
         TournamentName: '',
         StartDate: '',
         EndDate: '',
       });
     } catch (error) {
-      console.error(error);
+      console.error('Error creating tournament:', error);
     }
   };
 
   const handleUpdateTournament = async (tournamentId, updatedTournamentData) => {
     try {
-      await axios.put(`${apiUrl}/Tournament/update-tournament/${tournamentId}`, updatedTournamentData);
-      const response = await axios.get(`${apiUrl}/Tournament/get-all-tournaments`);
-      setTournaments(response.data);
+      const response = await fetch(`${apiUrl}/Tournament/update-tournament/${tournamentId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedTournamentData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update tournament: ${response.status} - ${response.statusText}`);
+      }
+
+      await fetchTournaments();
     } catch (error) {
-      console.error(error);
+      console.error('Error updating tournament:', error);
     }
   };
 
   const handleDeleteTournament = async (tournamentId) => {
     try {
-      await axios.delete(`${apiUrl}/Tournament/delete-tournament/${tournamentId}`);
-      const response = await axios.get(`${apiUrl}/Tournament/get-all-tournaments`);
-      setTournaments(response.data);
+      const response = await fetch(`${apiUrl}/Tournament/delete-tournament/${tournamentId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete tournament: ${response.status} - ${response.statusText}`);
+      }
+
+      await fetchTournaments();
     } catch (error) {
-      console.error(error);
+      console.error('Error deleting tournament:', error);
     }
   };
 

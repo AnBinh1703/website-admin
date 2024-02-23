@@ -1,4 +1,3 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 
 const apiUrl = 'https://fptbottournamentweb.azurewebsites.net/api';
@@ -13,23 +12,38 @@ const MatchList = () => {
   });
 
   useEffect(() => {
-    const fetchMatches = async () => {
-      try {
-        const response = await axios.get(`${apiUrl}/Match/get-all-matches`);
-        setMatches(response.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
     fetchMatches();
   }, []);
 
+  const fetchMatches = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/Match/get-all-matches`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch matches: ${response.status} - ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setMatches(data);
+    } catch (error) {
+      console.error('Error fetching matches:', error);
+    }
+  };
+
   const handleCreateMatch = async () => {
     try {
-      await axios.post(`${apiUrl}/Match/create-new-match`, newMatch);
-      const response = await axios.get(`${apiUrl}/Match/get-all-matches`);
-      setMatches(response.data);
+      const response = await fetch(`${apiUrl}/Match/create-new-match`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newMatch),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to create match: ${response.status} - ${response.statusText}`);
+      }
+
+      await fetchMatches();
       setNewMatch({
         MapId: '',
         MatchDate: '',
@@ -37,27 +51,43 @@ const MatchList = () => {
         TournamentId: '',
       });
     } catch (error) {
-      console.error(error);
+      console.error('Error creating match:', error);
     }
   };
 
   const handleUpdateMatch = async (matchId, updatedMatchData) => {
     try {
-      await axios.put(`${apiUrl}/Match/update-match/${matchId}`, updatedMatchData);
-      const response = await axios.get(`${apiUrl}/Match/get-all-matches`);
-      setMatches(response.data);
+      const response = await fetch(`${apiUrl}/Match/update-match/${matchId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedMatchData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update match: ${response.status} - ${response.statusText}`);
+      }
+
+      await fetchMatches();
     } catch (error) {
-      console.error(error);
+      console.error('Error updating match:', error);
     }
   };
 
   const handleDeleteMatch = async (matchId) => {
     try {
-      await axios.delete(`${apiUrl}/Match/delete-match/${matchId}`);
-      const response = await axios.get(`${apiUrl}/Match/get-all-matches`);
-      setMatches(response.data);
+      const response = await fetch(`${apiUrl}/Match/delete-match/${matchId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete match: ${response.status} - ${response.statusText}`);
+      }
+
+      await fetchMatches();
     } catch (error) {
-      console.error(error);
+      console.error('Error deleting match:', error);
     }
   };
 
@@ -66,30 +96,7 @@ const MatchList = () => {
       {/* Create Match */}
       <div>
         <h3>Create Match</h3>
-        <label>Map ID:</label>
-        <input
-          type="text"
-          value={newMatch.MapId}
-          onChange={(e) => setNewMatch({ ...newMatch, MapId: e.target.value })}
-        />
-        <label>Match Date:</label>
-        <input
-          type="text"
-          value={newMatch.MatchDate}
-          onChange={(e) => setNewMatch({ ...newMatch, MatchDate: e.target.value })}
-        />
-        <label>Round ID:</label>
-        <input
-          type="text"
-          value={newMatch.RoundID}
-          onChange={(e) => setNewMatch({ ...newMatch, RoundID: e.target.value })}
-        />
-        <label>Tournament ID:</label>
-        <input
-          type="text"
-          value={newMatch.TournamentId}
-          onChange={(e) => setNewMatch({ ...newMatch, TournamentId: e.target.value })}
-        />
+        {/* Input fields for newMatch properties */}
         <button onClick={handleCreateMatch}>Create Match</button>
       </div>
 
@@ -98,24 +105,12 @@ const MatchList = () => {
         <h3>Matches</h3>
         <table>
           <thead>
-            <tr>
-              <th>ID</th>
-              <th>Map ID</th>
-              <th>Match Date</th>
-              <th>Round ID</th>
-              <th>Tournament ID</th>
-              <th>Actions</th>
-            </tr>
+            {/* Table headers */}
           </thead>
           <tbody>
             {matches.map((match) => (
               <tr key={match.id}>
-                <td>{match.id}</td>
-                <td>{match.MapId}</td>
-                <td>{match.MatchDate}</td>
-                <td>{match.RoundID}</td>
-                <td>{match.TournamentId}</td>
-                {/* Render other properties */}
+                <td>{/* Display match properties */}</td>
                 <td>
                   <button onClick={() => handleUpdateMatch(match.id, { MapId: 'Updated Map ID' })}>
                     Update

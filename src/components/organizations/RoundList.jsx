@@ -1,4 +1,3 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 
 const apiUrl = 'https://fptbottournamentweb.azurewebsites.net/api';
@@ -10,48 +9,79 @@ const RoundList = () => {
   });
 
   useEffect(() => {
-    const fetchRounds = async () => {
-      try {
-        const response = await axios.get(`${apiUrl}/Round/get-all-rounds`);
-        setRounds(response.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
     fetchRounds();
   }, []);
 
+  const fetchRounds = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/Round/get-all-rounds`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch rounds: ${response.status} - ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setRounds(data);
+    } catch (error) {
+      console.error('Error fetching rounds:', error);
+    }
+  };
+
   const handleCreateRound = async () => {
     try {
-      await axios.post(`${apiUrl}/Round/create-new-round`, newRound);
-      const response = await axios.get(`${apiUrl}/Round/get-all-rounds`);
-      setRounds(response.data);
+      const response = await fetch(`${apiUrl}/Round/create-new-round`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newRound),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to create round: ${response.status} - ${response.statusText}`);
+      }
+
+      await fetchRounds();
       setNewRound({
         roundName: '',
       });
     } catch (error) {
-      console.error(error);
+      console.error('Error creating round:', error);
     }
   };
 
   const handleUpdateRound = async (roundId, updatedRoundData) => {
     try {
-      await axios.put(`${apiUrl}/Round/update-round/${roundId}`, updatedRoundData);
-      const response = await axios.get(`${apiUrl}/Round/get-all-rounds`);
-      setRounds(response.data);
+      const response = await fetch(`${apiUrl}/Round/update-round/${roundId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedRoundData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update round: ${response.status} - ${response.statusText}`);
+      }
+
+      await fetchRounds();
     } catch (error) {
-      console.error(error);
+      console.error('Error updating round:', error);
     }
   };
 
   const handleDeleteRound = async (roundId) => {
     try {
-      await axios.delete(`${apiUrl}/Round/delete-round/${roundId}`);
-      const response = await axios.get(`${apiUrl}/Round/get-all-rounds`);
-      setRounds(response.data);
+      const response = await fetch(`${apiUrl}/Round/delete-round/${roundId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete round: ${response.status} - ${response.statusText}`);
+      }
+
+      await fetchRounds();
     } catch (error) {
-      console.error(error);
+      console.error('Error deleting round:', error);
     }
   };
 
