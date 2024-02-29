@@ -1,0 +1,83 @@
+/* Add these styles to TournamentList.css */
+
+#tournament-list-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+h2 {
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+}
+
+table th, table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+/* Style for the selected row */
+table .selected-row {
+  background-color: #cce5ff;
+}
+
+/* Form styles */
+.popup-form {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+  padding: 16px;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.popup-form h3 {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.popup-form label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.popup-form input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 12px;
+}
+
+/* Button styles */
+.popup-form button {
+  padding: 8px 16px;
+  border: none;
+  cursor: pointer;
+  margin-right: 8px;
+}
+
+/* Green button for Create */
+.popup-form .create-button {
+  background-color: #28a745;
+  color: #fff;
+}
+
+/* Yellow button for Update */
+.popup-form .update-button {
+  background-color: #ffc107;
+  color: #000;
+}
+
+/* Red button for Delete */
+.popup-form .delete-button {
+  background-color: #dc3545;
+  color: #fff;
+}
