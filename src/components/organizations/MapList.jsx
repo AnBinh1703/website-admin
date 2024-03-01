@@ -76,7 +76,7 @@ const handleShowUpdateForm = (id) => {
 
   const getAllMaps = async () => {
     try {
-      const response = await fetch('https://fptbottournamentweb.azurewebsites.net/api/Map/get-all-maps');
+      const response = await fetch('https://fptbottournamentweb.azurewebsites.net/api/map/get-all');
       const data = await response.json();
 
       setMaps(data);
@@ -111,7 +111,7 @@ const handleCreateMap = async () => {
       return;
     }
 
-    await fetch('https://fptbottournamentweb.azurewebsites.net/api/Map/create-new-map', {
+    await fetch('https://fptbottournamentweb.azurewebsites.net/api/map/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -143,7 +143,7 @@ const handleUpdateMap = async () => {
     }
 
     console.log('Updating map:', selectedMapId, formData);
-    await fetch(`https://fptbottournamentweb.azurewebsites.net/api/Map/update-map/${selectedMapId}`, {
+    await fetch(`https://fptbottournamentweb.azurewebsites.net/api/map/update/${selectedMapId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -173,7 +173,7 @@ const handleUpdateMap = async () => {
 const handleDeleteMap = async () => {
   try {
     console.log('Deleting map:', selectedMapId);
-    await fetch(`https://fptbottournamentweb.azurewebsites.net/api/Map/delete-map/${selectedMapId}`, {
+    await fetch(`https://fptbottournamentweb.azurewebsites.net/api/map/delete/${selectedMapId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

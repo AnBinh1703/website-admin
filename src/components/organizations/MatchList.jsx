@@ -76,7 +76,7 @@ const MatchList = () => {
 
   const getAllMatches = async () => {
     try {
-      const response = await fetch('https://fptbottournamentweb.azurewebsites.net/api/Match/get-all-matches');
+      const response = await fetch('https://fptbottournamentweb.azurewebsites.net/api/match/get-all');
       const data = await response.json();
       setMatches(data);
       setLoading(false);

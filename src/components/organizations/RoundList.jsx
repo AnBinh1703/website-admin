@@ -68,7 +68,7 @@ const RoundList = () => {
 
   const getAllRounds = async () => {
     try {
-      const response = await fetch('https://fptbottournamentweb.azurewebsites.net/api/Round/get-all-rounds');
+      const response = await fetch('https://fptbottournamentweb.azurewebsites.net/api/round/get-all');
       const data = await response.json();
 
       setRounds(data);
@@ -97,7 +97,7 @@ const RoundList = () => {
 
   const handleCreateRound = async () => {
     try {
-      await fetch('https://fptbottournamentweb.azurewebsites.net/api/Round/create-new-round', {
+      await fetch('https://fptbottournamentweb.azurewebsites.net/api/round/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -119,7 +119,11 @@ const RoundList = () => {
 
   const handleUpdateRound = async (id) => {
     try {
-      await fetch(`https://fptbottournamentweb.azurewebsites.net/api/Round/update-round/${id}`, {
+      if (!formData.roundName) {
+      console.error('Please fill in all required fields.');
+      return;
+    }
+      await fetch(`https://fptbottournamentweb.azurewebsites.net/api/round/update/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -141,7 +145,11 @@ const RoundList = () => {
 
   const handleDeleteRound = async (id) => {
     try {
-      await fetch(`https://fptbottournamentweb.azurewebsites.net/api/Round/delete-round/${id}`, {
+      if (!formData.roundName) {
+      console.error('Please fill in all required fields.');
+      return;
+    }
+      await fetch(`https://fptbottournamentweb.azurewebsites.net/api/round/delete/${id}`, {
         method: 'DELETE',
       });
 
