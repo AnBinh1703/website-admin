@@ -1,19 +1,68 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
+import "./UserList.css"; // Make sure to update the import path based on your project structure
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [formValid, setFormValid] = useState(true);
+
   const [formData, setFormData] = useState({
-    id: '',
-    userName: '',
-    userEmail: '',
-    password: '',
-    fullName: '',
-    role: 0,
+    id: "",
+    userName: "",
+    userEmail: "",
+    password: "",
+    fullName: "",
+    role: "",
   });
 
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const [showDeleteForm, setShowDeleteForm] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
+
+  const handleShowCreateForm = () => {
+    setShowCreateForm(true);
+  };
+
+  const handleShowUpdateForm = (id) => {
+    const selectedUser = users.find((user) => user.id === id);
+
+    setFormData({
+      id: selectedUser.id,
+      userName: selectedUser.userName,
+      userEmail: selectedUser.userEmail,
+      password: "",
+      fullName: selectedUser.fullName,
+      role: selectedUser.role,
+    });
+
+    setSelectedUserId(id); // Set the selectedUserId here
+    setShowUpdateForm(true);
+  };
+
+  const handleShowDeleteForm = (id) => {
+    const selectedUser = users.find((user) => user.id === id);
+
+    setFormData({
+      id: selectedUser.id,
+      userName: selectedUser.userName,
+      userEmail: selectedUser.userEmail,
+      password: "",
+      fullName: selectedUser.fullName,
+      role: selectedUser.role,
+    });
+
+    setSelectedUserId(id); // Set the selectedUserId here
+    setShowDeleteForm(true);
+  };
+
+  const handleCloseForms = () => {
+    setShowCreateForm(false);
+    setShowUpdateForm(false);
+    setShowDeleteForm(false);
+    setSelectedUserId(null);
+  };
 
   const handleInputChange = (e) => {
     setFormData({
@@ -22,129 +71,159 @@ const UserList = () => {
     });
   };
 
+  useEffect(() => {
+    getAllUsers();
+  }, []);
+
   const getAllUsers = async () => {
     try {
-      const response = await fetch('https://fptbottournamentweb.azurewebsites.net/api/User/get-all-user');
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/user/get-all"
+      );
       const data = await response.json();
 
       setUsers(data);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching users:', error.message);
-      setError('Error fetching users. Please try again.');
+      console.error("Error fetching users:", error.message);
+      setError("Error fetching users. Please try again.");
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    getAllUsers();
-  }, []);
-
   const handleCreateUser = async () => {
     try {
-      await fetch('https://fptbottournamentweb.azurewebsites.net/api/User/create-new-user', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      if (
+        !formData.userName ||
+        !formData.userEmail ||
+        !formData.password ||
+        !formData.fullName ||
+        !formData.role
+      ) {
+        console.error("Please fill in all fields.");
+        setFormValid(false);
+        return;
+      }
 
-      // Refresh user list
+      await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/user/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
       getAllUsers();
-      // Clear form data
       setFormData({
-        id: '',
-        userName: '',
-        userEmail: '',
-        password: '',
-        fullName: '',
+        id: "",
+        userName: "",
+        userEmail: "",
+        password: "",
+        fullName: "",
         role: 0,
       });
+      setFormValid(true);
+      setShowCreateForm(false);
     } catch (error) {
-      console.error('Error creating user:', error);
+      console.error("Error creating user:", error);
     }
   };
 
   const handleUpdateUser = async () => {
     try {
-      await fetch(`https://fptbottournamentweb.azurewebsites.net/api/User/update-user`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      if (
+        !formData.userName ||
+        !formData.userEmail ||
+        !formData.fullName ||
+        !formData.role
+      ) {
+        console.error("Please fill in all fields.");
+        setFormValid(false);
+        return;
+      }
 
-      // Refresh user list
+      await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/user/update/${selectedUserId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
       getAllUsers();
-      // Clear form data
       setFormData({
-        id: '',
-        userName: '',
-        userEmail: '',
-        password: '',
-        fullName: '',
+        id: "",
+        userName: "",
+        userEmail: "",
+        password: "",
+        fullName: "",
         role: 0,
       });
-      // Deselect user
-      setSelectedUserId(null);
+      setFormValid(true);
+      setShowUpdateForm(false);
     } catch (error) {
-      console.error('Error updating user:', error);
+      console.error("Error updating user:", error);
     }
   };
 
-  const handleDeleteUser = async (userId) => {
+  const handleDeleteUser = async () => {
     try {
-      await fetch(`https://fptbottournamentweb.azurewebsites.net/api/User/delete-user?Id=${userId}`, {
-        method: 'DELETE',
-      });
+      await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/user/delete/${selectedUserId}`,
+        {
+          method: "DELETE",
+        }
+      );
 
-      // Refresh user list
       getAllUsers();
-      // Clear form data
       setFormData({
-        id: '',
-        userName: '',
-        userEmail: '',
-        password: '',
-        fullName: '',
+        id: "",
+        userName: "",
+        userEmail: "",
+        password: "",
+        fullName: "",
         role: 0,
       });
-      // Deselect user
-      setSelectedUserId(null);
+      setShowDeleteForm(false);
     } catch (error) {
-      console.error('Error deleting user:', error);
+      console.error("Error deleting user:", error);
     }
-  };
-
-  const handleUserSelection = (userId) => {
-    // Set selected user ID
-    setSelectedUserId(userId);
-
-    // Fetch user details based on the selected user ID
-    const selectedUser = users.find((user) => user.id === userId);
-    setFormData({
-      id: selectedUser.id,
-      userName: selectedUser.userName,
-      userEmail: selectedUser.userEmail,
-      password: '', // Exclude password for security reasons
-      fullName: selectedUser.fullName,
-      role: selectedUser.role,
-    });
   };
 
   return (
-    <div>
+    <div id="user-list-container">
       <h2>User List</h2>
-      {/* Display user data in a table or another suitable format */}
+      <div>
+        <button className="create-button" onClick={handleShowCreateForm}>
+          Create User
+        </button>
+        <button
+          className="update-button"
+          onClick={() => selectedUserId && handleShowUpdateForm(selectedUserId)}
+          disabled={!selectedUserId}
+        >
+          Update User
+        </button>
+        <button
+          className="delete-button"
+          onClick={() => selectedUserId && handleShowDeleteForm(selectedUserId)}
+          disabled={!selectedUserId}
+        >
+          Delete User
+        </button>
+      </div>
       {loading ? (
         <p>Loading...</p>
       ) : error ? (
         <p>{error}</p>
       ) : (
         <table>
-          {/* Table headers */}
           <thead>
             <tr>
               <th>ID</th>
@@ -152,43 +231,120 @@ const UserList = () => {
               <th>UserEmail</th>
               <th>FullName</th>
               <th>Role</th>
-              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {users.map((user) => (
-              <tr key={user.id} className={user.id === selectedUserId ? 'selected' : ''} onClick={() => handleUserSelection(user.id)}>
-                <td>{user.id}</td>
+              <tr
+                key={user.id}
+                style={{
+                  backgroundColor:
+                    user.id === selectedUserId ? "gray" : "transparent",
+                }}
+                onClick={() => setSelectedUserId(user.id)}
+              >
+                <td>{user.keyId}</td>
                 <td>{user.userName}</td>
                 <td>{user.userEmail}</td>
                 <td>{user.fullName}</td>
                 <td>{user.role}</td>
-                <td>
-                  <button onClick={handleDeleteUser} disabled={!selectedUserId}>
-                    Delete
-                  </button>
-                </td>
               </tr>
             ))}
           </tbody>
         </table>
       )}
-
-      {/* Create User Form */}
-      <div>
-        <h3>Create New User</h3>
-        {/* Add input fields for user data */}
-        <button onClick={handleCreateUser}>Create User</button>
-      </div>
-
-      {/* Update User Form */}
-      <div>
-        <h3>Update User</h3>
-        {/* Add input fields for user data */}
-        <button onClick={handleUpdateUser} disabled={!selectedUserId}>
-          Update User
-        </button>
-      </div>
+      {showCreateForm && (
+        <div className="popup-form">
+          <h3>Create New User</h3>
+          <label>UserName:</label>
+          <input
+            type="text"
+            name="userName"
+            value={formData.userName}
+            onChange={handleInputChange}
+          />
+          <label>UserEmail:</label>
+          <input
+            type="text"
+            name="userEmail"
+            value={formData.userEmail}
+            onChange={handleInputChange}
+          />
+          <label>Password:</label>
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleInputChange}
+          />
+          <label>FullName:</label>
+          <input
+            type="text"
+            name="fullName"
+            value={formData.fullName}
+            onChange={handleInputChange}
+          />
+          <label>Role:</label>
+          <input
+            type="number"
+            name="role"
+            value={formData.role}
+            onChange={handleInputChange}
+          />
+          <button onClick={handleCreateUser}>Create User</button>
+          <button onClick={handleCloseForms}>Close</button>
+        </div>
+      )}
+      {showUpdateForm && (
+        <div className="popup-form">
+          <h3>Update User</h3>
+          <label>UserName:</label>
+          <input
+            type="text"
+            name="userName"
+            value={formData.userName}
+            onChange={handleInputChange}
+          />
+          <label>UserEmail:</label>
+          <input
+            type="text"
+            name="userEmail"
+            value={formData.userEmail}
+            onChange={handleInputChange}
+          />
+          <label>Password:</label>
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleInputChange}
+          />
+          <label>FullName:</label>
+          <input
+            type="text"
+            name="fullName"
+            value={formData.fullName}
+            onChange={handleInputChange}
+          />
+          <label>Role:</label>
+          <input
+            type="number"
+            name="role"
+            value={formData.role}
+            onChange={handleInputChange}
+          />
+          <button onClick={handleUpdateUser}>Update User</button>
+          <button onClick={handleCloseForms}>Close</button>
+        </div>
+      )}
+      {showDeleteForm && (
+        <div className="popup-form">
+          <h3>Delete User</h3>
+          <p>Are you sure you want to delete this user?</p>
+          <button onClick={handleDeleteUser}>Delete User</button>
+          <button onClick={handleCloseForms}>Cancel</button>
+        </div>
+      )}
     </div>
   );
 };

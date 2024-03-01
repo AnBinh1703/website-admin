@@ -75,6 +75,10 @@ const handleFetchTournamentById = (id) => {
 };
 const handleCreateTournament = async () => {
   try {
+    if (!formData.keyId || !formData.tournamentName || !formData.startDate || !formData.endDate) {
+      console.error('Please fill in all required fields.');
+      return;
+    }
     await fetch('https://fptbottournamentweb.azurewebsites.net/api/tournament/create', {
       method: 'POST',
       headers: {
@@ -86,11 +90,13 @@ const handleCreateTournament = async () => {
     // Refresh tournament list
     getAllTournaments();
     // Clear form data
-    setFormData({
+      setFormData({
+      keyId: '',
       tournamentName: '',
       startDate: '',
       endDate: '',
     });
+
     setShowCreateForm(false);
   } catch (error) {
     console.error('Error creating tournament:', error);
@@ -99,7 +105,11 @@ const handleCreateTournament = async () => {
 
 
  const handleUpdateTournament = async () => {
-  try {
+   try {
+    if (!formData.keyId || !formData.tournamentName || !formData.startDate || !formData.endDate) {
+      console.error('Please fill in all required fields.');
+      return;
+    }
     await fetch(`https://fptbottournamentweb.azurewebsites.net/api/tournament/update/${selectedTournamentId}`, {
       method: 'PUT',
       headers: {
