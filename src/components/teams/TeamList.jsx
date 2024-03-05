@@ -20,7 +20,7 @@ const TeamList = () => {
     // Fetch teams when the component mounts
     const fetchTeams = async () => {
       try {
-        const response = await axios.get('https://fptbottournamentweb.azurewebsites.net/api/Team/get-all-teams');
+        const response = await axios.get('https://fptbottournamentweb.azurewebsites.net/api/team/get-all');
         setTeams(response.data);
       } catch (error) {
         console.error(error);
@@ -64,9 +64,9 @@ const TeamList = () => {
   const handleCreateTeam = async () => {
     try {
       // Create a new team
-      await axios.post('https://fptbottournamentweb.azurewebsites.net/api/Team/create-team', newTeam);
+      await axios.post('https://fptbottournamentweb.azurewebsites.net/api/team/create-team', newTeam);
       // Update the list
-      const response = await axios.get('https://fptbottournamentweb.azurewebsites.net/api/Team/get-all-teams');
+      const response = await axios.get('https://fptbottournamentweb.azurewebsites.net/api/team/get-all-teams');
       setTeams(response.data);
       // Clear the newTeam state
       setNewTeam({
@@ -184,16 +184,16 @@ const TeamList = () => {
             <tr>
               <th>ID</th>
               <th>Name</th>
-              <th>High School ID</th>
+              <th>High School Name</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {teams.map((team) => (
               <tr key={team.Id}>
-                <td>{team.Id}</td>
-                <td>{team.Name}</td>
-                <td>{team.HighSchool_Id}</td>
+                <td>{team.keyId}</td>
+                <td>{team.teamName}</td>
+                <td>{team.highSchoolResponseModel.highSchoolName}</td>
                 <td>
                   <button onClick={() => handleUpdateTeam(team.Id, { Name: 'Updated Team Name' })}>Update</button>
                   <button onClick={() => handleDeleteTeam(team.Id)}>Delete</button>
