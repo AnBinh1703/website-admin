@@ -1,4 +1,3 @@
-import axios from "axios";
 import React, { useState } from "react";
 import "./css/TournamentList.css"; // Make sure to adjust the import based on your actual file structure
 
@@ -53,7 +52,7 @@ const TournamentList = () => {
 
   const getAllTournaments = async () => {
     try {
-      const response = await axios.get(
+      const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/tournament/get-all"
       );
       const data = await response.json();
@@ -70,7 +69,7 @@ const TournamentList = () => {
   const handleFetchTournamentById = async (id) => {
     try {
       // Fetch tournament by ID and highlight the selected tournament
-      const response = await axios.get(
+      const response = await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/tournament/get-by-id/${id}`
       );
       const data = await response.json();
@@ -100,7 +99,7 @@ const TournamentList = () => {
         return;
       }
 
-      const response = await axios.get(
+      const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/tournament/create",
         {
           method: "POST",
@@ -146,7 +145,7 @@ const TournamentList = () => {
         return;
       }
 
-      const response = await axios.get(
+      const response = await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/tournament/update/${selectedTournamentId}`,
         {
           method: "PUT",
@@ -181,7 +180,7 @@ const TournamentList = () => {
   };
   const handleDeleteTournament = async (id) => {
     try {
-      const response = await axios.get(
+      const response = await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/tournament/delete/${selectedTournamentId}`,
         {
           method: "DELETE",

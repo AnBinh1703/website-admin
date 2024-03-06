@@ -1,4 +1,3 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import "./css/RoundList.css"; // Make sure to adjust the import based on your actual file structure
 
@@ -69,7 +68,7 @@ const RoundList = () => {
 
   const getAllRounds = async () => {
     try {
-      const response = await axios.get(
+      const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/round/get-all"
       );
       const data = await response.json();
@@ -101,7 +100,7 @@ const RoundList = () => {
 
   const handleCreateRound = async () => {
     try {
-      await axios.get(
+      await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/round/create",
         {
           method: "POST",
@@ -130,7 +129,7 @@ const RoundList = () => {
         console.error("Please fill in all required fields.");
         return;
       }
-      await axios.get(
+      await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/round/update/${id}`,
         {
           method: "PUT",
@@ -159,7 +158,7 @@ const RoundList = () => {
         console.error("Please fill in all required fields.");
         return;
       }
-      await axios.get(
+      await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/round/delete/${id}`,
         {
           method: "DELETE",

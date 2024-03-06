@@ -1,4 +1,3 @@
-import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate from react-router-dom
 import "./LoginPage.css";
@@ -22,7 +21,7 @@ const LoginPage = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.get(
+      const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/Login/login",
         {
           method: "POST",
