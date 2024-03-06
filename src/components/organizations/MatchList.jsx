@@ -95,7 +95,6 @@ const MatchList = () => {
 
   const handleShowCreateForm = () => {
     setShowCreateForm(true);
-    loadTeams(); // Fetch teams data when showing create form
   };
 
   const handleShowUpdateForm = (id) => {
@@ -112,7 +111,6 @@ const MatchList = () => {
 
     setShowUpdateForm(true);
     setSelectedMatchId(id);
-    loadTeams(); // Fetch teams data when showing update form
   };
 
   const handleShowDeleteForm = (id) => {
@@ -145,6 +143,7 @@ const MatchList = () => {
     });
   };
 
+<<<<<<< HEAD
   const loadTeams = async () => {
     try {
       const response = await fetch(
@@ -157,6 +156,8 @@ const MatchList = () => {
     }
   };
 
+=======
+>>>>>>> web-dev
   useEffect(() => {
     getAllMatches();
   }, []);
@@ -180,17 +181,13 @@ const MatchList = () => {
   const handleCreateMatch = async () => {
     try {
       const requestBody = {
-        matchCreatedModel: {
-          keyId: formData.keyId,
-          mapId: formData.mapId,
-          matchDate: formData.matchDate,
-          roundId: formData.roundId,
-          tournamentId: formData.tournamentId,
-        },
-        teamInMatchCreatedModel: formData.teamInMatch.map((teamId) => ({
-          teamId,
-        })),
-      };
+        keyId: formData.keyId,
+        mapId: formData.mapId,
+        matchDate: formData.matchDate,
+        roundId: formData.roundId,
+        tournamentId: formData.tournamentId,
+      }
+
 
       const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/match/create",
@@ -346,14 +343,17 @@ const MatchList = () => {
       {showCreateForm && (
         <div className="popup-form">
           <h3>Create New Match</h3>
-          <label>KeyId:</label>
+          <label>Match Id:</label>
           <input
             type="text"
             name="keyId"
             value={formData.keyId}
             onChange={handleInputChange}
           />
+<<<<<<< HEAD
 
+=======
+>>>>>>> web-dev
           <label>Map:</label>
           <select
             name="mapId"
@@ -422,6 +422,7 @@ const MatchList = () => {
             <option value="">Select Tournament</option>
             {tournamentOptions.map((tournament) => (
               <option key={tournament.id} value={tournament.id}>
+<<<<<<< HEAD
                 {tournament.tournamentName}
               </option>
             ))}
@@ -429,6 +430,13 @@ const MatchList = () => {
 
           {/* Add other form elements or customize as needed */}
 
+=======
+                {tournament.tournamentName}{" "}
+                {/* Adjust with the actual property name */}
+              </option>
+            ))}
+          </select>
+>>>>>>> web-dev
           <button onClick={handleCreateMatch}>Create Match</button>
           <button onClick={handleCloseForms}>Cancel</button>
         </div>
@@ -437,7 +445,45 @@ const MatchList = () => {
       {showUpdateForm && (
         <div className="popup-form">
           <h3>Update Match</h3>
+<<<<<<< HEAD
           {/* ... (rest of the form elements) */}
+=======
+          <label>KeyId:</label>
+          <input
+            type="text"
+            name="keyId"
+            value={formData.keyId}
+            onChange={handleInputChange}
+          />
+          <label>Map ID:</label>
+          <input
+            type="text"
+            name="mapId"
+            value={formData.mapId}
+            onChange={handleInputChange}
+          />
+          <label>Match Date:</label>
+          <input
+            type="datetime-local"
+            name="matchDate"
+            value={formData.matchDate}
+            onChange={handleInputChange}
+          />
+          <label>Round ID:</label>
+          <input
+            type="text"
+            name="roundId"
+            value={formData.roundId}
+            onChange={handleInputChange}
+          />
+          <label>Tournament ID:</label>
+          <input
+            type="text"
+            name="tournamentId"
+            value={formData.tournamentId}
+            onChange={handleInputChange}
+          />
+>>>>>>> web-dev
           <button onClick={handleUpdateMatch}>Update Match</button>
           <button onClick={handleCloseForms}>Cancel</button>
         </div>
