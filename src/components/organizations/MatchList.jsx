@@ -5,7 +5,7 @@ const MatchList = () => {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [setFormValid] = useState(true);
+  const [formValid, setFormValid] = useState(true);
 
   const [formData, setFormData] = useState({
     keyId: "",
@@ -21,25 +21,23 @@ const MatchList = () => {
   const [showDeleteForm, setShowDeleteForm] = useState(false);
   const [selectedMatchId, setSelectedMatchId] = useState(null);
 
+  // Teams data
+  const [teams, setTeams] = useState([]);
+  const [selectedTeamId, setSelectedTeamId] = useState(null);
   // State for dropdown options and selected values
   const [mapOptions, setMapOptions] = useState([]);
   const [roundOptions, setRoundOptions] = useState([]);
   const [tournamentOptions, setTournamentOptions] = useState([]);
 
-  const [setSelectedMap] = useState("");
+  const [selectedMap, setSelectedMap] = useState("");
   const [selectedMapId, setSelectedMapId] = useState("");
 
-  const [setSelectedRound] = useState("");
+  const [selectedRound, setSelectedRound] = useState("");
   const [selectedRoundId, setSelectedRoundId] = useState("");
 
-  const [setSelectedTournament] = useState("");
+  const [selectedTournament, setSelectedTournament] = useState("");
   const [selectedTournamentId, setSelectedTournamentId] = useState("");
-
-  // Add these state variables
-  const [selectedMapName, setSelectedMapName] = useState("");
-  const [selectedRoundName, setSelectedRoundName] = useState("");
-  const [selectedTournamentName, setSelectedTournamentName] = useState("");
-
+  // Fetch dropdown options when the component mounts
   // Fetch dropdown options when the component mounts
   useEffect(() => {
     fetchDropdownOptions("map");
@@ -77,16 +75,16 @@ const MatchList = () => {
   const handleDropdownChange = (type, selectedOption) => {
     switch (type) {
       case "map":
-        setSelectedMap(selectedOption.id);
-        setSelectedMapName(selectedOption.mapName);
+        setSelectedMap(selectedOption.mapName);
+        setSelectedMapId(selectedOption.id);
         break;
       case "round":
-        setSelectedRound(selectedOption.id);
-        setSelectedRoundName(selectedOption.roundName);
+        setSelectedRound(selectedOption.roundName);
+        setSelectedRoundId(selectedOption.id);
         break;
       case "tournament":
-        setSelectedTournament(selectedOption.id);
-        setSelectedTournamentName(selectedOption.tournamentName);
+        setSelectedTournament(selectedOption.tournamentName);
+        setSelectedTournamentId(selectedOption.id);
         break;
       default:
         break;
@@ -106,7 +104,7 @@ const MatchList = () => {
       matchDate: selectedMatch.matchDate,
       roundId: selectedMatch.roundId,
       tournamentId: selectedMatch.tournamentId,
-      teamInMatch: selectedMatch.teamInMatch.map((team) => team.teamId),
+      teamInMatch: selectedMatch.teamInMatch,
     });
 
     setShowUpdateForm(true);
@@ -122,7 +120,7 @@ const MatchList = () => {
       matchDate: selectedMatch.matchDate,
       roundId: selectedMatch.roundId,
       tournamentId: selectedMatch.tournamentId,
-      teamInMatch: selectedMatch.teamInMatch.map((team) => team.teamId),
+      teamInMatch: selectedMatch.teamInMatch,
     });
 
     setShowDeleteForm(true);
@@ -134,6 +132,7 @@ const MatchList = () => {
     setShowUpdateForm(false);
     setShowDeleteForm(false);
     setSelectedMatchId(null);
+    setSelectedTeamId(null);
   };
 
   const handleInputChange = (e) => {
@@ -143,21 +142,6 @@ const MatchList = () => {
     });
   };
 
-<<<<<<< HEAD
-  const loadTeams = async () => {
-    try {
-      const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/team/get-all"
-      );
-      const data = await response.json();
-    } catch (error) {
-      console.error("Error fetching teams:", error.message);
-      // Handle error fetching teams
-    }
-  };
-
-=======
->>>>>>> web-dev
   useEffect(() => {
     getAllMatches();
   }, []);
@@ -180,14 +164,25 @@ const MatchList = () => {
 
   const handleCreateMatch = async () => {
     try {
+      // if (
+      //   !formData.keyId ||
+      //   !formData.mapId ||
+      //   !formData.matchDate ||
+      //   !formData.roundId ||
+      //   !formData.tournamentId ||
+      //   formData.teamInMatch.length !== 2
+      // ) {
+      //   console.error("Please fill in all required fields.");
+      //   setFormValid(false);
+      //   return;
+      // }
       const requestBody = {
         keyId: formData.keyId,
         mapId: formData.mapId,
         matchDate: formData.matchDate,
         roundId: formData.roundId,
         tournamentId: formData.tournamentId,
-      }
-
+      };
 
       const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/match/create",
@@ -201,12 +196,22 @@ const MatchList = () => {
       );
 
       if (!response.ok) {
-        const errorResponse = await response.json();
+        let errorResponse;
+        try {
+          errorResponse = await response.json();
+        } catch (error) {
+          console.error("Error creating match. Unexpected response:", response);
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
         console.error("Error creating match:", errorResponse);
-        setFormValid(false); // Set form validity to false on error
         throw new Error(`Error adding a new match: ${errorResponse.message}`);
       }
+
+      // Get the created match ID from the response
       const createdMatchId = await response.json();
+
+      // Log the created match ID
       console.log("Match created successfully. ID:", createdMatchId);
 
       setFormValid(true);
@@ -221,31 +226,39 @@ const MatchList = () => {
         teamInMatch: [],
       });
     } catch (error) {
-      console.error("Error creating match:", error.message);
+      console.error("Error creating match:", error);
+      // Throw a detailed error message
+      throw new Error(`Error creating match: ${error.message}`);
     }
   };
 
   const handleUpdateMatch = async () => {
     try {
-      const requestBody = {
-        mapId: formData.mapId,
-        matchDate: formData.matchDate,
-        roundId: formData.roundId,
-        tournamentId: formData.tournamentId,
-        keyId: formData.keyId,
-      };
+      if (
+        !formData.keyId ||
+        !formData.mapId ||
+        !formData.matchDate ||
+        !formData.roundId ||
+        !formData.tournamentId ||
+        formData.teamInMatch.length !== 2
+      ) {
+        console.error("Please fill in all required fields.");
+        setFormValid(false);
+        return;
+      }
 
       await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/match/update-match`,
+        `https://fptbottournamentweb.azurewebsites.net/api/match/update/${selectedMatchId}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(requestBody),
+          body: JSON.stringify(formData),
         }
       );
 
+      setFormValid(true);
       setShowUpdateForm(false);
       getAllMatches();
       setFormData({
@@ -350,22 +363,11 @@ const MatchList = () => {
             value={formData.keyId}
             onChange={handleInputChange}
           />
-<<<<<<< HEAD
-
-=======
->>>>>>> web-dev
           <label>Map:</label>
           <select
             name="mapId"
             value={selectedMapId}
-            onChange={(e) => {
-              handleDropdownChange("map", e.target.value);
-              setSelectedMapId(e.target.value);
-              const selectedMap = mapOptions.find(
-                (map) => map.id === e.target.value
-              );
-              setSelectedMap(selectedMap ? selectedMap.mapName : "");
-            }}
+            onChange={(e) => handleDropdownChange("map", e.target.value)}
           >
             <option value="">Select Map</option>
             {mapOptions.map((map) => (
@@ -374,7 +376,6 @@ const MatchList = () => {
               </option>
             ))}
           </select>
-
           <label>Match Date:</label>
           <input
             type="datetime-local"
@@ -382,61 +383,33 @@ const MatchList = () => {
             value={formData.matchDate}
             onChange={handleInputChange}
           />
-
-          <label>Round:</label>
+          <label>Round ID:</label>
           <select
             name="roundId"
             value={selectedRoundId}
-            onChange={(e) => {
-              handleDropdownChange("round", e.target.value);
-              setSelectedRoundId(e.target.value);
-              const selectedRound = roundOptions.find(
-                (round) => round.id === e.target.value
-              );
-              setSelectedRound(selectedRound ? selectedRound.roundName : "");
-            }}
+            onChange={(e) => handleDropdownChange("round", e.target.value)}
           >
             <option value="">Select Round</option>
             {roundOptions.map((round) => (
               <option key={round.id} value={round.id}>
-                {round.roundName}
+                {round.roundName} {/* Adjust with the actual property name */}
               </option>
             ))}
           </select>
-
-          <label>Tournament:</label>
+          <label>Tournament ID:</label>
           <select
             name="tournamentId"
             value={selectedTournamentId}
-            onChange={(e) => {
-              handleDropdownChange("tournament", e.target.value);
-              setSelectedTournamentId(e.target.value);
-              const selectedTournament = tournamentOptions.find(
-                (tournament) => tournament.id === e.target.value
-              );
-              setSelectedTournament(
-                selectedTournament ? selectedTournament.tournamentName : ""
-              );
-            }}
+            onChange={(e) => handleDropdownChange("tournament", e.target.value)}
           >
             <option value="">Select Tournament</option>
             {tournamentOptions.map((tournament) => (
               <option key={tournament.id} value={tournament.id}>
-<<<<<<< HEAD
-                {tournament.tournamentName}
-              </option>
-            ))}
-          </select>
-
-          {/* Add other form elements or customize as needed */}
-
-=======
                 {tournament.tournamentName}{" "}
                 {/* Adjust with the actual property name */}
               </option>
             ))}
           </select>
->>>>>>> web-dev
           <button onClick={handleCreateMatch}>Create Match</button>
           <button onClick={handleCloseForms}>Cancel</button>
         </div>
@@ -445,9 +418,6 @@ const MatchList = () => {
       {showUpdateForm && (
         <div className="popup-form">
           <h3>Update Match</h3>
-<<<<<<< HEAD
-          {/* ... (rest of the form elements) */}
-=======
           <label>KeyId:</label>
           <input
             type="text"
@@ -483,7 +453,6 @@ const MatchList = () => {
             value={formData.tournamentId}
             onChange={handleInputChange}
           />
->>>>>>> web-dev
           <button onClick={handleUpdateMatch}>Update Match</button>
           <button onClick={handleCloseForms}>Cancel</button>
         </div>
