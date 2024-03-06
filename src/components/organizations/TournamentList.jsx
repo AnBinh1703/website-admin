@@ -311,7 +311,7 @@ const TournamentList = () => {
       {showCreateForm && (
         <div className="popup-form">
           <h3>Create New Tournament</h3>
-          <label>KeyId</label>
+          <label>Tournament Id:</label>
           <input
             type="text"
             name="keyId"

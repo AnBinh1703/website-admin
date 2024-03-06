@@ -257,7 +257,7 @@ const HighSchoolList = () => {
       <table border="1">
         <thead>
           <tr>
-            <th>Key ID</th>
+            <th>ID</th>
             <th>High School Name</th>
           </tr>
         </thead>
