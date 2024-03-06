@@ -71,8 +71,12 @@ const RoundList = () => {
       const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/round/get-all"
       );
-      const data = await response.json();
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
       setRounds(data);
       setLoading(false);
     } catch (error) {
@@ -81,6 +85,7 @@ const RoundList = () => {
       setLoading(false);
     }
   };
+
   const handleFetchRoundById = (id) => {
     const updatedRounds = rounds.map((round) =>
       round.id === id
