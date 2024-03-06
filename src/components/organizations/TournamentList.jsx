@@ -35,10 +35,46 @@ const TournamentList = () => {
     setShowCreateForm(true);
   };
 
+  // const handleShowUpdateForm = (id) => {
+  //   setFormData({ ...tournaments.find((tournament) => tournament.id === id) });
+  //   setShowUpdateForm(true);
+  //   setSelectedTournamentId(id);
+  // };
   const handleShowUpdateForm = (id) => {
-    setFormData({ ...tournaments.find((tournament) => tournament.id === id) });
-    setShowUpdateForm(true);
-    setSelectedTournamentId(id);
+    const selectedTournament = tournaments.find(
+      (tournament) => tournament.id === id
+    );
+
+    if (selectedTournament) {
+      // Format date for display in the update form
+      const formattedStartDate = new Date(selectedTournament.startDate)
+        .toISOString()
+        .slice(0, 10);
+      const formattedEndDate = new Date(selectedTournament.endDate)
+        .toISOString()
+        .slice(0, 10);
+
+      // Format time for display in the update form (optional, adjust as needed)
+      const formattedStartTime = new Date(selectedTournament.startDate)
+        .toISOString()
+        .slice(11, 16);
+      const formattedEndTime = new Date(selectedTournament.endDate)
+        .toISOString()
+        .slice(11, 16);
+
+      // Set the form data
+      setFormData({
+        ...selectedTournament,
+        startDate: formattedStartDate,
+        endDate: formattedEndDate,
+        // Optionally, set time values if needed
+        // startTime: formattedStartTime,
+        // endTime: formattedEndTime,
+      });
+
+      setShowUpdateForm(true);
+      setSelectedTournamentId(id);
+    }
   };
 
   const handleShowDeleteForm = (id) => {
