@@ -76,6 +76,11 @@ const MapList = () => {
       const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/map/get-all"
       );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
       const data = await response.json();
 
       setMaps(data);

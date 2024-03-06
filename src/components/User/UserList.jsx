@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-
 const UserList = () => {
   const [users, setUsers] = useState([]);
   const [newUser, setNewUser] = useState({

@@ -182,8 +182,7 @@ const MatchList = () => {
         matchDate: formData.matchDate,
         roundId: formData.roundId,
         tournamentId: formData.tournamentId,
-      }
-
+      };
 
       const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/match/create",
