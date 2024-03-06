@@ -1,5 +1,5 @@
+import axios from "axios";
 import React, { useEffect, useState } from "react";
-
 const UserList = () => {
   const [users, setUsers] = useState([]);
   const [newUser, setNewUser] = useState({
@@ -25,7 +25,7 @@ const UserList = () => {
 
   const handleCreateUser = async () => {
     try {
-      const response = await fetch(
+      const response = await axios.get(
         "https://fptbottournamentweb.azurewebsites.net/api/user/create",
         {
           method: "POST",
@@ -71,7 +71,7 @@ const UserList = () => {
 
   const handleUpdateUser = async () => {
     try {
-      const response = await fetch(
+      const response = await axios.get(
         `https://fptbottournamentweb.azurewebsites.net/api/user/update/${selectedUserId}`,
         {
           method: "PUT",
@@ -109,7 +109,7 @@ const UserList = () => {
 
   const handleDeleteUser = async () => {
     try {
-      const response = await fetch(
+      const response = await axios.get(
         `https://fptbottournamentweb.azurewebsites.net/api/user/delete/${selectedUserId}`,
         {
           method: "DELETE",

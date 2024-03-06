@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import "./css/MapList.css";
 
@@ -73,7 +74,7 @@ const MapList = () => {
 
   const getAllMaps = async () => {
     try {
-      const response = await fetch(
+      const response = await axios.get(
         "https://fptbottournamentweb.azurewebsites.net/api/map/get-all"
       );
       const data = await response.json();
@@ -107,7 +108,7 @@ const MapList = () => {
         return;
       }
 
-      await fetch(
+      await axios.get(
         "https://fptbottournamentweb.azurewebsites.net/api/map/create",
         {
           method: "POST",
@@ -142,7 +143,7 @@ const MapList = () => {
       }
 
       console.log("Updating map:", selectedMapId, formData);
-      await fetch(
+      await axios.get(
         `https://fptbottournamentweb.azurewebsites.net/api/map/update/${selectedMapId}`,
         {
           method: "PUT",
@@ -175,7 +176,7 @@ const MapList = () => {
   const handleDeleteMap = async () => {
     try {
       console.log("Deleting map:", selectedMapId);
-      await fetch(
+      await axios.get(
         `https://fptbottournamentweb.azurewebsites.net/api/map/delete/${selectedMapId}`,
         {
           method: "DELETE",

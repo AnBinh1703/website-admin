@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import "./css/MatchList.css";
 
@@ -49,7 +50,7 @@ const MatchList = () => {
   // Function to fetch dropdown options
   const fetchDropdownOptions = async (type) => {
     try {
-      const response = await fetch(
+      const response = await axios.get(
         `https://fptbottournamentweb.azurewebsites.net/api/${type}/get-all`
       );
       const data = await response.json();
@@ -157,7 +158,7 @@ const MatchList = () => {
 
   const loadTeams = async () => {
     try {
-      const response = await fetch(
+      const response = await axios.get(
         "https://fptbottournamentweb.azurewebsites.net/api/team/get-all"
       );
       const data = await response.json();
@@ -174,7 +175,7 @@ const MatchList = () => {
 
   const getAllMatches = async () => {
     try {
-      const response = await fetch(
+      const response = await axios.get(
         "https://fptbottournamentweb.azurewebsites.net/api/match/get-all"
       );
       const data = await response.json();
@@ -215,7 +216,7 @@ const MatchList = () => {
         })),
       };
 
-      const response = await fetch(
+      const response = await axios.get(
         "https://fptbottournamentweb.azurewebsites.net/api/match/create",
         {
           method: "POST",
@@ -278,7 +279,7 @@ const MatchList = () => {
         return;
       }
 
-      await fetch(
+      await axios.get(
         `https://fptbottournamentweb.azurewebsites.net/api/match/update/${selectedMatchId}`,
         {
           method: "PUT",
@@ -307,7 +308,7 @@ const MatchList = () => {
 
   const handleDeleteMatch = async () => {
     try {
-      await fetch(
+      await axios.get(
         `https://fptbottournamentweb.azurewebsites.net/api/match/delete/${selectedMatchId}`,
         {
           method: "DELETE",

@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 
 const LoadingIndicator = () => <p>Loading...</p>;
@@ -24,7 +25,7 @@ const HighSchoolList = () => {
   const getAllHighSchools = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
+      const response = await axios.get(
         "https://fptbottournamentweb.azurewebsites.net/api/highSchool/get-all"
       );
       const data = await response.json();
@@ -74,7 +75,7 @@ const HighSchoolList = () => {
   const handleCreateHighSchool = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
+      const response = await axios.get(
         "https://fptbottournamentweb.azurewebsites.net/api/highSchool/create",
         {
           method: "POST",
@@ -110,7 +111,7 @@ const HighSchoolList = () => {
   const handleUpdateHighSchool = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
+      const response = await axios.get(
         `https://fptbottournamentweb.azurewebsites.net/api/highSchool/update/${selectedHighSchoolId}`,
         {
           method: "PUT",
@@ -146,7 +147,7 @@ const HighSchoolList = () => {
   const handleDeleteHighSchool = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
+      const response = await axios.get(
         `https://fptbottournamentweb.azurewebsites.net/api/highSchool/delete/${selectedHighSchoolId}`,
         {
           method: "DELETE",
