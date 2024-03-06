@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
-import './css/TournamentList.css'; // Make sure to adjust the import based on your actual file structure
+import React, { useState } from "react";
+import "./css/TournamentList.css"; // Make sure to adjust the import based on your actual file structure
 
 const TournamentList = () => {
   const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
-          keyId: '',
+    keyId: "",
 
-    tournamentName: '',
-    startDate: '',
-    endDate: '',
+    tournamentName: "",
+    startDate: "",
+    endDate: "",
   });
 
   // State for handling pop-up forms
@@ -52,110 +52,160 @@ const TournamentList = () => {
 
   const getAllTournaments = async () => {
     try {
-      const response = await fetch('https://fptbottournamentweb.azurewebsites.net/api/tournament/get-all');
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/tournament/get-all"
+      );
       const data = await response.json();
 
       setTournaments(data);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching tournaments:', error.message);
-      setError('Error fetching tournaments. Please try again.');
+      console.error("Error fetching tournaments:", error.message);
+      setError("Error fetching tournaments. Please try again.");
       setLoading(false);
     }
   };
-const handleFetchTournamentById = (id) => {
-  // Fetch tournament by ID and highlight the selected tournament
-  const updatedTournaments = tournaments.map((tournament) => ({
-    ...tournament,
-    highlighted: tournament.id === id,
-  }));
 
-  setTournaments(updatedTournaments);
-  setSelectedTournamentId(id);
-};
-const handleCreateTournament = async () => {
-  try {
-    if (!formData.keyId || !formData.tournamentName || !formData.startDate || !formData.endDate) {
-      console.error('Please fill in all required fields.');
-      return;
+  const handleFetchTournamentById = async (id) => {
+    try {
+      // Fetch tournament by ID and highlight the selected tournament
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/tournament/get-by-id/${id}`
+      );
+      const data = await response.json();
+
+      const updatedTournaments = tournaments.map((tournament) => ({
+        ...tournament,
+        highlighted: tournament.id === id,
+      }));
+
+      setTournaments(updatedTournaments);
+      setSelectedTournamentId(id);
+      setFormData(data);
+    } catch (error) {
+      console.error("Error fetching tournament by ID:", error.message);
     }
-    await fetch('https://fptbottournamentweb.azurewebsites.net/api/tournament/create', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formData),
-    });
+  };
 
-    // Refresh tournament list
-    getAllTournaments();
-    // Clear form data
+  const handleCreateTournament = async () => {
+    try {
+      if (
+        !formData.keyId ||
+        !formData.tournamentName ||
+        !formData.startDate ||
+        !formData.endDate
+      ) {
+        console.error("Please fill in all required fields.");
+        return;
+      }
+
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/tournament/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      // Log the entire response for inspection
+      console.log("Create Tournament Response:", response);
+
+      const responseText = await response.text();
+      console.log("Response Text:", responseText);
+
+      // Refresh tournament list
+      getAllTournaments();
+
+      // Clear form data
       setFormData({
-      keyId: '',
-      tournamentName: '',
-      startDate: '',
-      endDate: '',
-    });
+        keyId: "",
+        tournamentName: "",
+        startDate: "",
+        endDate: "",
+      });
 
-    setShowCreateForm(false);
-  } catch (error) {
-    console.error('Error creating tournament:', error);
-  }
-};
-
-
- const handleUpdateTournament = async () => {
-   try {
-    if (!formData.keyId || !formData.tournamentName || !formData.startDate || !formData.endDate) {
-      console.error('Please fill in all required fields.');
-      return;
+      setShowCreateForm(false);
+    } catch (error) {
+      console.error("Error creating tournament:", error);
     }
-    await fetch(`https://fptbottournamentweb.azurewebsites.net/api/tournament/update/${selectedTournamentId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formData),
-    });
+  };
 
-    // Refresh tournament list
-    getAllTournaments();
-    // Clear form data
-    setFormData({
-      keyId: '',
-      tournamentName: '',
-      startDate: '',
-      endDate: '',
-    });
-    setShowUpdateForm(false);
-  } catch (error) {
-    console.error('Error updating tournament:', error);
-  }
-};
+  const handleUpdateTournament = async () => {
+    try {
+      if (
+        !formData.keyId ||
+        !formData.tournamentName ||
+        !formData.startDate ||
+        !formData.endDate
+      ) {
+        console.error("Please fill in all required fields.");
+        return;
+      }
 
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/tournament/update/${selectedTournamentId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Update Tournament Error:", errorData);
+        throw new Error(
+          `Failed to update tournament: ${response.status} - ${response.statusText}`
+        );
+      }
+
+      // Refresh tournament list
+      getAllTournaments();
+      // Clear form data
+      setFormData({
+        keyId: "",
+        tournamentName: "",
+        startDate: "",
+        endDate: "",
+      });
+      setShowUpdateForm(false);
+    } catch (error) {
+      console.error("Error updating tournament:", error.message);
+    }
+  };
   const handleDeleteTournament = async (id) => {
-  try {
-    const response = await fetch(`https://fptbottournamentweb.azurewebsites.net/api/tournament/delete/${selectedTournamentId}`, {
-      method: 'DELETE',
-    });
+    try {
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/tournament/delete/${selectedTournamentId}`,
+        {
+          method: "DELETE",
+        }
+      );
 
-    if (!response.ok) {
-      throw new Error(`Failed to delete tournament: ${response.status} - ${response.statusText}`);
+      if (!response.ok) {
+        throw new Error(
+          `Failed to delete tournament: ${response.status} - ${response.statusText}`
+        );
+      }
+
+      // Refresh tournament list
+      getAllTournaments();
+      // Clear form data
+      setFormData({
+        tournamentName: "",
+        startDate: "",
+        endDate: "",
+      });
+      setShowDeleteForm(false);
+    } catch (error) {
+      console.error("Error deleting tournament:", error);
     }
-
-    // Refresh tournament list
-    getAllTournaments();
-    // Clear form data
-    setFormData({
-      tournamentName: '',
-      startDate: '',
-      endDate: '',
-    });
-    setShowDeleteForm(false);
-  } catch (error) {
-    console.error('Error deleting tournament:', error);
-  }
-};
+  };
 
   return (
     <div id="tournament-list-container">
@@ -167,14 +217,18 @@ const handleCreateTournament = async () => {
         </button>
         <button
           className="update-button"
-          onClick={() => selectedTournamentId && handleShowUpdateForm(selectedTournamentId)}
+          onClick={() =>
+            selectedTournamentId && handleShowUpdateForm(selectedTournamentId)
+          }
           disabled={!selectedTournamentId}
         >
           Update Tournament
         </button>
         <button
           className="delete-button"
-          onClick={() => selectedTournamentId && handleShowDeleteForm(selectedTournamentId)}
+          onClick={() =>
+            selectedTournamentId && handleShowDeleteForm(selectedTournamentId)
+          }
           disabled={!selectedTournamentId}
         >
           Delete Tournament
@@ -197,9 +251,9 @@ const handleCreateTournament = async () => {
           <tbody>
             {tournaments.map((tournament) => (
               <tr
-              key={tournament.id}
-              className={tournament.highlighted ? 'selected-row' : ''}
-              onClick={() => handleFetchTournamentById(tournament.id)}
+                key={tournament.id}
+                className={tournament.highlighted ? "selected-row" : ""}
+                onClick={() => handleFetchTournamentById(tournament.id)}
               >
                 <td>{tournament.keyId}</td>
                 <td>{tournament.tournamentName}</td>
@@ -216,14 +270,34 @@ const handleCreateTournament = async () => {
         <div className="popup-form">
           <h3>Create New Tournament</h3>
           <label>KeyId</label>
-          <input type="text" name="keyId" value={formData.keyId} onChange={handleInputChange} />
+          <input
+            type="text"
+            name="keyId"
+            value={formData.keyId}
+            onChange={handleInputChange}
+          />
 
           <label>Tournament Name:</label>
-          <input type="text" name="tournamentName" value={formData.tournamentName} onChange={handleInputChange} />
+          <input
+            type="text"
+            name="tournamentName"
+            value={formData.tournamentName}
+            onChange={handleInputChange}
+          />
           <label>Start Date:</label>
-          <input type="date" name="startDate" value={formData.startDate} onChange={handleInputChange} />
+          <input
+            type="date"
+            name="startDate"
+            value={formData.startDate}
+            onChange={handleInputChange}
+          />
           <label>End Date:</label>
-          <input type="date" name="endDate" value={formData.endDate} onChange={handleInputChange} />
+          <input
+            type="date"
+            name="endDate"
+            value={formData.endDate}
+            onChange={handleInputChange}
+          />
           <button onClick={handleCreateTournament}>Create Tournament</button>
           <button onClick={handleCloseForms}>Close</button>
         </div>
@@ -234,14 +308,36 @@ const handleCreateTournament = async () => {
         <div className="popup-form">
           <h3>Update Tournament</h3>
           <label>KeyId</label>
-          <input type="text" name="keyId" value={formData.keyId} onChange={handleInputChange} />
+          <input
+            type="text"
+            name="keyId"
+            value={formData.keyId}
+            onChange={handleInputChange}
+          />
           <label>Tournament Name:</label>
-          <input type="text" name="tournamentName" value={formData.tournamentName} onChange={handleInputChange} />
+          <input
+            type="text"
+            name="tournamentName"
+            value={formData.tournamentName}
+            onChange={handleInputChange}
+          />
           <label>Start Date:</label>
-          <input type="date" name="startDate" value={formData.startDate} onChange={handleInputChange} />
+          <input
+            type="date"
+            name="startDate"
+            value={formData.startDate}
+            onChange={handleInputChange}
+          />
           <label>End Date:</label>
-          <input type="date" name="endDate" value={formData.endDate} onChange={handleInputChange} />
-          <button onClick={() => handleUpdateTournament(selectedTournamentId)}>Update Tournament</button>
+          <input
+            type="date"
+            name="endDate"
+            value={formData.endDate}
+            onChange={handleInputChange}
+          />
+          <button onClick={() => handleUpdateTournament(selectedTournamentId)}>
+            Update Tournament
+          </button>
           <button onClick={handleCloseForms}>Close</button>
         </div>
       )}
@@ -251,7 +347,9 @@ const handleCreateTournament = async () => {
         <div className="popup-form">
           <h3>Delete Tournament</h3>
           <p>Are you sure you want to delete this tournament?</p>
-          <button onClick={() => handleDeleteTournament(selectedTournamentId)}>Delete Tournament</button>
+          <button onClick={() => handleDeleteTournament(selectedTournamentId)}>
+            Delete Tournament
+          </button>
           <button onClick={handleCloseForms}>Cancel</button>
         </div>
       )}
