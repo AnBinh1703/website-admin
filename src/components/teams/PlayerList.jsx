@@ -282,7 +282,7 @@ const PlayerList = () => {
             <label>Team:</label>
             <select
               name="teamId"
-              value={selectedTeamId}
+              value={formData.teamId}
               onChange={handleInputChange}
             >
               <option value="">Select Team</option>

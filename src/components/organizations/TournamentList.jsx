@@ -335,8 +335,8 @@ const TournamentList = () => {
               >
                 <td>{tournament.keyId}</td>
                 <td>{tournament.tournamentName}</td>
-                <td>{new Date(tournament.startDate).toLocaleDateString()}</td>
-                <td>{new Date(tournament.endDate).toLocaleDateString()}</td>
+                <td>{new Date(tournament.startDate).toLocaleDateString("en-Gb")}</td>
+                <td>{new Date(tournament.endDate).toLocaleDateString("en-Gb")}</td>
               </tr>
             ))}
           </tbody>

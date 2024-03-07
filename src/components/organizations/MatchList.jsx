@@ -309,7 +309,7 @@ const MatchList = () => {
                 <td>{match.mapName}</td>
                 <td>{match.roundName}</td>
                 <td>{match.tournamentName}</td>
-                <td>{new Date(match.matchDate).toLocaleString()}</td>
+                <td>{new Date(match.matchDate).toLocaleString("en-GB")}</td>
               </tr>
             ))}
           </tbody>
