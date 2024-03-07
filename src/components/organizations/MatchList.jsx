@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
+import TeamInMatchForm from "./TeamInMatchForm";
 import "./css/MatchList.css";
-
 const MatchList = () => {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,11 +27,23 @@ const MatchList = () => {
   const [selectedRoundId, setSelectedRoundId] = useState("");
   const [selectedTournamentId, setSelectedTournamentId] = useState("");
 
+  const [showTeamInMatchForm, setShowTeamInMatchForm] = useState(false);
+  const [doubleClick, setDoubleClick] = useState(false);
+
   useEffect(() => {
     fetchDropdownOptions("map");
     fetchDropdownOptions("round");
     fetchDropdownOptions("tournament");
   }, []);
+
+  const handleRowDoubleClick = (id) => {
+    setSelectedMatchId(id);
+    setDoubleClick(true);
+  };
+
+  const resetDoubleClick = () => {
+    setDoubleClick(false);
+  };
 
   const fetchDropdownOptions = async (type) => {
     try {
@@ -291,6 +303,7 @@ const MatchList = () => {
                 key={match.id}
                 className={selectedMatchId === match.id ? "selected-row" : ""}
                 onClick={() => setSelectedMatchId(match.id)}
+                onDoubleClick={() => handleRowDoubleClick(match.id)}
               >
                 <td>{match.keyId}</td>
                 <td>{match.mapName}</td>
@@ -460,6 +473,15 @@ const MatchList = () => {
           <p>Are you sure you want to delete this match?</p>
           <button onClick={handleDeleteMatch}>Delete Match</button>
           <button onClick={handleCloseForms}>Cancel</button>
+        </div>
+      )}
+      {/* Display TeamInMatchForm.jsx if double-click event occurred */}
+      {doubleClick && (
+        <div className="popup-form">
+          <TeamInMatchForm
+            matchId={selectedMatchId}
+            onClose={resetDoubleClick}
+          />
         </div>
       )}
     </div>

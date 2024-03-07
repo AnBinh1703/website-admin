@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import HighSchoolList from "./HighSchoolList";
 import PlayerList from "./PlayerList";
-import TeamInMatchList from "./TeamInMatchList";
 import TeamList from "./TeamList";
 
 function DashboardTeam() {
@@ -25,12 +24,6 @@ function DashboardTeam() {
       <nav className="subtopnav">
         <button
           className="btn btn-secondary subtopnav-item"
-          onClick={() => handleComponentSelect("team-in-match")}
-        >
-          Team in Match
-        </button>
-        <button
-          className="btn btn-secondary subtopnav-item"
           onClick={() => handleComponentSelect("teams")}
         >
           Team
@@ -51,7 +44,6 @@ function DashboardTeam() {
 
       {/* Display screen */}
       <div className="display-screen">
-        {selectedComponent === "team-in-match" && <TeamInMatchList />}
         {selectedComponent === "teams" && <TeamList />}
         {selectedComponent === "player" && <PlayerList />}
         {selectedComponent === "high-school" && <HighSchoolList />}
