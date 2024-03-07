@@ -78,14 +78,13 @@ const MatchList = () => {
     setShowCreateForm(true);
   };
 
-  //
   const handleShowUpdateForm = (id) => {
     const selectedMatch = matches.find((match) => match.id === id);
 
     if (selectedMatch) {
       // Format date for display in the update form
       const formattedDate = new Date(selectedMatch.matchDate);
-      formattedDate.setDate(formattedDate.getDate() + 1);
+      formattedDate.setHours(formattedDate.getHours() - 17);
 
       // Set the form data with the formatted match date
       setFormData({
@@ -302,6 +301,81 @@ const MatchList = () => {
             ))}
           </tbody>
         </table>
+      )}
+      {showCreateForm && (
+        <div className="popup-form">
+          <h3>Create Match</h3>
+          <label>Match Id:</label>
+          <input
+            type="text"
+            name="keyId"
+            value={formData.keyId}
+            onChange={handleInputChange}
+          />
+          <label>Map:</label>
+          <select
+            name="mapId"
+            value={selectedMapId}
+            onChange={(e) =>
+              handleDropdownChange(
+                "map",
+                mapOptions.find((m) => m.id === e.target.value)
+              )
+            }
+          >
+            <option value="">Select Map</option>
+            {mapOptions.map((map) => (
+              <option key={map.id} value={map.id}>
+                {map.mapName}
+              </option>
+            ))}
+          </select>
+          <label>Match Date:</label>
+          <input
+            type="datetime-local"
+            name="matchDate"
+            value={formData.matchDate}
+            onChange={handleInputChange}
+          />
+          <label>Round ID:</label>
+          <select
+            name="roundId"
+            value={selectedRoundId}
+            onChange={(e) =>
+              handleDropdownChange(
+                "round",
+                roundOptions.find((r) => r.id === e.target.value)
+              )
+            }
+          >
+            <option value="">Select Round</option>
+            {roundOptions.map((round) => (
+              <option key={round.id} value={round.id}>
+                {round.roundName}
+              </option>
+            ))}
+          </select>
+          <label>Tournament ID:</label>
+          <select
+            name="tournamentId"
+            value={selectedTournamentId}
+            onChange={(e) =>
+              handleDropdownChange(
+                "tournament",
+                tournamentOptions.find((t) => t.id === e.target.value)
+              )
+            }
+          >
+            <option value="">Select Tournament</option>
+            {tournamentOptions.map((tournament) => (
+              <option key={tournament.id} value={tournament.id}>
+                {tournament.tournamentName}
+              </option>
+            ))}
+          </select>
+          <button onClick={handleCreateMatch}>Create Match</button>
+          <button onClick={handleCloseForms}>Cancel</button>
+        </div>
       )}
 
       {showUpdateForm && (
