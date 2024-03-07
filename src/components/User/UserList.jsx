@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+
 const UserList = () => {
   const [users, setUsers] = useState([]);
   const [newUser, setNewUser] = useState({
@@ -6,7 +7,7 @@ const UserList = () => {
     userEmail: "",
     password: "",
     fullName: "",
-    role: "",
+    role: 0,
   });
 
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -16,14 +17,58 @@ const UserList = () => {
 
   useEffect(() => {
     // Fetch the list of users on component mount
-    fetch("https://fptbottournamentweb.azurewebsites.net/api/user/get-all")
-      .then((response) => response.json())
-      .then((data) => setUsers(data))
-      .catch((error) => console.error("Error fetching users:", error));
+    fetchUsers();
   }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/user/get-all"
+      );
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch users. Server returned ${response.status} ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      console.error("Error fetching users:", error.message);
+    }
+  };
+
+  const fetchUserById = async (id) => {
+    try {
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/user/get-by-id/${id}`
+      );
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch user. Server returned ${response.status} ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error fetching user by ID:", error.message);
+    }
+  };
 
   const handleCreateUser = async () => {
     try {
+      // Check if all required fields are filled
+      if (
+        !newUser.userName ||
+        !newUser.userEmail ||
+        !newUser.password ||
+        !newUser.fullName
+      ) {
+        console.error("Please fill in all required fields.");
+        return;
+      }
+
       const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/user/create",
         {
@@ -38,7 +83,7 @@ const UserList = () => {
               password: newUser.password,
               fullName: newUser.fullName,
             },
-            role: newUser.role.toString(),
+            role: newUser.role,
           }),
         }
       );
@@ -53,14 +98,13 @@ const UserList = () => {
         );
       }
 
-      const data = await response.json();
-      setUsers([...users, data]);
+      await fetchUsers();
       setNewUser({
         userName: "",
         userEmail: "",
         password: "",
         fullName: "",
-        role: "",
+        role: 0,
       });
       setShowCreateForm(false);
     } catch (error) {
@@ -91,14 +135,13 @@ const UserList = () => {
         );
       }
 
-      const data = await response.json();
-      setUsers(users.map((user) => (user.id === selectedUserId ? data : user)));
+      await fetchUsers();
       setNewUser({
         userName: "",
         userEmail: "",
         password: "",
         fullName: "",
-        role: "",
+        role: 0,
       });
       setShowUpdateForm(false);
     } catch (error) {
@@ -125,13 +168,13 @@ const UserList = () => {
         );
       }
 
-      setUsers(users.filter((user) => user.id !== selectedUserId));
+      await fetchUsers();
       setNewUser({
         userName: "",
         userEmail: "",
         password: "",
         fullName: "",
-        role: "",
+        role: 0,
       });
       setShowDeleteForm(false);
     } catch (error) {
@@ -139,33 +182,30 @@ const UserList = () => {
     }
   };
 
-  const handleRowClick = (id) => {
-    // Fetch user by ID and highlight the selected user
-    fetch(
-      `https://fptbottournamentweb.azurewebsites.net/api/user/get-by-id/${id}`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        const updatedUsers = users.map((user) => ({
-          ...user,
-          highlighted: user.id === id,
-        }));
+  const handleRowClick = async (id) => {
+    try {
+      const data = await fetchUserById(id);
 
-        setUsers(updatedUsers);
-        setSelectedUserId(id);
-        setNewUser({
-          userName: data.userName,
-          userEmail: data.userEmail,
-          password: data.password,
-          fullName: data.fullName,
-          role: data.role,
-        });
-      })
-      .catch((error) => console.error("Error fetching user by ID:", error));
+      const updatedUsers = users.map((user) => ({
+        ...user,
+        highlighted: user.id === id,
+      }));
+
+      setUsers(updatedUsers);
+      setSelectedUserId(id);
+      setNewUser({
+        userName: data.userName,
+        userEmail: data.userEmail,
+        password: data.password,
+        fullName: data.fullName,
+        role: data.role,
+      });
+    } catch (error) {
+      console.error("Error handling row click:", error);
+    }
   };
 
   const handleInputChange = (e) => {
-    // Update form data when input fields change
     setNewUser({
       ...newUser,
       [e.target.name]: e.target.value,

@@ -1,15 +1,10 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
-
-const LoadingIndicator = () => <p>Loading...</p>;
-
-const ErrorDisplay = ({ error }) => <p style={{ color: "red" }}>{error}</p>;
 
 const TeamList = () => {
   const [teams, setTeams] = useState([]);
+  const [selectedTeam, setSelectedTeam] = useState(null);
   const [highSchoolsOptions, setHighSchoolsOption] = useState([]);
-  const [selectedHighSchool, setSelectedHighSchool] = useState(false);
-  const [selectedHighSchoolId, setSelectedHighSchoolId] = useState(null);
+  const [selectedHighSchoolId,setSelectedHighSchoolId] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [showDeleteForm, setShowDeleteForm] = useState(false);
@@ -20,18 +15,33 @@ const TeamList = () => {
     highSchoolId: "",
   });
 
-  useEffect(() => {
-    // Fetch teams when the component mounts
-    fetchTeams();
-  }, []);
-  const fetchTeams = async () => {
+  const getAllTeams = async () => {
     try {
-      const response = await axios.get(
+      const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/team/get-all"
       );
-      setTeams(response.data);
+      const data = await response.json();
+      setTeams(data);
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching teams: ",error.message);
+    }
+  };
+  const handleFetchTeamById = async (id) => {
+    try {
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/team/get-by-id/${id}`
+      );
+      const data = await response.json();
+      const updateTeams = teams.map((team) => ({
+        ...team,
+        hightlighted: team.id === id,
+      }));
+      setTeams(updateTeams);
+      setSelectedTeamId(id);
+      setFormData(data);
+      console.log(updateTeams);
+    } catch (error) {
+      console.error("Error fetching team by ID:", error.message);
     }
   };
   const handleShowCreateForm = () => {
@@ -39,9 +49,12 @@ const TeamList = () => {
   };
 
   const handleShowUpdateForm = (id) => {
-    setFormData({ ...teams.find((team) => team.Id === id) });
+    const selectedTeam = teams.find((team) => team.id === id);
+    setFormData({
+      ...selectedTeam
+    })
     setShowUpdateForm(true);
-    setSelectedTeamId(id);
+    setSelectedTeam(id);
   };
 
   const handleShowDeleteForm = (id) => {
@@ -84,7 +97,7 @@ const TeamList = () => {
       const responseText = await response.text();
       console.log("Response Text:", responseText);
 
-      fetchTeams();
+      getAllTeams();
       // Clear form data
       setFormData({
         keyId: "",
@@ -97,22 +110,74 @@ const TeamList = () => {
       console.error("Error creating team:", error);
     }
   };
-
   const handleUpdateTeam = async () => {
     try {
-      // Send a PUT request to update the team
-      await axios.put(
-        `https://fptbottournamentweb.azurewebsites.net/api/Team/update-team/${selectedTeamId}`,
-        formData
+      // Validation checks
+      if (
+        !formData.keyId ||
+        !formData.teamName ||
+        !formData.highSchoolId
+      ) {
+        console.error("Please fill in all required fields.");
+        return;
+      }
+
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/team/update/${selectedTeamId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
       );
-      // Fetch teams again to update the list
-      const response = await axios.get(
-        "https://fptbottournamentweb.azurewebsites.net/api/Team/get-all-teams"
-      );
-      setTeams(response.data);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Update Tournament Error:", errorData);
+        throw new Error(
+          `Failed to update team: ${response.status} - ${response.statusText}`
+        );
+      }
+
+      getAllTeams();
+
+      // Clear form data
+      setFormData({
+        keyId: "",
+        teamName: "",
+        highSchoolId: "",
+      });
       setShowUpdateForm(false);
     } catch (error) {
-      console.error(error);
+      console.error("Error updating team:", error.message);
+    }
+  };
+  const handleDeleteTeam = async () => {
+    try {
+      console.log("Deleting team:", selectedTeamId);
+      await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/team/delete/${selectedTeamId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: selectedTeamId,
+          }),
+        }
+      );
+      getAllTeams();
+      setFormData({
+        keyId: "",
+        teamName: "",
+        highSchoolId: "",
+      });
+      setShowDeleteForm(false);
+    } catch (error) {
+      console.error("Error deleting team:", error);
     }
   };
   const fetchDropdownOptions = async () => {
@@ -130,23 +195,9 @@ const TeamList = () => {
     fetchDropdownOptions();
   }, []);
 
-  const handleDeleteTeam = async () => {
-    try {
-      // Send a DELETE request to remove the team
-      await axios.delete(
-        `https://fptbottournamentweb.azurewebsites.net/api/Team/delete-team/${selectedTeamId}`
-      );
-      // Fetch teams again to update the list
-      const response = await axios.get(
-        "https://fptbottournamentweb.azurewebsites.net/api/Team/get-all-teams"
-      );
-      setTeams(response.data);
-      setShowDeleteForm(false);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
+  useEffect(() => {
+    getAllTeams();
+  }, []);
   return (
     <div>
       {/* Buttons for Create, Update, Delete */}
@@ -211,21 +262,34 @@ const TeamList = () => {
       {showUpdateForm && (
         <div className="popup-form">
           <h3>Update Team</h3>
+          <label>ID:</label>
+          <input
+            type="text"
+            name="keyId"
+            value={formData.keyId}
+            onChange={handleInputChange}
+          />
           <label>Name:</label>
           <input
             type="text"
-            name="Name"
-            value={formData.Name}
+            name="teamName"
+            value={formData.teamName}
             onChange={handleInputChange}
           />
 
-          <label>High School ID:</label>
-          <input
-            type="text"
-            name="HighSchool_Id"
-            value={formData.HighSchool_Id}
+          <label>High School:</label>
+          <select
+            name="highSchoolId"
+            value={formData.highSchoolId}
             onChange={handleInputChange}
-          />
+          >
+            <option value="">Select High School</option>
+            {highSchoolsOptions.map((highSchool) => (
+              <option key={highSchool.id} value={highSchool.id}>
+                {highSchool.highSchoolName}
+              </option>
+            ))}
+          </select>
           <button onClick={handleUpdateTeam}>Update Team</button>
           <button onClick={handleCloseForms}>Close</button>
         </div>
@@ -254,7 +318,10 @@ const TeamList = () => {
           </thead>
           <tbody>
             {teams.map((team) => (
-              <tr key={team.Id}>
+              <tr 
+                key={team.id} 
+                className = {team.hightlighted ? "selected-row" : ""} 
+                onClick={() => handleFetchTeamById(team.id)}>
                 <td>{team.keyId}</td>
                 <td>{team.teamName}</td>
                 <td>{team.highSchoolName}</td>
