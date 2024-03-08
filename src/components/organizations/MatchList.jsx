@@ -17,32 +17,59 @@ const MatchList = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [showDeleteForm, setShowDeleteForm] = useState(false);
+
   const [selectedMatchId, setSelectedMatchId] = useState(null);
+  const [selectedMapId, setSelectedMapId] = useState("");
+  const [selectedRoundId, setSelectedRoundId] = useState("");
+  const [selectedTournamentId, setSelectedTournamentId] = useState("");
+  const [selectedTeam, setSelectedTeam] = useState("");
+
+  const [setMatchKeyId] = useState("");
 
   const [mapOptions, setMapOptions] = useState([]);
   const [roundOptions, setRoundOptions] = useState([]);
   const [tournamentOptions, setTournamentOptions] = useState([]);
+  const [teamOptions, setTeamOptions] = useState([]);
+  const [matchOptions, setMatchOptions] = useState([]);
 
-  const [selectedMapId, setSelectedMapId] = useState("");
-  const [selectedRoundId, setSelectedRoundId] = useState("");
-  const [selectedTournamentId, setSelectedTournamentId] = useState("");
-
-  const [showTeamInMatchForm, setShowTeamInMatchForm] = useState(false);
+  const [setShowTeamInMatchForm] = useState(false);
   const [doubleClick, setDoubleClick] = useState(false);
+  const [showAddTeamForm, setShowAddTeamForm] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState("");
 
   useEffect(() => {
     fetchDropdownOptions("map");
     fetchDropdownOptions("round");
     fetchDropdownOptions("tournament");
+    fetchDropdownOptions("team");
+    fetchDropdownOptions("match");
   }, []);
 
-  const handleRowDoubleClick = (id) => {
-    setSelectedMatchId(id);
-    setDoubleClick(true);
-  };
+  const handleRowDoubleClick = async (id) => {
+    try {
+      setSelectedMatchId(id);
+      setDoubleClick(true);
 
-  const resetDoubleClick = () => {
-    setDoubleClick(false);
+      // Fetch match details based on matchId
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/match/get/${id}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Error fetching match details");
+      }
+
+      const matchData = await response.json();
+      const matchKeyId = matchData.matchKeyId;
+
+      setShowTeamInMatchForm(true);
+      setMatchKeyId(matchKeyId);
+
+      // Trigger the "Add Team" form
+      setShowAddTeamForm(true);
+    } catch (error) {
+      console.error("Error handling double-click:", error.message);
+    }
   };
 
   const fetchDropdownOptions = async (type) => {
@@ -61,6 +88,12 @@ const MatchList = () => {
           break;
         case "tournament":
           setTournamentOptions(data);
+          break;
+        case "team":
+          setTeamOptions(data);
+          break;
+        case "match": // Add this case to set match options
+          setMatchOptions(data);
           break;
         default:
           break;
@@ -113,7 +146,9 @@ const MatchList = () => {
       setSelectedMatchId(id);
     }
   };
-
+  const handleShowAddTeamForm = () => {
+    setShowAddTeamForm(true);
+  };
   const handleShowDeleteForm = (id) => {
     const selectedMatch = matches.find((match) => match.id === id);
 
@@ -145,6 +180,8 @@ const MatchList = () => {
 
   useEffect(() => {
     getAllMatches();
+    fetchDropdownOptions("team");
+    fetchDropdownOptions("match");
   }, []);
 
   const getAllMatches = async () => {
@@ -255,6 +292,38 @@ const MatchList = () => {
       console.error("Error deleting match:", error);
     }
   };
+  const handleAddTeamToMatch = async () => {
+    try {
+      const requestBody = {
+        teamId: selectedTeam, // Use selectedTeam instead of teamId
+        matchId: selectedMatch,
+      };
+
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/team-in-match/add-team-to-match",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Error adding team to match.");
+      }
+
+      await getAllMatches();
+
+      setShowAddTeamForm(false);
+      setSelectedMatch("");
+
+      setSelectedTeam("");
+    } catch (error) {
+      console.error("Error adding team to match:", error.message);
+    }
+  };
 
   return (
     <div id="match-list-container">
@@ -281,6 +350,12 @@ const MatchList = () => {
         >
           Delete Match
         </button>
+        {/* <button
+          className="add-team-button"
+          onClick={() => setShowAddTeamForm(true)}
+        >
+          Add Team to Match
+        </button> */}
       </div>
       {loading ? (
         <p>Loading...</p>
@@ -480,8 +555,47 @@ const MatchList = () => {
         <div className="popup-form">
           <TeamInMatchForm
             matchId={selectedMatchId}
-            onClose={resetDoubleClick}
+            onClose={() => setDoubleClick(false)} // Fix: Close the form on close button click
+            onUpdateResult={(updatedData) => {
+              // Handle the updated data if needed
+              console.log("Updated Result:", updatedData);
+            }}
           />
+        </div>
+      )}
+
+      {showAddTeamForm && (
+        <div className="popup-form">
+          <h3>Add Team to Match</h3>
+          <label>Match:</label>
+          <select
+            name="matchId"
+            value={selectedMatch}
+            onChange={(e) => setSelectedMatch(e.target.value)}
+          >
+            <option value="">Select Match</option>
+            {matchOptions.map((match) => (
+              <option key={match.id} value={match.id}>
+                {match.matchKeyId}
+              </option>
+            ))}
+          </select>
+          <label>Team:</label>
+          <select
+            name="teamId"
+            value={selectedTeam}
+            onChange={(e) => setSelectedTeam(e.target.value)}
+          >
+            <option value="">Select Team</option>
+            {teamOptions.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.teamName}
+              </option>
+            ))}
+          </select>
+          {/* ... (Existing input fields) */}
+          <button onClick={handleAddTeamToMatch}>Add Team</button>
+          <button onClick={() => setShowAddTeamForm(false)}>Cancel</button>
         </div>
       )}
     </div>

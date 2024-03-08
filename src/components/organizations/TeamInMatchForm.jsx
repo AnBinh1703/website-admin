@@ -1,142 +1,129 @@
 import React, { useEffect, useState } from "react";
 
-const TeamInMatchForm = ({ onClose, onCreate, onUpdateResult, matchId }) => {
+const TeamInMatchForm = ({ onClose, onUpdateResult, matchId }) => {
   const [formData, setFormData] = useState({
     teamId: "",
-    teamName: "",
-    matchKeyId: "",
     score: "",
     duration: "",
     isWinner: "",
   });
-
+  const [matches, setMatches] = useState([]);
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showTeamSelectionPopup, setShowTeamSelectionPopup] = useState(false);
+  const [selectedTeamId, setselectedTeamId] = useState("");
+  const [setMatchKeyId] = useState("");
+  const [selectedMatch, setSelectedMatch] = useState("");
+  const [setShowTeamInMatchForm] = useState(false);
+  const [showAddTeamForm, setShowAddTeamForm] = useState(false);
+  const [mapOptions, setMapOptions] = useState([]);
+  const [matchOptions, setMatchOptions] = useState([]);
+  const [teamOptions, setTeamOptions] = useState([]);
 
   useEffect(() => {
-    const fetchTeams = async () => {
+    // Fetch teams data based on matchId
+    const fetchTeamsData = async () => {
       try {
         const response = await fetch(
           `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/get-all-teams-in-match-id/${matchId}`
         );
-        const data = await response.json();
-        setTeams(data);
+
+        if (!response.ok) {
+          throw new Error("Error fetching teams data");
+        }
+
+        const teamsData = await response.json();
+        setTeams(teamsData);
+        setLoading(false);
       } catch (error) {
-        console.error("Error fetching teams:", error.message);
-        setError("Error fetching teams. Please try again.");
-      } finally {
+        console.error("Error fetching teams data:", error.message);
+        setError("Error fetching teams data. Please try again.");
         setLoading(false);
       }
     };
 
-    fetchTeams();
+    fetchTeamsData();
   }, [matchId]);
 
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  useEffect(() => {
+    fetchDropdownOptions("team");
+    fetchDropdownOptions("match");
+  }, []);
 
-  // const handleCreate = async () => {
-  //   try {
-  //     // Check if teamId is selected
-  //     if (!formData.teamId) {
-  //       console.error("Please select a team.");
-  //       return;
-  //     }
-
-  //     // Create the request body based on formData
-  //     const requestBody = {
-  //       teamId: formData.teamId,
-  //       matchId: matchId, // Assuming matchId is available as a prop
-  //     };
-
-  //     const response = await fetch(
-  //       "https://fptbottournamentweb.azurewebsites.net/api/team-in-match/add-team-to-match",
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify(requestBody),
-  //       }
-  //     );
-
-  //     if (!response.ok) {
-  //       throw new Error("Error creating team-in-match");
-  //     }
-
-  //     // If successful, close the form and trigger a refresh or additional actions if needed
-  //     onCreate(formData);
-  //     onClose();
-  //   } catch (error) {
-  //     console.error("Error creating team-in-match:", error);
-  //   }
-  // };
-
-  // const handleCreate = async () => {
-  //   try {
-  //     // Check if a team has been selected
-  //     if (!formData.teamId) {
-  //       console.error("Please select a team.");
-  //       return;
-  //     }
-
-  //     // Create the request body based on formData
-  //     const requestBody = {
-  //       teamId: formData.teamId,
-  //       matchId: matchId,
-  //     };
-
-  //     const response = await fetch(
-  //       "https://fptbottournamentweb.azurewebsites.net/api/team-in-match/add-team-to-match",
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify(requestBody),
-  //       }
-  //     );
-
-  //     if (!response.ok) {
-  //       throw new Error("Error creating team-in-match");
-  //     }
-
-  //     // If successful, clear the form data and trigger a refresh or additional actions if needed
-  //     setFormData({
-  //       teamId: "",
-  //       teamName: "",
-  //       matchKeyId: "",
-  //       score: "",
-  //       duration: "",
-  //       isWinner: "",
-  //     });
-
-  //     // Trigger a refresh or additional actions if needed
-  //     onUpdateResult(formData);
-  //     onClose();
-  //   } catch (error) {
-  //     console.error("Error creating team-in-match:", error);
-  //   }
-  // };
-
-  const handleCreate = async () => {
+  const fetchDropdownOptions = async (type) => {
     try {
-      // Check if a team has been selected
-      if (!formData.teamId) {
-        console.error("Please select a team.");
-        return;
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/${type}/get-all`
+      );
+      const data = await response.json();
+
+      switch (type) {
+        case "team":
+          setTeamOptions(data);
+          break;
+        case "match": // Add this case to set match options
+          setMatchOptions(data);
+          break;
+        default:
+          break;
+      }
+    } catch (error) {
+      console.error(`Error fetching ${type} options:`, error.message);
+    }
+  };
+  const handleUpdateResult = async () => {
+    try {
+      const teamIdToUpdate = formData.teamId;
+
+      const updateRequestBody = {
+        score: formData.score,
+        duration: formData.duration,
+        isWinner: formData.isWinner,
+      };
+
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/update-result-for-team-in-match-id/${teamIdToUpdate}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updateRequestBody),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Error updating team-in-match result");
       }
 
-      // Create the request body based on formData
+      onUpdateResult(formData);
+      onClose();
+    } catch (error) {
+      console.error("Error updating team-in-match result:", error);
+    }
+  };
+
+  const getAllMatches = async () => {
+    try {
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/match/get-all"
+      );
+      const data = await response.json();
+
+      setMatches(data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching matches:", error.message);
+      setError("Error fetching matches. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  const handleAddTeamToMatch = async () => {
+    try {
       const requestBody = {
-        teamId: formData.teamId,
-        matchId: matchId,
+        teamId: selectedTeamId,
+        matchId: selectedMatch,
       };
 
       const response = await fetch(
@@ -151,38 +138,46 @@ const TeamInMatchForm = ({ onClose, onCreate, onUpdateResult, matchId }) => {
       );
 
       if (!response.ok) {
-        throw new Error("Error creating team-in-match");
+        throw new Error("Error adding team to match.");
       }
 
-      // If successful, clear the form data and trigger a refresh or additional actions if needed
-      setFormData({
-        teamId: "",
-        teamName: "",
-        matchKeyId: "",
-        score: "",
-        duration: "",
-        isWinner: "",
-      });
+      await getAllMatches();
 
-      // Trigger a refresh or additional actions if needed
+      setShowAddTeamForm(false);
+
+      setselectedTeamId("");
+    } catch (error) {
+      console.error("Error adding team to match:", error.message);
+    }
+    setLoading();
+  };
+
+  const handleDeleteTeam = async () => {
+    try {
+      const teamIdToDelete = formData.teamId;
+
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/delete-team-with-id/${teamIdToDelete}?matchId=${matchId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Error deleting team");
+      }
+
       onUpdateResult(formData);
       onClose();
     } catch (error) {
-      console.error("Error creating team-in-match:", error);
+      console.error("Error deleting team:", error);
     }
-  };
-
-  const handleUpdateResult = () => {
-    // Implement the logic for updating the result
-    onUpdateResult(formData);
-    onClose();
   };
 
   return (
     <div className="popup-form">
       <h3>Team-in-Match List</h3>
 
-      {/* Display table with team information */}
       <table>
         <thead>
           <tr>
@@ -190,13 +185,13 @@ const TeamInMatchForm = ({ onClose, onCreate, onUpdateResult, matchId }) => {
             <th>Match Key ID</th>
             <th>Score</th>
             <th>Duration</th>
-            <th>Is Winner</th>
+            <th>Result</th>
           </tr>
         </thead>
         <tbody>
           {teams.map((team) => (
             <tr key={team.id}>
-              <td>{team.teamName}</td>
+              <td>{team.teamName} </td>
               <td>{team.matchKeyId}</td>
               <td>{team.score}</td>
               <td>{team.duration}</td>
@@ -206,29 +201,53 @@ const TeamInMatchForm = ({ onClose, onCreate, onUpdateResult, matchId }) => {
         </tbody>
       </table>
 
-      {/* Add three buttons: Create, Update Result, Close */}
-      <button onClick={handleCreate}>Create</button>
-      <button onClick={handleUpdateResult}>Update Result</button>
-      <button onClick={onClose}>Close</button>
+      {teams.length >= 0 && (
+        <>
+          <button
+            className="add-team-button"
+            onClick={() => setShowAddTeamForm(true)}
+          >
+            Add Team
+          </button>
 
-      {/* Team selection popup */}
-      {showTeamSelectionPopup && (
-        <div className="team-selection-popup">
-          <label>Team Name:</label>
+          <button onClick={handleUpdateResult}>Update Result</button>
+          <button onClick={handleDeleteTeam}>Delete Team</button>
+        </>
+      )}
+      {showAddTeamForm && (
+        <div className="popup-form">
+          <h3>Add Team</h3>
+          <label>Match:</label>
+          <select
+            name="matchId"
+            value={selectedMatch}
+            onChange={(e) => setSelectedMatch(e.target.value)}
+          >
+            <option value="">Select Match</option>
+            {matchOptions.map((match) => (
+              <option key={match.id} value={match.id}>
+                {match.keyId}
+              </option>
+            ))}
+          </select>
+          <label>Team:</label>
           <select
             name="teamId"
-            value={formData.teamId}
-            onChange={handleInputChange}
+            value={selectedTeamId}
+            onChange={(e) => setselectedTeamId(e.target.value)}
           >
             <option value="">Select Team</option>
-            {teams.map((team) => (
+            {teamOptions.map((team) => (
               <option key={team.id} value={team.id}>
                 {team.teamName}
               </option>
             ))}
           </select>
+          <button onClick={handleAddTeamToMatch}>Add Team</button>
+          <button onClick={() => setShowAddTeamForm(false)}>Cancel</button>
         </div>
       )}
+      <button onClick={onClose}>Close</button>
     </div>
   );
 };
