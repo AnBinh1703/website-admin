@@ -35,11 +35,6 @@ const TournamentList = () => {
     setShowCreateForm(true);
   };
 
-  // const handleShowUpdateForm = (id) => {
-  //   setFormData({ ...tournaments.find((tournament) => tournament.id === id) });
-  //   setShowUpdateForm(true);
-  //   setSelectedTournamentId(id);
-  // };
   const handleShowUpdateForm = (id) => {
     const selectedTournament = tournaments.find(
       (tournament) => tournament.id === id
@@ -335,8 +330,12 @@ const TournamentList = () => {
               >
                 <td>{tournament.keyId}</td>
                 <td>{tournament.tournamentName}</td>
-                <td>{new Date(tournament.startDate).toLocaleDateString("en-Gb")}</td>
-                <td>{new Date(tournament.endDate).toLocaleDateString("en-Gb")}</td>
+                <td>
+                  {new Date(tournament.startDate).toLocaleDateString("en-Gb")}
+                </td>
+                <td>
+                  {new Date(tournament.endDate).toLocaleDateString("en-Gb")}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -348,34 +347,18 @@ const TournamentList = () => {
         <div className="popup-form">
           <h3>Create New Tournament</h3>
           <label>Tournament Id:</label>
-          <input
-            type="text"
-            name="keyId"
-            value={formData.keyId}
-            onChange={handleInputChange}
-          />
+          <input type="text" name="keyId" onChange={handleInputChange} />
 
           <label>Tournament Name:</label>
           <input
             type="text"
             name="tournamentName"
-            value={formData.tournamentName}
             onChange={handleInputChange}
           />
           <label>Start Date:</label>
-          <input
-            type="date"
-            name="startDate"
-            value={formData.startDate}
-            onChange={handleInputChange}
-          />
+          <input type="date" name="startDate" onChange={handleInputChange} />
           <label>End Date:</label>
-          <input
-            type="date"
-            name="endDate"
-            value={formData.endDate}
-            onChange={handleInputChange}
-          />
+          <input type="date" name="endDate" onChange={handleInputChange} />
           <button onClick={handleCreateTournament}>Create Tournament</button>
           <button onClick={handleCloseForms}>Close</button>
         </div>

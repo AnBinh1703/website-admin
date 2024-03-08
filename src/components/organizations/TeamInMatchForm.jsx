@@ -19,6 +19,7 @@ const TeamInMatchForm = ({ onClose, onUpdateResult, matchId }) => {
   const [mapOptions, setMapOptions] = useState([]);
   const [matchOptions, setMatchOptions] = useState([]);
   const [teamOptions, setTeamOptions] = useState([]);
+  const [selectedRowId, setSelectedRowId] = useState(null);
 
   useEffect(() => {
     // Fetch teams data based on matchId
@@ -34,7 +35,7 @@ const TeamInMatchForm = ({ onClose, onUpdateResult, matchId }) => {
 
         const teamsData = await response.json();
         setTeams(teamsData);
-        setLoading(false);
+        setLoading(true);
       } catch (error) {
         console.error("Error fetching teams data:", error.message);
         setError("Error fetching teams data. Please try again.");
@@ -49,7 +50,10 @@ const TeamInMatchForm = ({ onClose, onUpdateResult, matchId }) => {
     fetchDropdownOptions("team");
     fetchDropdownOptions("match");
   }, []);
-
+  const handleRowClick = (teamInMatchId) => {
+    // Set the selected row ID
+    setSelectedRowId(teamInMatchId);
+  };
   const fetchDropdownOptions = async (type) => {
     try {
       const response = await fetch(
@@ -73,7 +77,7 @@ const TeamInMatchForm = ({ onClose, onUpdateResult, matchId }) => {
   };
   const handleUpdateResult = async () => {
     try {
-      const teamIdToUpdate = formData.teamId;
+      const teamInMatchIdToUpdate = selectedRowId;
 
       const updateRequestBody = {
         score: formData.score,
@@ -82,7 +86,7 @@ const TeamInMatchForm = ({ onClose, onUpdateResult, matchId }) => {
       };
 
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/update-result-for-team-in-match-id/${teamIdToUpdate}`,
+        `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/update-result-for-team-in-match-id/${teamInMatchIdToUpdate}`,
         {
           method: "PUT",
           headers: {
@@ -99,7 +103,7 @@ const TeamInMatchForm = ({ onClose, onUpdateResult, matchId }) => {
       onUpdateResult(formData);
       onClose();
     } catch (error) {
-      console.error("Error updating team-in-match result:", error);
+      console.error("Error updating team-in-matz result:", error);
     }
   };
 
@@ -190,7 +194,7 @@ const TeamInMatchForm = ({ onClose, onUpdateResult, matchId }) => {
         </thead>
         <tbody>
           {teams.map((team) => (
-            <tr key={team.id}>
+            <tr key={team.id} onClick={() => handleRowClick(team.id)}>
               <td>{team.teamName} </td>
               <td>{team.matchKeyId}</td>
               <td>{team.score}</td>

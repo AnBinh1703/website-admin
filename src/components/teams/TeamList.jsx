@@ -222,19 +222,9 @@ const TeamList = () => {
         <div className="popup-form">
           <h3>Create New Team</h3>
           <label>ID:</label>
-          <input
-            type="text"
-            name="keyId"
-            value={formData.keyId}
-            onChange={handleInputChange}
-          />
+          <input type="text" name="keyId" onChange={handleInputChange} />
           <label>Name:</label>
-          <input
-            type="text"
-            name="teamName"
-            value={formData.teamName}
-            onChange={handleInputChange}
-          />
+          <input type="text" name="teamName" onChange={handleInputChange} />
 
           <label>High School:</label>
           <select

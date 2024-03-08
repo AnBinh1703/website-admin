@@ -241,12 +241,7 @@ const RoundList = () => {
         <div className="popup-form">
           <h3>Create New Round</h3>
           <label>Round Name:</label>
-          <input
-            type="text"
-            name="roundName"
-            value={formData.roundName}
-            onChange={handleInputChange}
-          />
+          <input type="text" name="roundName" onChange={handleInputChange} />
           <button onClick={handleCreateRound}>Create Round</button>
           <button onClick={handleCloseForms}>Close</button>
         </div>
