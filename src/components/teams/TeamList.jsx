@@ -4,7 +4,7 @@ const TeamList = () => {
   const [teams, setTeams] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [highSchoolsOptions, setHighSchoolsOption] = useState([]);
-  const [selectedHighSchoolId,setSelectedHighSchoolId] = useState(null);
+  const [selectedHighSchoolId] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [showDeleteForm, setShowDeleteForm] = useState(false);
@@ -23,7 +23,7 @@ const TeamList = () => {
       const data = await response.json();
       setTeams(data);
     } catch (error) {
-      console.error("Error fetching teams: ",error.message);
+      console.error("Error fetching teams: ", error.message);
     }
   };
   const handleFetchTeamById = async (id) => {
@@ -51,8 +51,8 @@ const TeamList = () => {
   const handleShowUpdateForm = (id) => {
     const selectedTeam = teams.find((team) => team.id === id);
     setFormData({
-      ...selectedTeam
-    })
+      ...selectedTeam,
+    });
     setShowUpdateForm(true);
     setSelectedTeam(id);
   };
@@ -113,11 +113,7 @@ const TeamList = () => {
   const handleUpdateTeam = async () => {
     try {
       // Validation checks
-      if (
-        !formData.keyId ||
-        !formData.teamName ||
-        !formData.highSchoolId
-      ) {
+      if (!formData.keyId || !formData.teamName || !formData.highSchoolId) {
         console.error("Please fill in all required fields.");
         return;
       }
@@ -226,19 +222,9 @@ const TeamList = () => {
         <div className="popup-form">
           <h3>Create New Team</h3>
           <label>ID:</label>
-          <input
-            type="text"
-            name="keyId"
-            value={formData.keyId}
-            onChange={handleInputChange}
-          />
+          <input type="text" name="keyId" onChange={handleInputChange} />
           <label>Name:</label>
-          <input
-            type="text"
-            name="teamName"
-            value={formData.teamName}
-            onChange={handleInputChange}
-          />
+          <input type="text" name="teamName" onChange={handleInputChange} />
 
           <label>High School:</label>
           <select
@@ -318,10 +304,11 @@ const TeamList = () => {
           </thead>
           <tbody>
             {teams.map((team) => (
-              <tr 
-                key={team.id} 
-                className = {team.hightlighted ? "selected-row" : ""} 
-                onClick={() => handleFetchTeamById(team.id)}>
+              <tr
+                key={team.id}
+                className={team.hightlighted ? "selected-row" : ""}
+                onClick={() => handleFetchTeamById(team.id)}
+              >
                 <td>{team.keyId}</td>
                 <td>{team.teamName}</td>
                 <td>{team.highSchoolName}</td>

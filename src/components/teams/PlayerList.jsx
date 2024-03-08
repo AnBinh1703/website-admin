@@ -22,11 +22,7 @@ const PlayerList = () => {
   const handleShowCreateForm = () => {
     setShowCreateForm(true);
   };
-  // const handleShowUpdateForm = (id) => {
-  //   setFormData({ ...players.find((player) => player.id === id) });
-  //   setShowUpdateForm(true);
-  //   setSelectedPlayerId(id);
-  // };
+
   const handleShowUpdateForm = (id) => {
     const selectedPlayer = players.find((player) => player.id === id);
     const existingDob = new Date(selectedPlayer.dob)
@@ -133,13 +129,6 @@ const PlayerList = () => {
   };
   const handleUpdatePlayer = async () => {
     try {
-      // Kiểm tra xem các trường đã được điền đầy đủ hay không
-      // if (!formData.keyId || !formData.mapName) {
-      //   console.error("Please fill in all fields.");
-      //   setFormValid(false);
-      //   return;
-      // }
-
       console.log("Updating player:", selectedPlayerId, formData);
       await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/player/update/${selectedPlayerId}`,
@@ -259,32 +248,13 @@ const PlayerList = () => {
           <div className="popup-form">
             <h3>Create New Player</h3>
             <label>Name: </label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-            />
+            <input type="text" name="name" onChange={handleInputChange} />
             <label>Date of Birth</label>
-            <input
-              type="date"
-              name="dob"
-              value={formData.dob}
-              onChange={handleInputChange}
-            />
+            <input type="date" name="dob" onChange={handleInputChange} />
             <label>Id:</label>
-            <input
-              type="text"
-              name="keyId"
-              value={formData.keyId}
-              onChange={handleInputChange}
-            />
+            <input type="text" name="keyId" onChange={handleInputChange} />
             <label>Team:</label>
-            <select
-              name="teamId"
-              value={formData.teamId}
-              onChange={handleInputChange}
-            >
+            <select name="teamId" onChange={handleInputChange}>
               <option value="">Select Team</option>
               {teamOptions.map((team) => (
                 <option key={team.id} value={team.id}>
@@ -324,10 +294,9 @@ const PlayerList = () => {
             <label>Team:</label>
             <select
               name="teamId"
-              value={selectedTeamId}
+              value={formData.selectedTeamId}
               onChange={handleInputChange}
             >
-              <option value="">Select Team</option>
               {teamOptions.map((team) => (
                 <option key={team.id} value={team.id}>
                   {team.teamName}
