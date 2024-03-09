@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 const TeamList = () => {
   const [teams, setTeams] = useState([]);
-  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [setSelectedTeam] = useState(null);
   const [highSchoolsOptions, setHighSchoolsOption] = useState([]);
   const [selectedHighSchoolId] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
