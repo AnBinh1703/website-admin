@@ -743,76 +743,99 @@ function Round() {
 
 function Team() {
   const [teams, setTeams] = useState([]);
-  const [selectedTeam, setSelectedTeam] = useState(null);
-  const [highSchoolsOptions, setHighSchoolsOption] = useState([]);
-  const [selectedHighSchoolId] = useState(null);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [showUpdateForm, setShowUpdateForm] = useState(false);
-  const [showDeleteForm, setShowDeleteForm] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState(null);
-  const [formData, setFormData] = useState({
+  const [updatedTeamData, setUpdatedTeamData] = useState({
     keyId: "",
     teamName: "",
     highSchoolId: "",
+    highSchoolName: "",
   });
+  const [showModal, setShowModal] = useState(false);
+  const [modalActionType, setModalActionType] = useState("update");
+  const [highSchools, setHighSchools] = useState([]);
 
-  const getAllTeams = async () => {
+  useEffect(() => {
+    fetchTeams();
+    fetchHighSchools();
+  }, []);
+
+  const fetchTeams = async () => {
     try {
       const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/team/get-all"
       );
-      const data = await response.json();
-      setTeams(data);
+
+      if (response.ok) {
+        const data = await response.json();
+        setTeams(data);
+      } else {
+        console.error("Error fetching teams");
+      }
     } catch (error) {
-      console.error("Error fetching teams: ", error.message);
+      console.error("Error fetching teams:", error.message);
     }
   };
 
-  const handleFetchTeamById = async (id) => {
+  const fetchHighSchools = async () => {
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/team/get-by-id/${id}`
+        "https://fptbottournamentweb.azurewebsites.net/api/highschool/get-all"
       );
-      const data = await response.json();
-      const updateTeams = teams.map((team) => ({
-        ...team,
-        hightlighted: team.id === id,
-      }));
-      setTeams(updateTeams);
-      setSelectedTeamId(id);
-      setFormData(data);
+
+      if (response.ok) {
+        const data = await response.json();
+        setHighSchools(data);
+      } else {
+        console.error("Error fetching high schools");
+      }
     } catch (error) {
-      console.error("Error fetching team by ID:", error.message);
+      console.error("Error fetching high schools:", error.message);
     }
   };
 
-  const handleShowCreateForm = () => {
-    setShowCreateForm(true);
-  };
-
-  const handleShowUpdateForm = (id) => {
-    const selectedTeam = teams.find((team) => team.id === id);
-    setFormData({
-      ...selectedTeam,
+  const handleUpdate = (team) => {
+    setSelectedTeamId(team.id);
+    setUpdatedTeamData({
+      keyId: team.keyId,
+      teamName: team.teamName,
+      highSchoolId: team.highSchoolId,
+      highSchoolName: team.highSchoolName,
     });
-    setShowUpdateForm(true);
-    setSelectedTeam(id);
+    setShowModal(true);
+    setModalActionType("update");
   };
 
-  const handleShowDeleteForm = (id) => {
-    setFormData({ ...teams.find((team) => team.id === id) });
-    setShowDeleteForm(true);
-    setSelectedTeamId(id);
+  const handleDelete = async (teamId) => {
+    try {
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/team/delete/${teamId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (response.ok) {
+        fetchTeams();
+      } else {
+        console.error("Error deleting team");
+      }
+    } catch (error) {
+      console.error("Error deleting team:", error.message);
+    }
   };
 
-  consthandleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
+  const handleCreate = () => {
+    setUpdatedTeamData({
+      keyId: "",
+      teamName: "",
+      highSchoolName: "",
+      highSchoolId: "",
     });
+    setShowModal(true);
+    setModalActionType("create");
   };
 
-  const handleCreateTeam = async () => {
+  const handleCreateSubmit = async () => {
     try {
       const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/team/create",
@@ -821,24 +844,32 @@ function Team() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            keyId: updatedTeamData.keyId,
+            teamName: updatedTeamData.teamName,
+            highSchoolId: updatedTeamData.highSchoolId,
+          }),
         }
       );
-      const data = await response.json();
-      setTeams([...teams, data]);
-      setShowCreateForm(false);
-      setFormData({
-        keyId: "",
-        teamName: "",
-        highSchoolId: "",
-      });
+
+      if (response.ok) {
+        fetchTeams();
+        setShowModal(false);
+      } else {
+        console.error("Error creating team");
+      }
     } catch (error) {
-      console.error("Error creating team: ", error.message);
+      console.error("Error creating team:", error.message);
     }
   };
 
-  const handleUpdateTeam = async () => {
+  const handleUpdateSubmit = async () => {
     try {
+      if (!selectedTeamId) {
+        console.error("No team selected for update");
+        return;
+      }
+
       const response = await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/team/update/${selectedTeamId}`,
         {
@@ -846,110 +877,102 @@ function Team() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            keyId: updatedTeamData.keyId,
+            teamName: updatedTeamData.teamName,
+            highSchoolId: updatedTeamData.highSchoolId,
+          }),
         }
       );
-      const data = await response.json();
-      const updatedTeams = teams.map((team) =>
-        team.id === selectedTeamId ? data : team
-      );
-      setTeams(updatedTeams);
-      setShowUpdateForm(false);
-      setSelectedTeamId(null);
-      setFormData({
-        keyId: "",
-        teamName: "",
-        highSchoolId: "",
-      });
+
+      if (response.ok) {
+        fetchTeams();
+        setShowModal(false);
+      } else {
+        console.error("Error updating team");
+      }
     } catch (error) {
-      console.error("Error updating team: ", error.message);
+      console.error("Error updating team:", error.message);
     }
   };
 
-  const handleDeleteTeam = async () => {
-    try {
-      await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/team/delete/${selectedTeamId}`,
-        {
-          method: "DELETE",
-        }
-      );
-      const updatedTeams = teams.filter((team) => team.id !== selectedTeamId);
-      setTeams(updatedTeams);
-      setShowDeleteForm(false);
-      setSelectedTeamId(null);
-      setFormData({
-        keyId: "",
-        teamName: "",
-        highSchoolId: "",
-      });
-    } catch (error) {
-      console.error("Error deleting team: ", error.message);
+  const handleSubmitAction = () => {
+    if (modalActionType === "update") {
+      handleUpdateSubmit();
+    } else if (modalActionType === "create") {
+      handleCreateSubmit();
     }
   };
 
-  useEffect(() => {
-    getAllTeams();
-  }, []);
+  const handleInputChange = async (e) => {
+    const { name, value } = e.target;
+    if (name === "highSchoolName") {
+      const selectedHighSchool = highSchools.find(
+        (school) => school.highSchoolName === value
+      );
+      if (selectedHighSchool) {
+        setUpdatedTeamData({
+          ...updatedTeamData,
+          highSchoolName: selectedHighSchool.highSchoolName,
+          highSchoolId: selectedHighSchool.highSchoolId,
+        });
+      } else {
+        setUpdatedTeamData({
+          ...updatedTeamData,
+          highSchoolName: "",
+          highSchoolId: "",
+        });
+      }
+    } else {
+      setUpdatedTeamData({
+        ...updatedTeamData,
+        [name]: value,
+      });
+    }
+  };
 
   return (
-    <div>
-      <h1>Teams</h1>
-      {teams.map((team) => (
-        <div key={team.id}>
-          <h2>{team.teamName}</h2>
-          <button onClick={() => handleShowUpdateForm(team.id)}>Update</button>
-          <button onClick={() => handleShowDeleteForm(team.id)}>Delete</button>
-        </div>
-      ))}
-      {showCreateForm && (
-        <div>
-          <h2>Create Team</h2>
-          <input
-            type="text"
-            name="teamName"
-            value={formData.teamName}
-            onChange={handleChange}
-            placeholder="Team Name"
-          />
-          <input
-            type="text"
-            name="highSchoolId"
-            value={formData.highSchoolId}
-            onChange={handleChange}
-            placeholder="High School ID"
-          />
-          <button onClick={handleCreateTeam}>Create</button>
-        </div>
+    <div className="team-container">
+      <div className="team-title">
+        <h2>Team</h2>
+      </div>
+      <div className="team-list">
+        {teams.map((team) => (
+          <div key={team.id} className="team-item">
+            <h4>{team.teamName}</h4>
+            <p>Key ID: {team.keyId}</p>
+            <p>High School Name: {team.highSchoolName}</p>
+            <div>
+              <button
+                className="update-button"
+                onClick={() => handleUpdate(team)}
+              >
+                Update
+              </button>
+              <button
+                className="delete-button"
+                onClick={() => handleDelete(team.id)}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <button className="create-button" onClick={handleCreate}>
+        Create Team
+      </button>
+      {showModal && (
+        <TeamModal
+          show={showModal}
+          onClose={() => setShowModal(false)}
+          onSubmit={handleSubmitAction}
+          teamData={updatedTeamData}
+          onChange={handleInputChange}
+          actionType={modalActionType}
+          highSchools={highSchools}
+        />
       )}
-      {showUpdateForm && (
-        <div>
-          <h2>Update Team</h2>
-          <input
-            type="text"
-            name="teamName"
-            value={formData.teamName}
-            onChange={handleChange}
-            placeholder="Team Name"
-          />
-          <input
-            type="text"
-            name="highSchoolId"
-            value={formData.highSchoolId}
-            onChange={handleChange}
-            placeholder="High School ID"
-          />
-          <button onClick={handleUpdateTeam}>Update</button>
-        </div>
-      )}
-      {showDeleteForm && (
-        <div>
-          <h2>Delete Team</h2>
-          <p>Are you sure you want to delete this team?</p>
-          <button onClick={handleDeleteTeam}>Delete</button>
-        </div>
-      )}
-      <button onClick={handleShowCreateForm}>Create Team</button>
     </div>
   );
 }

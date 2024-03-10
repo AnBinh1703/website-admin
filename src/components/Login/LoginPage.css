@@ -6,7 +6,7 @@
   width: 600px;
   background: #fff;
   padding-bottom: 30px;
-  border: 2px solid #00b77a;
+  border: 2px solid black;
   border-radius: 8px;
 }
 
@@ -20,7 +20,7 @@
 }
 
 .text{
-  color: #00b77a;
+  color: black;
   font-size: 48px;
   font-weight: 700;
 }
@@ -28,7 +28,7 @@
 .underline{
   width: 61px;
   height: 6px;
-  background: #00b77a;
+  background: black;
   border-radius: 9px;
 }
 
@@ -88,7 +88,7 @@
   width: 220px;
   height: 59px;
   color: #fff;
-  background: #006c63;
+  background: black;
   border-radius: 50px;
   font-size: 19px;
   font-weight: 700;
