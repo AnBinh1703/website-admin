@@ -45,14 +45,14 @@ const MatchList = () => {
     fetchDropdownOptions("match");
   }, []);
 
-  const handleRowDoubleClick = async (id) => {
+  const handleRowDoubleClick = async (matchId) => {
     try {
-      setSelectedMatchId(id);
+      setSelectedMatchId(matchId);
       setDoubleClick(true);
 
       // Fetch match details based on matchId
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/match/get/${id}`
+        `https://fptbottournamentweb.azurewebsites.net/api/match/get/${matchId}`
       );
 
       if (!response.ok) {

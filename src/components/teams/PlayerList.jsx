@@ -2,11 +2,9 @@ import React, { useEffect, useState } from "react";
 
 const PlayerList = () => {
   const [teamOptions, setTeamOptions] = useState([]);
-  const [selectedTeam, setSelectedTeam] = useState(false);
-  const [selectedTeamId, setSelectedTeamId] = useState(null);
   const [players, setPlayers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [setLoading] = useState(true);
+  const [setError] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     dob: "",
@@ -190,7 +188,7 @@ const PlayerList = () => {
   };
   useEffect(() => {
     getAllPlayers();
-  }, []);
+  });
   return (
     <div>
       <div>

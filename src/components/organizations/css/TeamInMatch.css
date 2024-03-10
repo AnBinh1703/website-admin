@@ -1,0 +1,4 @@
+/* Add your existing styles for rows, and then add the selected class */
+table tbody tr.selected {
+  background-color: #cfe2f3; /* Change this to the desired background color */
+}

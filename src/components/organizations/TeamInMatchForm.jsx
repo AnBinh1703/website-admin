@@ -1,28 +1,30 @@
 import React, { useEffect, useState } from "react";
+import "./css/TeamInMatch.css";
 
 const TeamInMatchForm = ({ onClose, onUpdateResult, matchId }) => {
+  // State for selected team's details and update form visibility
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [updateFormVisible, setUpdateFormVisible] = useState(false);
+
+  // State for form data and dropdown options
   const [formData, setFormData] = useState({
-    teamId: "",
-    score: "",
+    score: 0,
     duration: "",
-    isWinner: "",
+    isWinner: true,
   });
   const [matches, setMatches] = useState([]);
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedTeamId, setselectedTeamId] = useState("");
-  const [setMatchKeyId] = useState("");
   const [selectedMatch, setSelectedMatch] = useState("");
-  const [setShowTeamInMatchForm] = useState(false);
-  const [showAddTeamForm, setShowAddTeamForm] = useState(false);
-  const [mapOptions, setMapOptions] = useState([]);
+  const [selectedTeamId, setselectedTeamId] = useState("");
   const [matchOptions, setMatchOptions] = useState([]);
   const [teamOptions, setTeamOptions] = useState([]);
   const [selectedRowId, setSelectedRowId] = useState(null);
+  const [showAddTeamForm, setShowAddTeamForm] = useState(false);
 
+  // Fetch teams data based on matchId
   useEffect(() => {
-    // Fetch teams data based on matchId
     const fetchTeamsData = async () => {
       try {
         const response = await fetch(
@@ -35,7 +37,7 @@ const TeamInMatchForm = ({ onClose, onUpdateResult, matchId }) => {
 
         const teamsData = await response.json();
         setTeams(teamsData);
-        setLoading(true);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching teams data:", error.message);
         setError("Error fetching teams data. Please try again.");
@@ -46,14 +48,60 @@ const TeamInMatchForm = ({ onClose, onUpdateResult, matchId }) => {
     fetchTeamsData();
   }, [matchId]);
 
+  // Fetch dropdown options on component mount
   useEffect(() => {
     fetchDropdownOptions("team");
     fetchDropdownOptions("match");
   }, []);
-  const handleRowClick = (teamInMatchId) => {
-    // Set the selected row ID
-    setSelectedRowId(teamInMatchId);
+
+  // Handle row click to show update form
+  const handleRowClick = async (teamId) => {
+    console.log("Clicked row ID:", teamId);
+    console.log("Current selectedRowId:", selectedRowId);
+
+    // Fetch the selected team based on teamId
+    try {
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/get-team-in-match-by-id/${teamId}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Error fetching selected team");
+      }
+
+      const selectedTeamData = await response.json();
+      setSelectedTeam(selectedTeamData);
+      setSelectedRowId(teamId);
+    } catch (error) {
+      console.error("Error fetching selected team:", error.message);
+    }
   };
+
+  // Open the update form with selected team details
+
+  // Open the update form with selected team details
+  const handleUpdateFormOpen = () => {
+    console.log("Selected team:", selectedTeam);
+
+    if (!selectedTeam) {
+      console.error("Selected team not found.");
+      return;
+    }
+
+    setFormData({
+      score: selectedTeam.score || 0,
+      duration: selectedTeam.duration || "",
+      isWinner: selectedTeam.isWinner || true,
+    });
+
+    setUpdateFormVisible(true);
+  };
+
+  // Additional method to close the update form
+  const handleUpdateFormClose = () => {
+    setUpdateFormVisible(false);
+  };
+  // Fetch dropdown options for teams and matches
   const fetchDropdownOptions = async (type) => {
     try {
       const response = await fetch(
@@ -65,7 +113,7 @@ const TeamInMatchForm = ({ onClose, onUpdateResult, matchId }) => {
         case "team":
           setTeamOptions(data);
           break;
-        case "match": // Add this case to set match options
+        case "match":
           setMatchOptions(data);
           break;
         default:
@@ -75,8 +123,66 @@ const TeamInMatchForm = ({ onClose, onUpdateResult, matchId }) => {
       console.error(`Error fetching ${type} options:`, error.message);
     }
   };
+
+  // Fetch all matches
+  const getAllMatches = async () => {
+    try {
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/match/get-all"
+      );
+      const data = await response.json();
+
+      setMatches(data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching matches:", error.message);
+      setError("Error fetching matches. Please try again.");
+      setLoading(true);
+    }
+  };
+
+  // Add team to match
+  const handleAddTeamToMatch = async () => {
+    try {
+      const requestBody = {
+        teamId: selectedTeamId,
+        matchId: selectedMatch,
+      };
+
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/team-in-match/add-team-to-match",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Error adding team to match.");
+      }
+
+      // Fetch updated data before setting state or closing the form
+      await getAllMatches();
+
+      // Reset form state
+      setShowAddTeamForm(false);
+      setselectedTeamId("");
+    } catch (error) {
+      console.error("Error adding team to match:", error.message);
+      setLoading(false);
+    }
+  };
+  // Update team-in-match result
   const handleUpdateResult = async () => {
     try {
+      if (!selectedRowId) {
+        console.error("No row selected for update.");
+        return;
+      }
+
       const teamInMatchIdToUpdate = selectedRowId;
 
       const updateRequestBody = {
@@ -100,68 +206,24 @@ const TeamInMatchForm = ({ onClose, onUpdateResult, matchId }) => {
         throw new Error("Error updating team-in-match result");
       }
 
-      onUpdateResult(formData);
-      onClose();
+      await getAllMatches(); // Fetch updated data
+      setUpdateFormVisible(false); // Close the form
     } catch (error) {
-      console.error("Error updating team-in-matz result:", error);
+      console.error("Error updating team-in-match result:", error);
     }
-  };
-
-  const getAllMatches = async () => {
-    try {
-      const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/match/get-all"
-      );
-      const data = await response.json();
-
-      setMatches(data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching matches:", error.message);
-      setError("Error fetching matches. Please try again.");
-      setLoading(false);
-    }
-  };
-
-  const handleAddTeamToMatch = async () => {
-    try {
-      const requestBody = {
-        teamId: selectedTeamId,
-        matchId: selectedMatch,
-      };
-
-      const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/team-in-match/add-team-to-match",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Error adding team to match.");
-      }
-
-      await getAllMatches();
-
-      setShowAddTeamForm(false);
-
-      setselectedTeamId("");
-    } catch (error) {
-      console.error("Error adding team to match:", error.message);
-    }
-    setLoading();
   };
 
   const handleDeleteTeam = async () => {
     try {
-      const teamIdToDelete = formData.teamId;
+      if (!selectedRowId) {
+        console.error("No row selected for delete.");
+        return;
+      }
+
+      const teamInMatchIdToDelete = selectedRowId;
 
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/delete-team-with-id/${teamIdToDelete}?matchId=${matchId}`,
+        `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/delete-team-with-id/${teamInMatchIdToDelete}?matchId=${matchId}`,
         {
           method: "DELETE",
         }
@@ -171,10 +233,12 @@ const TeamInMatchForm = ({ onClose, onUpdateResult, matchId }) => {
         throw new Error("Error deleting team");
       }
 
-      onUpdateResult(formData);
-      onClose();
+      onUpdateResult(null); // Notify parent that a team was deleted
+      await getAllMatches(); // Fetch updated data
     } catch (error) {
       console.error("Error deleting team:", error);
+    } finally {
+      onClose(); // Close the form
     }
   };
 
@@ -194,8 +258,12 @@ const TeamInMatchForm = ({ onClose, onUpdateResult, matchId }) => {
         </thead>
         <tbody>
           {teams.map((team) => (
-            <tr key={team.id} onClick={() => handleRowClick(team.id)}>
-              <td>{team.teamName} </td>
+            <tr
+              key={team.id}
+              onClick={() => handleRowClick(team.id)}
+              className={selectedRowId === team.id ? "selected" : ""}
+            >
+              <td>{team.teamName}</td>
               <td>{team.matchKeyId}</td>
               <td>{team.score}</td>
               <td>{team.duration}</td>
@@ -205,7 +273,7 @@ const TeamInMatchForm = ({ onClose, onUpdateResult, matchId }) => {
         </tbody>
       </table>
 
-      {teams.length >= 0 && (
+      {teams.length > 0 && (
         <>
           <button
             className="add-team-button"
@@ -214,10 +282,11 @@ const TeamInMatchForm = ({ onClose, onUpdateResult, matchId }) => {
             Add Team
           </button>
 
-          <button onClick={handleUpdateResult}>Update Result</button>
+          <button onClick={handleUpdateFormOpen}>Update Result</button>
           <button onClick={handleDeleteTeam}>Delete Team</button>
         </>
       )}
+
       {showAddTeamForm && (
         <div className="popup-form">
           <h3>Add Team</h3>
@@ -251,6 +320,41 @@ const TeamInMatchForm = ({ onClose, onUpdateResult, matchId }) => {
           <button onClick={() => setShowAddTeamForm(false)}>Cancel</button>
         </div>
       )}
+
+      {updateFormVisible && (
+        <div className="popup-form">
+          <h3>Update Result</h3>
+          <label>Score:</label>
+          <input
+            type="number"
+            value={formData.score}
+            onChange={(e) =>
+              setFormData({ ...formData, score: e.target.value })
+            }
+          />
+          <label>Duration:</label>
+          <input
+            type="text"
+            value={formData.duration}
+            onChange={(e) =>
+              setFormData({ ...formData, duration: e.target.value })
+            }
+          />
+          <label>Is Winner:</label>
+          <select
+            value={formData.isWinner}
+            onChange={(e) =>
+              setFormData({ ...formData, isWinner: e.target.value })
+            }
+          >
+            <option value={true}>Win</option>
+            <option value={false}>Lose</option>
+          </select>
+          <button onClick={handleUpdateResult}>Update Result</button>
+          <button onClick={handleUpdateFormClose}>Cancel</button>
+        </div>
+      )}
+
       <button onClick={onClose}>Close</button>
     </div>
   );
