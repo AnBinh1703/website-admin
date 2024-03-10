@@ -1,40 +1,91 @@
 import React, { useState } from "react";
-import './LoginPage.css';
-import emailIcon from "./email.png";
+import { useNavigate } from "react-router-dom"; // Import useNavigate from react-router-dom
+import "./LoginPage.css";
 import passwordIcon from "./password.png";
 import userIcon from "./person.png";
 
 const LoginPage = () => {
+  const navigate = useNavigate(); // Create a navigate object
 
-  const [action,setAction] = useState("Sign Up");
+  const [formData, setFormData] = useState({
+    userName: "",
+    password: "",
+  });
+
+  const handleInputChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleLogin = async () => {
+    try {
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/Login/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userName: formData.userName,
+            password: formData.password,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        // Handle successful login, e.g., store user data in state or context
+        console.log("Login successful", data);
+
+        // Redirect to the home page after successful login
+        navigate("/home");
+      } else {
+        // Handle failed login, e.g., display error message
+        console.error("Login failed:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error during login:", error.message);
+    }
+  };
 
   return (
     <div className="container">
       <div className="header">
-        <div className="text">{action}</div>
+        <div className="text">Login</div>
         <div className="underline"></div>
       </div>
       <div className="input-box">
-        {action==="Login"?<div></div>: <div className="input-items">
-          <img src={userIcon} alt="" />
-          <input type="text" placeholder="Name" />
-        </div>}
         <div className="input-items">
-          <img src={emailIcon} alt="" />
-          <input type="email" placeholder="Email Id" />
+          <img src={userIcon} alt="" />
+          <input
+            type="text"
+            placeholder="Username"
+            name="userName"
+            value={formData.userName}
+            onChange={handleInputChange}
+          />
         </div>
         <div className="input-items">
           <img src={passwordIcon} alt="" />
-          <input type="password" placeholder="Password" />
+          <input
+            type="password"
+            placeholder="Password"
+            name="password"
+            value={formData.password}
+            onChange={handleInputChange}
+          />
         </div>
       </div>
-      {action==="Sign Up"?<div></div>: <div className="forgot-password">Lost Password? <span>Click here!</span></div>}
       <div className="submit-container">
-        <div className={action==="Login"?"submit gray":"submit"} onClick={()=>{setAction("Sign Up")}}>Sign Up</div>
-        <div className={action==="Sign Up"?"submit gray":"submit"} onClick={()=>{setAction("Login")}}>Login</div>
+        <div className="submit" onClick={handleLogin}>
+          Login
+        </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default LoginPage;

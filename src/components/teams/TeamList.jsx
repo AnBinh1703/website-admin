@@ -1,87 +1,295 @@
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
 const TeamList = () => {
-    const [teams, setTeams] = useState([]);
-  const [newTeam, setNewTeam] = useState({
-    Name: '',
-    HighSchool_Id: '',
-   });
+  const [teams, setTeams] = useState([]);
+  const [setSelectedTeam] = useState(null);
+  const [highSchoolsOptions, setHighSchoolsOption] = useState([]);
+  const [selectedHighSchoolId] = useState(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const [showDeleteForm, setShowDeleteForm] = useState(false);
+  const [selectedTeamId, setSelectedTeamId] = useState(null);
+  const [formData, setFormData] = useState({
+    keyId: "",
+    teamName: "",
+    highSchoolId: "",
+  });
 
-  useEffect(() => {
-    // Fetch teams when the component mounts
-    const fetchTeams = async () => {
-      try {
-        const response = await axios.get('http://localhost:3000/teams');
-        setTeams(response.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
+  const getAllTeams = async () => {
+    try {
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/team/get-all"
+      );
+      const data = await response.json();
+      setTeams(data);
+    } catch (error) {
+      console.error("Error fetching teams: ", error.message);
+    }
+  };
+  const handleFetchTeamById = async (id) => {
+    try {
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/team/get-by-id/${id}`
+      );
+      const data = await response.json();
+      const updateTeams = teams.map((team) => ({
+        ...team,
+        hightlighted: team.id === id,
+      }));
+      setTeams(updateTeams);
+      setSelectedTeamId(id);
+      setFormData(data);
+      console.log(updateTeams);
+    } catch (error) {
+      console.error("Error fetching team by ID:", error.message);
+    }
+  };
+  const handleShowCreateForm = () => {
+    setShowCreateForm(true);
+  };
 
-    fetchTeams();
-  }, []);  
+  const handleShowUpdateForm = (id) => {
+    const selectedTeam = teams.find((team) => team.id === id);
+    setFormData({
+      ...selectedTeam,
+    });
+    setShowUpdateForm(true);
+    setSelectedTeam(id);
+  };
+
+  const handleShowDeleteForm = (id) => {
+    setFormData({ ...teams.find((team) => team.Id === id) });
+    setShowDeleteForm(true);
+    setSelectedTeamId(id);
+  };
+
+  const handleCloseForms = () => {
+    setShowCreateForm(false);
+    setShowUpdateForm(false);
+    setShowDeleteForm(false);
+    setSelectedTeamId(null);
+  };
+
+  const handleInputChange = (e) => {
+    // Update form data when input fields change
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
   const handleCreateTeam = async () => {
     try {
-      // Create a new team
-      await axios.post('http://localhost:3000/teams', newTeam);
-      // Update the list
-      const response = await axios.get('http://localhost:3000/teams');
-      setTeams(response.data);
-      // Clear the newTeam state
-      setNewTeam({
-        Name: '',
-        HighSchool_Id: '',
-       });
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/team/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      // Log the entire response for inspection
+      console.log("Create Team Response:", response);
+
+      const responseText = await response.text();
+      console.log("Response Text:", responseText);
+
+      getAllTeams();
+      // Clear form data
+      setFormData({
+        keyId: "",
+        teamName: "",
+        highSchoolId: "",
+      });
+
+      setShowCreateForm(false);
     } catch (error) {
-      console.error(error);
+      console.error("Error creating team:", error);
     }
   };
-
-  const handleUpdateTeam = async (teamId, updatedTeamData) => {
+  const handleUpdateTeam = async () => {
     try {
-      // Send a PUT request to update the team
-      await axios.put(`http://localhost:3000/teams/${teamId}`, updatedTeamData);
-      // Fetch teams again to update the list
-      const response = await axios.get('http://localhost:3000/teams');
-      setTeams(response.data);
+      // Validation checks
+      if (!formData.keyId || !formData.teamName || !formData.highSchoolId) {
+        console.error("Please fill in all required fields.");
+        return;
+      }
+
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/team/update/${selectedTeamId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Update Tournament Error:", errorData);
+        throw new Error(
+          `Failed to update team: ${response.status} - ${response.statusText}`
+        );
+      }
+
+      getAllTeams();
+
+      // Clear form data
+      setFormData({
+        keyId: "",
+        teamName: "",
+        highSchoolId: "",
+      });
+      setShowUpdateForm(false);
     } catch (error) {
-      console.error(error);
+      console.error("Error updating team:", error.message);
     }
   };
-
-  const handleDeleteTeam = async (teamId) => {
+  const handleDeleteTeam = async () => {
     try {
-      // Send a DELETE request to remove the team
-      await axios.delete(`http://localhost:3000/teams/${teamId}`);
-      // Fetch teams again to update the list
-      const response = await axios.get('http://localhost:3000/teams');
-      setTeams(response.data);
+      console.log("Deleting team:", selectedTeamId);
+      await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/team/delete/${selectedTeamId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: selectedTeamId,
+          }),
+        }
+      );
+      getAllTeams();
+      setFormData({
+        keyId: "",
+        teamName: "",
+        highSchoolId: "",
+      });
+      setShowDeleteForm(false);
     } catch (error) {
-      console.error(error);
+      console.error("Error deleting team:", error);
     }
   };
+  const fetchDropdownOptions = async () => {
+    try {
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/highSchool/get-all`
+      );
+      const data = await response.json();
+      setHighSchoolsOption(data);
+    } catch (error) {
+      console.error(`Error fetching highSchool options:`, error.message);
+    }
+  };
+  useEffect(() => {
+    fetchDropdownOptions();
+  }, []);
 
+  useEffect(() => {
+    getAllTeams();
+  }, []);
   return (
     <div>
-
-      {/* Create Team */}
+      {/* Buttons for Create, Update, Delete */}
       <div>
-        <h3>Create Team</h3>
-        <label>Name:</label>
-        <input
-          type="text"
-          value={newTeam.Name}
-          onChange={(e) => setNewTeam({ ...newTeam, Name: e.target.value })}
-        />
-         <label>High School ID:</label>
-        <input
-          type="text"
-          value={newTeam.HighSchool_Id}
-          onChange={(e) => setNewTeam({ ...newTeam, HighSchool_Id: e.target.value })}
-        />
-        <button onClick={handleCreateTeam}>Create Team</button>
+        <button className="create-button" onClick={handleShowCreateForm}>
+          Create Team
+        </button>
+        <button
+          className="update-button"
+          onClick={() => selectedTeamId && handleShowUpdateForm(selectedTeamId)}
+          disabled={!selectedTeamId}
+        >
+          Update Team
+        </button>
+        <button
+          className="delete-button"
+          onClick={() => selectedTeamId && handleShowDeleteForm(selectedTeamId)}
+          disabled={!selectedTeamId}
+        >
+          Delete Team
+        </button>
       </div>
+
+      {/* Create Team Form */}
+      {showCreateForm && (
+        <div className="popup-form">
+          <h3>Create New Team</h3>
+          <label>ID:</label>
+          <input type="text" name="keyId" onChange={handleInputChange} />
+          <label>Name:</label>
+          <input type="text" name="teamName" onChange={handleInputChange} />
+
+          <label>High School:</label>
+          <select
+            name="highSchoolId"
+            value={selectedHighSchoolId}
+            onChange={handleInputChange}
+          >
+            <option value="">Select High School</option>
+            {highSchoolsOptions.map((highSchool) => (
+              <option key={highSchool.id} value={highSchool.id}>
+                {highSchool.highSchoolName}
+              </option>
+            ))}
+          </select>
+          <button onClick={handleCreateTeam}>Create Team</button>
+          <button onClick={handleCloseForms}>Close</button>
+        </div>
+      )}
+
+      {/* Update Team Form */}
+      {showUpdateForm && (
+        <div className="popup-form">
+          <h3>Update Team</h3>
+          <label>ID:</label>
+          <input
+            type="text"
+            name="keyId"
+            value={formData.keyId}
+            onChange={handleInputChange}
+          />
+          <label>Name:</label>
+          <input
+            type="text"
+            name="teamName"
+            value={formData.teamName}
+            onChange={handleInputChange}
+          />
+
+          <label>High School:</label>
+          <select
+            name="highSchoolId"
+            value={formData.highSchoolId}
+            onChange={handleInputChange}
+          >
+            <option value="">Select High School</option>
+            {highSchoolsOptions.map((highSchool) => (
+              <option key={highSchool.id} value={highSchool.id}>
+                {highSchool.highSchoolName}
+              </option>
+            ))}
+          </select>
+          <button onClick={handleUpdateTeam}>Update Team</button>
+          <button onClick={handleCloseForms}>Close</button>
+        </div>
+      )}
+
+      {/* Delete Team Confirmation */}
+      {showDeleteForm && (
+        <div className="popup-form">
+          <h3>Delete Team</h3>
+          <p>Are you sure you want to delete this team?</p>
+          <button onClick={handleDeleteTeam}>Delete Team</button>
+          <button onClick={handleCloseForms}>Cancel</button>
+        </div>
+      )}
 
       {/* Display Teams */}
       <div>
@@ -91,22 +299,19 @@ const TeamList = () => {
             <tr>
               <th>ID</th>
               <th>Name</th>
-              <th>High School ID</th>
-              <th>Actions</th>
+              <th>High School Name</th>
             </tr>
           </thead>
           <tbody>
             {teams.map((team) => (
-              <tr key={team.Id}>
-                <td>{team.Id}</td>
-                <td>{team.Name}</td>
-                <td>{team.HighSchool_Id}</td>
-                <td>
-                  <button onClick={() => handleUpdateTeam(team.Id, { Name: 'Updated Team Name' })}>
-                    Update
-                  </button>
-                  <button onClick={() => handleDeleteTeam(team.Id)}>Delete</button>
-                </td>
+              <tr
+                key={team.id}
+                className={team.hightlighted ? "selected-row" : ""}
+                onClick={() => handleFetchTeamById(team.id)}
+              >
+                <td>{team.keyId}</td>
+                <td>{team.teamName}</td>
+                <td>{team.highSchoolName}</td>
               </tr>
             ))}
           </tbody>
@@ -115,6 +320,5 @@ const TeamList = () => {
     </div>
   );
 };
-
 
 export default TeamList;
