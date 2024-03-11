@@ -7,23 +7,24 @@ const UserList = () => {
     userEmail: "",
     password: "",
     fullName: "",
-    role: 0,
+    role: "",
   });
 
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [showDeleteForm, setShowDeleteForm] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const [searchKey, setSearchKey] = useState("");
 
   useEffect(() => {
     // Fetch the list of users on component mount
     fetchUsers();
   }, []);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (searchKey = "") => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/user/get-all"
+        `https://fptbottournamentweb.azurewebsites.net/api/user/get-all?searchKey=${searchKey}`
       );
       if (!response.ok) {
         throw new Error(
@@ -77,25 +78,19 @@ const UserList = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            userRequestModel: {
-              userName: newUser.userName,
-              userEmail: newUser.userEmail,
-              password: newUser.password,
-              fullName: newUser.fullName,
-            },
-            role: newUser.role,
+            userName: newUser.userName,
+            userEmail: newUser.userEmail,
+            password: newUser.password,
+            fullName: newUser.fullName,
+            role: parseInt(newUser.role, 2), // Ensure role is parsed as an integer
           }),
         }
       );
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error(
-          `Failed to create user. Server returned ${response.status} ${response.statusText}: ${errorText}`
-        );
-        throw new Error(
-          `Failed to create user. Server returned ${response.status} ${response.statusText}: ${errorText}`
-        );
+        const errorData = await response.json();
+        console.error("Create user API error:", errorData);
+        return;
       }
 
       await fetchUsers();
@@ -104,7 +99,7 @@ const UserList = () => {
         userEmail: "",
         password: "",
         fullName: "",
-        role: 0,
+        role: "",
       });
       setShowCreateForm(false);
     } catch (error) {
@@ -126,10 +121,10 @@ const UserList = () => {
       );
 
       if (!response.ok) {
-        if (response.status === 400) {
-          const errorData = await response.json();
-          console.error("Validation Errors:", errorData);
-        }
+        const errorData = await response.json();
+        console.error("Update user API error:", errorData);
+        console.log("Validation errors:", errorData.errors);
+
         throw new Error(
           `Failed to update user. Server returned ${response.status} ${response.statusText}`
         );
@@ -141,11 +136,11 @@ const UserList = () => {
         userEmail: "",
         password: "",
         fullName: "",
-        role: 0,
+        role: "",
       });
       setShowUpdateForm(false);
     } catch (error) {
-      console.error("Error updating user:", error);
+      console.error("Error updating user:", error.message);
     }
   };
 
@@ -159,10 +154,6 @@ const UserList = () => {
       );
 
       if (!response.ok) {
-        if (response.status === 400) {
-          const errorData = await response.json();
-          console.error("Validation Errors:", errorData);
-        }
         throw new Error(
           `Failed to delete user. Server returned ${response.status} ${response.statusText}`
         );
@@ -174,25 +165,38 @@ const UserList = () => {
         userEmail: "",
         password: "",
         fullName: "",
-        role: 0,
+        role: "",
       });
       setShowDeleteForm(false);
     } catch (error) {
       console.error("Error deleting user:", error);
     }
   };
+  const getRoleLabel = (role) => {
+    switch (role) {
+      case 0:
+        return "Admin";
+      case 1:
+        return "Head-Reference";
+      case 2:
+        return "Round-Reference";
+      default:
+        return "Unknown Role";
+    }
+  };
 
   const handleRowClick = async (id) => {
     try {
-      const data = await fetchUserById(id);
-
-      const updatedUsers = users.map((user) => ({
-        ...user,
-        highlighted: user.id === id,
-      }));
-
+      const updatedUsers = users.map((user) => {
+        return {
+          ...user,
+          highlighted: user.id === id,
+        };
+      });
       setUsers(updatedUsers);
       setSelectedUserId(id);
+
+      const data = await fetchUserById(id);
       setNewUser({
         userName: data.userName,
         userEmail: data.userEmail,
@@ -228,6 +232,15 @@ const UserList = () => {
         >
           Delete User
         </button>
+        <div className="search-bar">
+          <label>Search:</label>
+          <input
+            type="text"
+            value={searchKey}
+            onChange={(e) => setSearchKey(e.target.value)}
+          />
+          <button onClick={() => fetchUsers(searchKey)}>Search</button>
+        </div>
       </div>
 
       {/* Create User Form Popup */}
@@ -307,12 +320,11 @@ const UserList = () => {
             onChange={handleInputChange}
           />
           <label>Role:</label>
-          <input
-            type="number"
-            name="role"
-            value={newUser.role}
-            onChange={handleInputChange}
-          />
+          <select name="role" value={newUser.role} onChange={handleInputChange}>
+            <option value={0}>Admin</option>
+            <option value={1}>Head-Reference</option>
+            <option value={2}>Round-Reference</option>
+          </select>
           <button onClick={handleUpdateUser}>Update User</button>
           <button onClick={() => setShowUpdateForm(false)}>Cancel</button>
         </div>
@@ -339,6 +351,7 @@ const UserList = () => {
           </tr>
         </thead>
         <tbody>
+          {/* Inside the table body */}
           {users.map((user) => (
             <tr
               key={user.id}
@@ -348,7 +361,7 @@ const UserList = () => {
               <td>{user.userName}</td>
               <td>{user.fullName}</td>
               <td>{user.userEmail}</td>
-              <td>{user.role}</td>
+              <td>{getRoleLabel(user.role)}</td> {/* Display role label */}
             </tr>
           ))}
         </tbody>
