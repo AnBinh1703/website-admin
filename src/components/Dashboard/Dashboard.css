@@ -5,30 +5,23 @@
 }
 
 .sidebar {
-  width: 300px;
+  width: 200px;
   background-color: #333;
   color: white;
   padding: 50px;
   height: 200vh;
-  display: flexbox;
-  flex-direction: column;
 }
 
 .sidebar a {
   color: white;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
+  text-decoration: solid;
+  display: block;
   margin-bottom: 20px;
-}
-
-.sidebar-text {
-  margin-left: 50px; /* Adjust the margin as needed */
-  margin: 10px;
-
 }
 
 .main-content {
   flex: 1;
   padding: 50px;
 }
+
+ 

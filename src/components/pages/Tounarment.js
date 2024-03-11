@@ -741,7 +741,7 @@ function Round() {
   );
 }
 
-function Team() {
+const Team = () => {
   const [teams, setTeams] = useState([]);
   const [selectedTeamId, setSelectedTeamId] = useState(null);
   const [updatedTeamData, setUpdatedTeamData] = useState({
@@ -753,6 +753,7 @@ function Team() {
   const [showModal, setShowModal] = useState(false);
   const [modalActionType, setModalActionType] = useState("update");
   const [highSchools, setHighSchools] = useState([]);
+  const [highSchoolIds, setHighSchoolIds] = useState([]); // Danh sách các ID của trường học
 
   useEffect(() => {
     fetchTeams();
@@ -785,6 +786,7 @@ function Team() {
       if (response.ok) {
         const data = await response.json();
         setHighSchools(data);
+        setHighSchoolIds(data.map((school) => school.highSchoolId)); // Tạo danh sách các ID của trường học
       } else {
         console.error("Error fetching high schools");
       }
@@ -837,6 +839,11 @@ function Team() {
 
   const handleCreateSubmit = async () => {
     try {
+      if (!updatedTeamData.highSchoolId) {
+        console.error("HighSchoolId is required.");
+        return;
+      }
+
       const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/team/create",
         {
@@ -867,6 +874,11 @@ function Team() {
     try {
       if (!selectedTeamId) {
         console.error("No team selected for update");
+        return;
+      }
+
+      if (!updatedTeamData.highSchoolId) {
+        console.error("HighSchoolId is required.");
         return;
       }
 
@@ -920,8 +932,9 @@ function Team() {
         setUpdatedTeamData({
           ...updatedTeamData,
           highSchoolName: "",
-          highSchoolId: "",
+          highSchoolId: "", // Reset highSchoolId if no school is selected
         });
+        console.error(updatedTeamData.highSchoolId);
       }
     } else {
       setUpdatedTeamData({
@@ -970,12 +983,13 @@ function Team() {
           teamData={updatedTeamData}
           onChange={handleInputChange}
           actionType={modalActionType}
-          highSchools={highSchools}
+          highSchoolsUrl="https://fptbottournamentweb.azurewebsites.net/api/highSchool/get-all"
+          highSchoolIds={highSchoolIds} // Truyền danh sách highSchoolIds vào modal
         />
       )}
     </div>
   );
-}
+};
 
 
 

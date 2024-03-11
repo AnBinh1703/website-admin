@@ -1,0 +1,102 @@
+/* MapList.css */
+
+#map-list-container {
+  padding: 20px;
+}
+
+h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+/* Buttons for Create, Update, Delete */
+div {
+  margin-bottom: 20px;
+}
+.create-button {
+  background-color: #28a745;
+  color: #fff;
+}
+
+/* Update Button - Yellow */
+.update-button {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+/* Delete Button - Red */
+.delete-button {
+  background-color: #dc3545;
+  color: #fff;
+}
+button {
+  margin-right: 10px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+/* Loading and Error Messages */
+p {
+  font-size: 16px;
+  color: red; /* You can change the color based on your design */
+}
+
+/* Table Styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+/* Popup Form Styles */
+.popup-form {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #efd8d8;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.popup-form h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+/* Input Fields in Popup Form */
+label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+}
+
+/* Buttons in Popup Form */
+.popup-form button {
+  padding: 10px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+/* Responsive Styles */
+@media (max-width: 600px) {
+  table {
+    font-size: 14px;
+  }
+
+  .popup-form {
+    width: 80%;
+  }
+}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 const TeamModal = ({
   show,
@@ -7,8 +7,30 @@ const TeamModal = ({
   teamData,
   onChange,
   actionType,
-  highSchools,
+  highSchoolsUrl = "https://fptbottournamentweb.azurewebsites.net/api/highSchool/get-all", // Thêm highSchoolsUrl như một props để truyền URL vào
 }) => {
+  const [highSchoolIds, setHighSchoolIds] = useState([]);
+
+  useEffect(() => {
+    const fetchHighSchoolId = async () => {
+      try {
+        const response = await fetch(highSchoolsUrl);
+
+        if (response.ok) {
+          const data = await response.json();
+          setHighSchoolIds(data);
+        } else {
+          console.error("Error fetching high school IDs");
+        }
+      } catch (error) {
+        console.error("Error fetching high school IDs:", error.message);
+      }
+    };
+
+    // Gọi hàm fetchHighSchoolId khi component được render
+    fetchHighSchoolId();
+  }, [highSchoolsUrl]); // Đảm bảo fetch lại dữ liệu khi highSchoolsUrl thay đổi
+
   if (!show) {
     return null;
   }
@@ -57,9 +79,9 @@ const TeamModal = ({
                 onChange={onChange}
               >
                 <option value="">Select a high school</option>
-                {highSchools.map((school) => (
-                  <option key={school.highSchoolId} value={school.highSchoolId}>
-                    {school.highSchoolName}
+                {highSchoolIds.map((highSchoolId) => (
+                  <option key={highSchoolId} value={highSchoolId}>
+                    {highSchoolId}
                   </option>
                 ))}
               </select>
