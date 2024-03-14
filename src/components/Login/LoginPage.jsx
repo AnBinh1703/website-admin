@@ -1,4 +1,3 @@
-// LoginPage.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./LoginPage.css";
@@ -39,6 +38,8 @@ const LoginPage = ({ setIsLoggedIn }) => {
       if (response.ok) {
         const data = await response.json();
         console.log("Login successful", data);
+        // Lưu token vào localStorage
+        localStorage.setItem("token", data.token);
         setIsLoggedIn(true); // Cập nhật trạng thái isLoggedIn thành true
         navigate("/");
       } else {

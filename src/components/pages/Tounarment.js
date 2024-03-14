@@ -15,13 +15,18 @@ import {
 import { TfiCup } from "react-icons/tfi";
 import { FaRegUserCircle } from "react-icons/fa";
 import Modal from "./Modal";
-import ActivityModal from "./ActivityModal"
-import HighSchoolModal from "./HighSchoolModal"
+import ActivityModal from "./ActivityModal";
+import HighSchoolModal from "./HighSchoolModal";
 import RoundModal from "./RoundModal";
 import MapModal from "./MapModal";
-import TeamModal from "./TeamModal"
+import "./Team.css";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
+
+
 
 function ActivityType() {
+  const token = localStorage.getItem("token");
   const [activities, setActivities] = useState([]);
   const [selectedActivityId, setSelectedActivityId] = useState(null);
   const [updatedActivityData, setUpdatedActivityData] = useState({
@@ -66,6 +71,10 @@ function ActivityType() {
         `https://fptbottournamentweb.azurewebsites.net/api/activity-type/delete/${activityId}`,
         {
           method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
       );
 
@@ -94,6 +103,7 @@ function ActivityType() {
         {
           method: "POST",
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(updatedActivityData),
@@ -118,6 +128,7 @@ function ActivityType() {
         {
           method: "PUT",
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(updatedActivityData),
@@ -153,7 +164,7 @@ function ActivityType() {
 
   return (
     <div className="tournament-container">
-      <div className="tournament-title">
+      <div className="team-title">
         <h2>Activity Type</h2>
       </div>
       <div className="line"></div>
@@ -197,8 +208,8 @@ function ActivityType() {
   );
 }
 
-
 function HighSchool() {
+  const token = localStorage.getItem("token");
   const [highSchools, setHighSchools] = useState([]);
   const [selectedHighSchoolId, setSelectedHighSchoolId] = useState(null);
   const [updatedHighSchoolData, setUpdatedHighSchoolData] = useState({
@@ -215,7 +226,7 @@ function HighSchool() {
   const fetchHighSchools = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/highSchool/get-all" 
+        "https://fptbottournamentweb.azurewebsites.net/api/highSchool/get-all"
       );
 
       if (response.ok) {
@@ -245,6 +256,10 @@ function HighSchool() {
         `https://fptbottournamentweb.azurewebsites.net/api/highSchool/delete/${highSchoolId}`, // Replace this with your API endpoint
         {
           method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
       );
 
@@ -274,6 +289,7 @@ function HighSchool() {
         {
           method: "POST",
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(updatedHighSchoolData),
@@ -298,6 +314,7 @@ function HighSchool() {
         {
           method: "PUT",
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(updatedHighSchoolData),
@@ -333,7 +350,7 @@ function HighSchool() {
 
   return (
     <div className="tournament-container">
-      <div className="tournament-title">
+      <div className="team-title">
         <h2>High Schools</h2>
       </div>
       <div className="line"></div>
@@ -379,6 +396,7 @@ function HighSchool() {
 }
 
 function Map() {
+  const token = localStorage.getItem("token");
   const [maps, setMaps] = useState([]);
   const [selectedMapId, setSelectedMapId] = useState(null);
   const [updatedMapData, setUpdatedMapData] = useState({
@@ -411,7 +429,7 @@ function Map() {
   const handleUpdate = (map) => {
     setSelectedMapId(map.id);
     setUpdatedMapData({
-      keyId : map.keyId,
+      keyId: map.keyId,
       mapName: map.mapName,
     });
     setShowModal(true);
@@ -424,6 +442,10 @@ function Map() {
         `https://fptbottournamentweb.azurewebsites.net/api/map/delete/${mapId}`, // Replace "your-api-url" with your actual API endpoint
         {
           method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
       );
 
@@ -453,6 +475,7 @@ function Map() {
         {
           method: "POST",
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(updatedMapData),
@@ -477,6 +500,7 @@ function Map() {
         {
           method: "PUT",
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(updatedMapData),
@@ -512,7 +536,7 @@ function Map() {
 
   return (
     <div className="map-container">
-      <div className="map-title">
+      <div className="team-title">
         <h2>Maps</h2>
       </div>
       <div className="line"></div>
@@ -558,14 +582,788 @@ function Map() {
 }
 
 function Match() {
-  return <div>Match Content</div>;
+  const token = localStorage.getItem("token");
+  const [matches, setMatches] = useState([]);
+  const [selectedMatchId, setSelectedMatchId] = useState(null);
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const [showDeleteForm, setShowDeleteForm] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [formData, setFormData] = useState({
+    keyId: "",
+    mapId: "",
+    mapName: "",
+    matchDate: new Date(),
+    roundId: "",
+    roundName: "",
+    tournamentId: "",
+    tournamentName: "",
+  });
+  const [maps, setMaps] = useState([]);
+  const [rounds, setRounds] = useState([]);
+  const [tournaments, setTournaments] = useState([]);
+  const [showCalendar, setShowCalendar] = useState(false);
+
+  useEffect(() => {
+    getAllMatches();
+    fetchMaps();
+    fetchRounds();
+    fetchTournaments();
+  }, []);
+
+  const getAllMatches = async () => {
+    try {
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/match/get-all"
+      );
+      const data = await response.json();
+      setMatches(data);
+    } catch (error) {
+      console.error("Error fetching matches: ", error.message);
+    }
+  };
+
+  const fetchMaps = async () => {
+    try {
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/map/get-all"
+      );
+      const data = await response.json();
+      setMaps(data);
+    } catch (error) {
+      console.error("Error fetching maps: ", error.message);
+    }
+  };
+
+  const fetchRounds = async () => {
+    try {
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/round/get-all"
+      );
+      const data = await response.json();
+      setRounds(data);
+    } catch (error) {
+      console.error("Error fetching rounds: ", error.message);
+    }
+  };
+
+  const fetchTournaments = async () => {
+    try {
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/tournament/get-all"
+      );
+      const data = await response.json();
+      setTournaments(data);
+    } catch (error) {
+      console.error("Error fetching tournaments: ", error.message);
+    }
+  };
+
+  const handleShowUpdateForm = (id) => {
+    const selectedMatch = matches.find((match) => match.id === id);
+    setFormData({
+      ...selectedMatch, // Thêm vào formData từ selectedMatch
+      matchDate: new Date(selectedMatch.matchDate),
+    });
+    setSelectedMatchId(id);
+    setShowUpdateForm(true);
+  };
+
+  const handleShowDeleteForm = (id) => {
+    setSelectedMatchId(id);
+    setShowDeleteForm(true);
+  };
+
+  const handleCloseForms = () => {
+    setShowUpdateForm(false);
+    setShowDeleteForm(false);
+    setShowCreateForm(false);
+    setSelectedMatchId(null);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleCalendarChange = (date) => {
+    setFormData({
+      ...formData,
+      matchDate: date,
+    });
+    setShowCalendar(false);
+  };
+
+  const handleCreateMatch = async () => {
+    try {
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/match/create",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      const data = await response.json();
+      console.log(data);
+
+      getAllMatches();
+      setFormData({
+        mapId: "",
+        matchDate: new Date(),
+        roundId: "",
+        tournamentId: "",
+      });
+
+      setShowCreateForm(false);
+    } catch (error) {
+      console.error("Error creating match:", error);
+    }
+  };
+
+  const handleUpdateMatch = async () => {
+    try {
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/match/update/${selectedMatchId}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      if (!response.ok) {
+        console.error("Error updating match:", response.statusText);
+        return;
+      }
+
+      getAllMatches();
+
+      setFormData({
+        keyId: "",
+        mapId: "",
+        mapName: "",
+        matchDate: new Date(),
+        roundId: "",
+        roundName: "",
+        tournamentId: "",
+        tournamentName: "",
+      });
+      setSelectedMatchId(null);
+      setShowUpdateForm(false);
+    } catch (error) {
+      console.error("Error updating match:", error.message);
+    }
+  };
+
+  const handleDeleteMatch = async () => {
+    try {
+      if (!selectedMatchId) {
+        console.error("No match selected for deletion.");
+        return;
+      }
+
+      await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/match/delete/${selectedMatchId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      getAllMatches();
+      setFormData({
+        keyId: "",
+        mapId: "",
+        mapName: "",
+        matchDate: new Date(),
+        roundId: "",
+        roundName: "",
+        tournamentId: "",
+        tournamentName: "",
+      });
+      setShowDeleteForm(false);
+    } catch (error) {
+      console.error("Error deleting match:", error);
+    }
+  };
+
+  return (
+    <div>
+      <div className="team-title">
+        <h2>Match</h2>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>KeyId Match</th>
+            <th>Match Date</th>
+            <th>Round Name</th>
+            <th>Tournament Name</th>
+            <th>Action Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          {matches.map((match) => (
+            <tr key={match.id}>
+              <td>{match.keyId}</td>
+              <td>{new Date(match.matchDate).toLocaleString()}</td>
+              <td>{match.roundName}</td>
+              <td>{match.tournamentName}</td>
+              <td>
+                <button
+                  className="button btn-update"
+                  onClick={() => handleShowUpdateForm(match.id)}
+                >
+                  Update
+                </button>
+                <button
+                  className="button btn-delete"
+                  onClick={() => handleShowDeleteForm(match.id)}
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <button className="create-button" onClick={() => setShowCreateForm(true)}>
+        Create Match
+      </button>
+
+      {showUpdateForm && (
+        <div className="popup-form show">
+          <h3>Update Match</h3>
+          <label>KeyId Match:</label>
+          <input
+            type="text"
+            name="keyId"
+            value={formData.keyId}
+            onChange={handleInputChange}
+          />
+          <label>Map Name:</label>
+          <select
+            name="mapId"
+            value={formData.mapId}
+            onChange={handleInputChange}
+          >
+            <option value="">Select Map</option>
+            {maps.map((map) => (
+              <option key={map.id} value={map.id}>
+                {map.mapName}
+              </option>
+            ))}
+          </select>
+          <label>Match Date:</label>
+          <div className="calendar-wrapper">
+            <input
+              type="text"
+              className="date-input"
+              value={formData.matchDate.toLocaleString()}
+              readOnly
+              onClick={() => setShowCalendar(true)}
+            />
+            {showCalendar && (
+              <Calendar
+                onChange={handleCalendarChange}
+                value={formData.matchDate}
+                onClose={() => setShowCalendar(false)}
+                className="custom-calendar"
+              />
+            )}
+          </div>
+          <label>Round Name:</label>
+          <select
+            name="roundId"
+            value={formData.roundId}
+            onChange={handleInputChange}
+          >
+            <option value="">Select Round</option>
+            {rounds.map((round) => (
+              <option key={round.id} value={round.id}>
+                {round.roundName}
+              </option>
+            ))}
+          </select>
+          <label>Tournament Name:</label>
+          <select
+            name="tournamentId"
+            value={formData.tournamentId}
+            onChange={handleInputChange}
+          >
+            <option value="">Select Tournament</option>
+            {tournaments.map((tournament) => (
+              <option key={tournament.id} value={tournament.id}>
+                {tournament.tournamentName}
+              </option>
+            ))}
+          </select>
+          <button className="button btn-update" onClick={handleUpdateMatch}>
+            Update
+          </button>
+          <button className="button btn-cancel" onClick={handleCloseForms}>
+            Close
+          </button>
+        </div>
+      )}
+
+      {showCreateForm && (
+        <div className="popup-form show">
+          <h3>Create New Match</h3>
+          <label>KeyId Match:</label>
+          <input
+            type="text"
+            name="keyId"
+            value={formData.keyId}
+            onChange={handleInputChange}
+          />
+          <label>Map ID:</label>
+          <select name="mapId" onChange={handleInputChange}>
+            <option value="">Select Map</option>
+            {maps.map((map) => (
+              <option key={map.id} value={map.id}>
+                {map.mapName}
+              </option>
+            ))}
+          </select>
+          <label>Match Date:</label>
+          <div>
+            <input
+              type="text"
+              value={formData.matchDate.toLocaleString()}
+              onClick={() => setShowCalendar(true)}
+            />
+            {showCalendar && (
+              <Calendar
+                onChange={handleCalendarChange}
+                value={formData.matchDate}
+                onClose={() => setShowCalendar(false)}
+              />
+            )}
+          </div>
+          <label>Round ID:</label>
+          <select name="roundId" onChange={handleInputChange}>
+            <option value="">Select Round</option>
+            {rounds.map((round) => (
+              <option key={round.id} value={round.id}>
+                {round.roundName}
+              </option>
+            ))}
+          </select>
+          <label>Tournament ID:</label>
+          <select name="tournamentId" onChange={handleInputChange}>
+            <option value="">Select Tournament</option>
+            {tournaments.map((tournament) => (
+              <option key={tournament.id} value={tournament.id}>
+                {tournament.tournamentName}
+              </option>
+            ))}
+          </select>
+          <button className="button btn-create" onClick={handleCreateMatch}>
+            Create
+          </button>
+          <button className="button btn-cancel" onClick={handleCloseForms}>
+            Close
+          </button>
+        </div>
+      )}
+
+      {showDeleteForm && (
+        <div className="popup-form show">
+          <h3>Delete Player</h3>
+          <p>Are you sure you want to delete this team?</p>
+          <button className="button btn-delete" onClick={handleDeleteMatch}>
+            Delete
+          </button>
+          <button className="button btn-cancel" onClick={handleCloseForms}>
+            Cancel
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function Player() {
-  return <div>Player Content</div>;
+  const token = localStorage.getItem("token");
+  const [players, setPlayers] = useState([]);
+  const [selectedPlayerId, setSelectedPlayerId] = useState(null);
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const [showDeleteForm, setShowDeleteForm] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    dob: new Date(),
+    keyId: "",
+    teamId: "",
+    teamName: "",
+  });
+  const [teams, setteams] = useState([]);
+  const [showCalendar, setShowCalendar] = useState(false);
+
+  useEffect(() => {
+    getAllPlayers();
+    fetchTeams();
+  }, []);
+
+  const getAllPlayers = async () => {
+    try {
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/player/get-all"
+      );
+      const data = await response.json();
+      setPlayers(data);
+    } catch (error) {
+      console.error("Error fetching players: ", error.message);
+    }
+  };
+
+  const fetchTeams = async () => {
+    try {
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/team/get-all",
+        {
+          method: "GET",
+        }
+      );
+      const data = await response.json();
+      setteams(data);
+    } catch (error) {
+      console.error("Error fetching teams: ", error.message);
+    }
+  };
+
+  const handleShowUpdateForm = (id) => {
+    const selectedPlayer = players.find((player) => player.id === id);
+    setFormData({
+      name: selectedPlayer.name,
+      dob: new Date(selectedPlayer.dob),
+      keyId: selectedPlayer.keyId,
+      teamId: selectedPlayer.teamId,
+      teamName: selectedPlayer.teamName,
+    });
+    setSelectedPlayerId(id);
+    setShowUpdateForm(true);
+  };
+
+  const handleShowDeleteForm = (id) => {
+    setSelectedPlayerId(id);
+    setShowDeleteForm(true);
+  };
+
+  const handleCloseForms = () => {
+    setShowUpdateForm(false);
+    setShowDeleteForm(false);
+    setShowCreateForm(false);
+    setSelectedPlayerId(null);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "teamName") {
+      // Tìm teamId dựa trên teamName và cập nhật giá trị cho teamId
+      const selectedTeam = teams.find((team) => team.teamName === value);
+      setFormData({
+        ...formData,
+        teamId: selectedTeam ? selectedTeam.id : "", // Nếu tìm thấy, lấy teamId, nếu không, gán giá trị rỗng
+        [name]: value,
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
+  };
+
+  const handleCreatePlayer = async () => {
+    try {
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/player/create",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      const data = await response.json();
+      console.log(data);
+
+      getAllPlayers();
+      setFormData({
+        name: "",
+        dob: new Date(),
+        keyId: "",
+        teamId: "",
+        teamName: "",
+      });
+
+      setShowCreateForm(false);
+    } catch (error) {
+      console.error("Error creating player:", error);
+    }
+  };
+
+  const handleUpdatePlayer = async () => {
+    try {
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/player/update/${selectedPlayerId}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      if (!response.ok) {
+        console.error("Error updating player:", response.statusText);
+        return;
+      }
+
+      getAllPlayers();
+
+      setFormData({
+        name: "",
+        dob: new Date(),
+        keyId: "",
+        teamId: "",
+        teamName: "",
+      });
+      setSelectedPlayerId(null);
+      setShowUpdateForm(false);
+    } catch (error) {
+      console.error("Error updating player:", error.message);
+    }
+  };
+
+  const handleDeletePlayer = async () => {
+    try {
+      if (!selectedPlayerId) {
+        console.error("No team selected for deletion.");
+        return;
+      }
+
+      await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/player/delete/${selectedPlayerId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: selectedPlayerId,
+          }),
+        }
+      );
+      getAllPlayers();
+      setFormData({
+        name: "",
+        dob: new Date(),
+        keyId: "",
+        teamId: "",
+        teamName: "",
+      });
+      setShowDeleteForm(false);
+    } catch (error) {
+      console.error("Error deleting player:", error);
+    }
+  };
+
+  const handleCalendarChange = (date) => {
+    setFormData({
+      ...formData,
+      dob: date,
+    });
+    setShowCalendar(false);
+  };
+
+  return (
+    <div>
+      <div className="team-title">
+        <h2>Player</h2>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Dob</th>
+            <th>KeyId</th>
+            <th>TeamName</th>
+            <th>Action Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          {players.map((player) => (
+            <tr key={player.id}>
+              <td>{player.name}</td>
+              <td>{player.dob}</td>
+              <td>{player.keyId}</td>
+              <td>{player.teamName}</td>
+              <td>
+                <button
+                  className="button btn-update"
+                  onClick={() => handleShowUpdateForm(player.id)}
+                >
+                  Update
+                </button>
+                <button
+                  className="button btn-delete"
+                  onClick={() => handleShowDeleteForm(player.id)}
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <button className="create-button" onClick={() => setShowCreateForm(true)}>
+        Create Player
+      </button>
+
+      {showUpdateForm && (
+        <div className="popup-form show">
+          <h3>Update Player</h3>
+          <label>Name:</label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+          />
+          <label>Dob:</label>
+          <div className="calendar-wrapper">
+            <input
+              type="text"
+              className="date-input"
+              value={formData.dob.toDateString()}
+              readOnly // Không cho phép chỉnh sửa trực tiếp giá trị ngày
+              onClick={() => setShowCalendar(true)}
+            />
+            {showCalendar && (
+              <Calendar
+                onChange={handleCalendarChange}
+                value={formData.dob}
+                onClose={() => setShowCalendar(false)}
+                className="custom-calendar"
+              />
+            )}
+          </div>
+          <label>KeyId:</label>
+          <input
+            type="text"
+            name="keyId"
+            value={formData.keyId}
+            onChange={handleInputChange}
+          />
+          <label>Team:</label>
+          <select
+            name="teamId"
+            value={formData.teamId}
+            onChange={handleInputChange}
+          >
+            <option value="">Select Team</option>
+            {teams.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.teamName}
+              </option>
+            ))}
+          </select>
+          <button className="button btn-update" onClick={handleUpdatePlayer}>
+            Update
+          </button>
+          <button className="button btn-cancel" onClick={handleCloseForms}>
+            Close
+          </button>
+        </div>
+      )}
+
+      {showCreateForm && (
+        <div className="popup-form show">
+          <h3>Create New Player</h3>
+          <label>Name:</label>
+          <input type="text" name="name" onChange={handleInputChange} />
+          <label>Dob:</label>
+          <div>
+            <input
+              type="text"
+              value={formData.dob.toDateString()}
+              onClick={() => setShowCalendar(true)}
+            />
+            {showCalendar && (
+              <Calendar
+                onChange={handleCalendarChange}
+                value={formData.dob}
+                onClose={() => setShowCalendar(false)}
+              />
+            )}
+          </div>
+          <label>KeyId:</label>
+          <input type="text" name="keyId" onChange={handleInputChange} />
+          <label>Team:</label>
+          <select
+            name="teamId"
+            value={formData.teamId}
+            onChange={handleInputChange}
+          >
+            <option value="">Select Team</option>
+            {teams.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.teamName}
+              </option>
+            ))}
+          </select>
+          <button className="button btn-create" onClick={handleCreatePlayer}>
+            Create
+          </button>
+          <button className="button btn-cancel" onClick={handleCloseForms}>
+            Close
+          </button>
+        </div>
+      )}
+
+      {showDeleteForm && (
+        <div className="popup-form show">
+          <h3>Delete Player</h3>
+          <p>Are you sure you want to delete this team?</p>
+          <button className="button btn-delete" onClick={handleDeletePlayer}>
+            Delete
+          </button>
+          <button className="button btn-cancel" onClick={handleCloseForms}>
+            Cancel
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function Round() {
+  const token = localStorage.getItem("token");
   const [rounds, setRounds] = useState([]);
   const [selectedRoundId, setSelectedRoundId] = useState(null);
   const [updatedRoundData, setUpdatedRoundData] = useState({
@@ -610,6 +1408,10 @@ function Round() {
         `https://fptbottournamentweb.azurewebsites.net/api/round/delete/${roundId}`,
         {
           method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
       );
 
@@ -638,6 +1440,7 @@ function Round() {
         {
           method: "POST",
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(updatedRoundData),
@@ -662,6 +1465,7 @@ function Round() {
         {
           method: "PUT",
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(updatedRoundData),
@@ -697,7 +1501,7 @@ function Round() {
 
   return (
     <div className="tournament-container">
-      <div className="tournament-title">
+      <div className="team-title">
         <h2>Round</h2>
       </div>
       <div className="line"></div>
@@ -741,261 +1545,308 @@ function Round() {
   );
 }
 
-const Team = () => {
+function Team() {
+  const token = localStorage.getItem("token");
   const [teams, setTeams] = useState([]);
   const [selectedTeamId, setSelectedTeamId] = useState(null);
-  const [updatedTeamData, setUpdatedTeamData] = useState({
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const [showDeleteForm, setShowDeleteForm] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [formData, setFormData] = useState({
     keyId: "",
     teamName: "",
     highSchoolId: "",
-    highSchoolName: "",
   });
-  const [showModal, setShowModal] = useState(false);
-  const [modalActionType, setModalActionType] = useState("update");
   const [highSchools, setHighSchools] = useState([]);
-  const [highSchoolIds, setHighSchoolIds] = useState([]); // Danh sách các ID của trường học
 
   useEffect(() => {
-    fetchTeams();
+    getAllTeams();
     fetchHighSchools();
   }, []);
 
-  const fetchTeams = async () => {
+  const getAllTeams = async () => {
     try {
       const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/team/get-all"
       );
-
-      if (response.ok) {
-        const data = await response.json();
-        setTeams(data);
-      } else {
-        console.error("Error fetching teams");
-      }
+      const data = await response.json();
+      setTeams(data);
     } catch (error) {
-      console.error("Error fetching teams:", error.message);
+      console.error("Error fetching teams: ", error.message);
     }
   };
 
   const fetchHighSchools = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/highschool/get-all"
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setHighSchools(data);
-        setHighSchoolIds(data.map((school) => school.highSchoolId)); // Tạo danh sách các ID của trường học
-      } else {
-        console.error("Error fetching high schools");
-      }
-    } catch (error) {
-      console.error("Error fetching high schools:", error.message);
-    }
-  };
-
-  const handleUpdate = (team) => {
-    setSelectedTeamId(team.id);
-    setUpdatedTeamData({
-      keyId: team.keyId,
-      teamName: team.teamName,
-      highSchoolId: team.highSchoolId,
-      highSchoolName: team.highSchoolName,
-    });
-    setShowModal(true);
-    setModalActionType("update");
-  };
-
-  const handleDelete = async (teamId) => {
-    try {
-      const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/team/delete/${teamId}`,
+        "https://fptbottournamentweb.azurewebsites.net/api/highschool/get-all",
         {
-          method: "DELETE",
+          method: "GET",
         }
       );
-
-      if (response.ok) {
-        fetchTeams();
-      } else {
-        console.error("Error deleting team");
-      }
+      const data = await response.json();
+      setHighSchools(data);
     } catch (error) {
-      console.error("Error deleting team:", error.message);
+      console.error("Error fetching high schools: ", error.message);
     }
   };
 
-  const handleCreate = () => {
-    setUpdatedTeamData({
-      keyId: "",
-      teamName: "",
-      highSchoolName: "",
-      highSchoolId: "",
+  const handleShowUpdateForm = (id) => {
+    const selectedTeam = teams.find((team) => team.id === id);
+    setFormData({
+      keyId: selectedTeam.keyId,
+      teamName: selectedTeam.teamName,
+      highSchoolId: selectedTeam.highSchoolId,
     });
-    setShowModal(true);
-    setModalActionType("create");
+    setSelectedTeamId(id);
+    setShowUpdateForm(true);
   };
 
-  const handleCreateSubmit = async () => {
-    try {
-      if (!updatedTeamData.highSchoolId) {
-        console.error("HighSchoolId is required.");
-        return;
-      }
+  const handleShowDeleteForm = (id) => {
+    setSelectedTeamId(id);
+    setShowDeleteForm(true);
+  };
 
+  const handleCloseForms = () => {
+    setShowUpdateForm(false);
+    setShowDeleteForm(false);
+    setShowCreateForm(false);
+    setSelectedTeamId(null);
+  };
+
+  const handleInputChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleCreateTeam = async () => {
+    try {
       const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/team/create",
         {
           method: "POST",
           headers: {
+            "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json",
+            Accept: "application/json",
           },
-          body: JSON.stringify({
-            keyId: updatedTeamData.keyId,
-            teamName: updatedTeamData.teamName,
-            highSchoolId: updatedTeamData.highSchoolId,
-          }),
+
+          body: JSON.stringify(formData),
         }
       );
 
-      if (response.ok) {
-        fetchTeams();
-        setShowModal(false);
-      } else {
-        console.error("Error creating team");
-      }
+      const data = await response.json();
+      console.log(data);
+
+      getAllTeams();
+      setFormData({
+        keyId: "",
+        teamName: "",
+        highSchoolId: "",
+      });
+
+      setShowCreateForm(false);
     } catch (error) {
-      console.error("Error creating team:", error.message);
+      console.error("Error creating team:", error);
     }
   };
 
-  const handleUpdateSubmit = async () => {
+  const handleUpdateTeam = async () => {
     try {
-      if (!selectedTeamId) {
-        console.error("No team selected for update");
-        return;
-      }
-
-      if (!updatedTeamData.highSchoolId) {
-        console.error("HighSchoolId is required.");
-        return;
-      }
-
       const response = await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/team/update/${selectedTeamId}`,
         {
           method: "PUT",
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            keyId: updatedTeamData.keyId,
-            teamName: updatedTeamData.teamName,
-            highSchoolId: updatedTeamData.highSchoolId,
-          }),
+          body: JSON.stringify(formData),
         }
       );
 
-      if (response.ok) {
-        fetchTeams();
-        setShowModal(false);
-      } else {
-        console.error("Error updating team");
+      if (!response.ok) {
+        console.error("Error updating team:", response.statusText);
+        return;
       }
+
+      getAllTeams();
+
+      setFormData({
+        keyId: "",
+        teamName: "",
+        highSchoolId: "",
+      });
+      setSelectedTeamId(null);
+      setShowUpdateForm(false);
     } catch (error) {
       console.error("Error updating team:", error.message);
     }
   };
 
-  const handleSubmitAction = () => {
-    if (modalActionType === "update") {
-      handleUpdateSubmit();
-    } else if (modalActionType === "create") {
-      handleCreateSubmit();
-    }
-  };
-
-  const handleInputChange = async (e) => {
-    const { name, value } = e.target;
-    if (name === "highSchoolName") {
-      const selectedHighSchool = highSchools.find(
-        (school) => school.highSchoolName === value
-      );
-      if (selectedHighSchool) {
-        setUpdatedTeamData({
-          ...updatedTeamData,
-          highSchoolName: selectedHighSchool.highSchoolName,
-          highSchoolId: selectedHighSchool.highSchoolId,
-        });
-      } else {
-        setUpdatedTeamData({
-          ...updatedTeamData,
-          highSchoolName: "",
-          highSchoolId: "", // Reset highSchoolId if no school is selected
-        });
-        console.error(updatedTeamData.highSchoolId);
+  const handleDeleteTeam = async () => {
+    try {
+      if (!selectedTeamId) {
+        console.error("No team selected for deletion.");
+        return;
       }
-    } else {
-      setUpdatedTeamData({
-        ...updatedTeamData,
-        [name]: value,
+
+      await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/team/delete/${selectedTeamId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: selectedTeamId,
+          }),
+        }
+      );
+      getAllTeams();
+      setFormData({
+        keyId: "",
+        teamName: "",
+        highSchoolId: "",
       });
+      setShowDeleteForm(false);
+    } catch (error) {
+      console.error("Error deleting team:", error);
     }
   };
 
   return (
-    <div className="team-container">
+    <div>
       <div className="team-title">
-        <h2>Team</h2>
+        <h2>Teams</h2>
       </div>
-      <div className="team-list">
-        {teams.map((team) => (
-          <div key={team.id} className="team-item">
-            <h4>{team.teamName}</h4>
-            <p>Key ID: {team.keyId}</p>
-            <p>High School Name: {team.highSchoolName}</p>
-            <div>
-              <button
-                className="update-button"
-                onClick={() => handleUpdate(team)}
-              >
-                Update
-              </button>
-              <button
-                className="delete-button"
-                onClick={() => handleDelete(team.id)}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-      <button className="create-button" onClick={handleCreate}>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>High School Name</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {teams.map((team) => (
+            <tr key={team.id}>
+              <td>{team.keyId}</td>
+              <td>{team.teamName}</td>
+              <td>{team.highSchoolName}</td>
+              <td>
+                <button
+                  className="button btn-update"
+                  onClick={() => handleShowUpdateForm(team.id)}
+                >
+                  Update
+                </button>
+                <button
+                  className="button btn-delete"
+                  onClick={() => handleShowDeleteForm(team.id)}
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <button className="create-button" onClick={() => setShowCreateForm(true)}>
         Create Team
       </button>
-      {showModal && (
-        <TeamModal
-          show={showModal}
-          onClose={() => setShowModal(false)}
-          onSubmit={handleSubmitAction}
-          teamData={updatedTeamData}
-          onChange={handleInputChange}
-          actionType={modalActionType}
-          highSchoolsUrl="https://fptbottournamentweb.azurewebsites.net/api/highSchool/get-all"
-          highSchoolIds={highSchoolIds} // Truyền danh sách highSchoolIds vào modal
-        />
+
+      {showUpdateForm && (
+        <div className="popup-form show">
+          <h3>Update Team</h3>
+          <label>ID:</label>
+          <input
+            type="text"
+            name="keyId"
+            value={formData.keyId}
+            onChange={handleInputChange}
+          />
+          <label>Name:</label>
+          <input
+            type="text"
+            name="teamName"
+            value={formData.teamName}
+            onChange={handleInputChange}
+          />
+          <label>High School:</label>
+          <select
+            name="highSchoolId"
+            value={formData.highSchoolId}
+            onChange={handleInputChange}
+          >
+            <option value="">Select High School</option>
+            {highSchools.map((school) => (
+              <option key={school.id} value={school.id}>
+                {school.highSchoolName}
+              </option>
+            ))}
+          </select>
+          <button className="button btn-update" onClick={handleUpdateTeam}>
+            Update
+          </button>
+          <button className="button btn-cancel" onClick={handleCloseForms}>
+            Close
+          </button>
+        </div>
+      )}
+
+      {showCreateForm && (
+        <div className="popup-form show">
+          <h3>Create New Team</h3>
+          <label>ID:</label>
+          <input type="text" name="keyId" onChange={handleInputChange} />
+          <label>Name:</label>
+          <input type="text" name="teamName" onChange={handleInputChange} />
+          <label>High School:</label>
+          <select
+            name="highSchoolId"
+            value={formData.highSchoolId}
+            onChange={handleInputChange}
+          >
+            <option value="">Select High School</option>
+            {highSchools.map((school) => (
+              <option key={school.id} value={school.id}>
+                {school.highSchoolName}
+              </option>
+            ))}
+          </select>
+          <button className="button btn-create" onClick={handleCreateTeam}>
+            Create
+          </button>
+          <button className="button btn-cancel" onClick={handleCloseForms}>
+            Close
+          </button>
+        </div>
+      )}
+
+      {showDeleteForm && (
+        <div className="popup-form show">
+          <h3>Delete Team</h3>
+          <p>Are you sure you want to delete this team?</p>
+          <button className="button btn-delete" onClick={handleDeleteTeam}>
+            Delete
+          </button>
+          <button className="button btn-cancel" onClick={handleCloseForms}>
+            Cancel
+          </button>
+        </div>
       )}
     </div>
   );
-};
-
-
-
-
+}
 
 function Tournament() {
+  const token = localStorage.getItem("token");
   const [tournaments, setTournaments] = useState([]);
   const [selectedTournamentId, setSelectedTournamentId] = useState(null);
   const [updatedTournamentData, setUpdatedTournamentData] = useState({
@@ -1046,6 +1897,10 @@ function Tournament() {
         `https://fptbottournamentweb.azurewebsites.net/api/tournament/delete/${tournamentId}`,
         {
           method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
       );
 
@@ -1077,6 +1932,7 @@ function Tournament() {
         {
           method: "POST",
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(updatedTournamentData),
@@ -1101,6 +1957,7 @@ function Tournament() {
         {
           method: "PUT",
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(updatedTournamentData),
@@ -1136,7 +1993,7 @@ function Tournament() {
 
   return (
     <div className="tournament-container">
-      <div className="tournament-title">
+      <div className="team-title">
         <h2>TOURNAMENT</h2>
       </div>
       <div className="line"></div>
@@ -1145,7 +2002,7 @@ function Tournament() {
           <div key={tournament.id} className="tournament-container-list">
             <div className="tournament-item">
               <p className="tour-title">{tournament.keyId}</p>
-              <p className="tour-title">{tournament.tournamentName}</p>
+              <p className="">{tournament.tournamentName}</p>
               <p>
                 Start Date:{" "}
                 {new Date(tournament.startDate).toLocaleDateString()}
@@ -1188,11 +2045,370 @@ function Tournament() {
   );
 }
 
-
-
 function User() {
-  return <div>User Content</div>;
+  const token = localStorage.getItem("token");
+  const [users, setUsers] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const [showDeleteForm, setShowDeleteForm] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [formData, setFormData] = useState({
+    userName: "",
+    userEmail: "",
+    fullName: "",
+    role: "Organizer",
+    password: "",
+  });
+  const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    getAllUsers();
+  }, []);
+
+  const getAllUsers = async () => {
+    try {
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/user/get-all"
+      );
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      console.error("Error fetching users: ", error.message);
+    }
+  };
+
+  const handleShowUpdateForm = (id) => {
+    const selectedUser = users.find((user) => user.id === id);
+    setFormData({
+      userName: selectedUser.userName,
+      userEmail: selectedUser.userEmail,
+      fullName: selectedUser.fullName,
+      role: selectedUser.role,
+      password: selectedUser.password,
+    });
+    setSelectedUserId(id);
+    setShowUpdateForm(true);
+  };
+
+  const handleShowDeleteForm = (id) => {
+    setSelectedUserId(id);
+    setShowDeleteForm(true);
+  };
+
+  const handleCloseForms = () => {
+    setShowUpdateForm(false);
+    setShowDeleteForm(false);
+    setShowCreateForm(false);
+    setSelectedUserId(null);
+    setFormData({
+      userName: "",
+      userEmail: "",
+      fullName: "",
+      role: "Organizer",
+      password: "",
+    });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleCreateUser = async () => {
+    try {
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/user/create",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ ...formData, role: formData.role }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (errorData.errors && errorData.errors.userRequestModel) {
+          alert(errorData.errors.userRequestModel[0]);
+        } else if (errorData.errors && errorData.errors["$.role"]) {
+          alert(errorData.errors["$.role"][0]);
+        } else {
+          alert("An error occurred while creating the user.");
+        }
+        return;
+      }
+
+      const data = await response.json();
+      console.log(data);
+
+      getAllUsers();
+      setFormData({
+        userName: "",
+        userEmail: "",
+        fullName: "",
+        role: "Organizer",
+        password: "",
+      });
+
+      setShowCreateForm(false);
+    } catch (error) {
+      console.error("Error creating user:", error);
+    }
+  };
+
+  const handleUpdateUser = async () => {
+    try {
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/user/update/${selectedUserId}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ ...formData, role: formData.role }),
+        }
+      );
+
+      if (!response.ok) {
+        console.error("Error updating user:", response.statusText);
+        return;
+      }
+
+      getAllUsers();
+
+      setFormData({
+        userName: "",
+        userEmail: "",
+        fullName: "",
+        role: "Organizer",
+        password: "",
+      });
+      setSelectedUserId(null);
+      setShowUpdateForm(false);
+    } catch (error) {
+      console.error("Error updating user:", error.message);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    try {
+      if (!selectedUserId) {
+        console.error("No user selected for deletion.");
+        return;
+      }
+
+      await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/user/delete/${selectedUserId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      getAllUsers();
+      setFormData({
+        userName: "",
+        userEmail: "",
+        fullName: "",
+        role: "Organizer",
+        password: "",
+      });
+      setShowDeleteForm(false);
+    } catch (error) {
+      console.error("Error deleting user:", error);
+    }
+  };
+
+  return (
+    <div>
+      <div className="user-title">
+        <h2>User</h2>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Full Name</th>
+            <th>Password</th>
+            <th>Role</th>
+            <th>Action Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((user) => (
+            <tr key={user.id}>
+              <td>{user.userName}</td>
+              <td>{user.userEmail}</td>
+              <td>{user.fullName}</td>
+              <td>{showPassword ? user.password : "********"}</td>
+              <td>{user.role}</td>
+              <td>
+                <button
+                  className="button btn-update"
+                  onClick={() => handleShowUpdateForm(user.id)}
+                >
+                  Update
+                </button>
+                <button
+                  className="button btn-delete"
+                  onClick={() => handleShowDeleteForm(user.id)}
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <button className="create-button" onClick={() => setShowCreateForm(true)}>
+        Create User
+      </button>
+
+      {showUpdateForm && (
+        <div className="popup-form show">
+          <h3>Update User</h3>
+          <label>Username:</label>
+          <input
+            type="text"
+            name="userName"
+            value={formData.userName}
+            onChange={handleInputChange}
+          />
+          <label>Email:</label>
+          <input
+            type="email"
+            name="userEmail"
+            value={formData.userEmail}
+            onChange={handleInputChange}
+          />
+          <label>Full Name:</label>
+          <input
+            type="text"
+            name="fullName"
+            value={formData.fullName}
+            onChange={handleInputChange}
+          />
+          <label>Password:</label>
+          <input
+            type="text"
+            name="password"
+            value={formData.password}
+            onChange={handleInputChange}
+          />
+          <label>Role:</label>
+          <select
+            name="role"
+            value={formData.role}
+            onChange={handleInputChange}
+          >
+            <option value="Organizer">Organizer</option>
+            <option value="Head Referee">Head Referee</option>
+            <option value="Referee">Referee</option>
+          </select>
+          <label>
+            Show Password:
+            <input
+              type="checkbox"
+              checked={showPassword}
+              onChange={() => setShowPassword(!showPassword)}
+            />
+          </label>
+
+          <button className="button btn-update" onClick={handleUpdateUser}>
+            Update
+          </button>
+          <button className="button btn-cancel" onClick={handleCloseForms}>
+            Close
+          </button>
+        </div>
+      )}
+
+      {showCreateForm && (
+        <div className="popup-form show">
+          <h3>Create New User</h3>
+          <label>Username:</label>
+          <input
+            type="text"
+            name="userName"
+            value={formData.userName}
+            onChange={handleInputChange}
+          />
+          <label>Email:</label>
+          <input
+            type="email"
+            name="userEmail"
+            value={formData.userEmail}
+            onChange={handleInputChange}
+          />
+          <label>Password:</label>
+          <input
+            type="text"
+            name="password"
+            value={formData.password}
+            onChange={handleInputChange}
+          />
+          <label>Full Name:</label>
+          <input
+            type="text"
+            name="fullName"
+            value={formData.fullName}
+            onChange={handleInputChange}
+          />
+          <label>Role:</label>
+          <select
+            name="role"
+            value={formData.role}
+            onChange={handleInputChange}
+          >
+            <option value="Organizer">Organizer</option>
+            <option value="Head Referee">Head Referee</option>
+            <option value="Referee">Referee</option>
+          </select>
+          <label>
+            Show Password:
+            <input
+              type="checkbox"
+              checked={showPassword}
+              onChange={() => setShowPassword(!showPassword)}
+            />
+          </label>
+
+          <button className="button btn-create" onClick={handleCreateUser}>
+            Create
+          </button>
+          <button className="button btn-cancel" onClick={handleCloseForms}>
+            Close
+          </button>
+        </div>
+      )}
+
+      {showDeleteForm && (
+        <div className="popup-form show">
+          <h3>Delete User</h3>
+          <p>Are you sure you want to delete this user?</p>
+          <button className="button btn-delete" onClick={handleDeleteUser}>
+            Delete
+          </button>
+          <button className="button btn-cancel" onClick={handleCloseForms}>
+            Cancel
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
+
 
 function MainContent() {
   const [selectedTab, setSelectedTab] = useState("activity");
