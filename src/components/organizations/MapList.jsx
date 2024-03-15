@@ -4,8 +4,8 @@ import "./css/MapList.css";
 const MapList = () => {
   const [maps, setMaps] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [formValid, setFormValid] = useState(true);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   const [formData, setFormData] = useState({
     id: "",
@@ -24,10 +24,8 @@ const MapList = () => {
   };
 
   const handleShowUpdateForm = (id) => {
-    // Find the selected map based on the ID
     const selectedMap = maps.find((map) => map.id === id);
 
-    // Set form data with the selected map's data
     setFormData({
       id: selectedMap.id,
       keyId: selectedMap.keyId,
@@ -37,12 +35,19 @@ const MapList = () => {
     setShowUpdateForm(true);
     setSelectedMapId(id);
   };
+  const handleFetchMapById = (id) => {
+    // Fetch map by ID and highlight the selected map
+    const updatedMaps = maps.map((map) => ({
+      ...map,
+      highlighted: map.id === id,
+    }));
 
+    setMaps(updatedMaps);
+    setSelectedMapId(id);
+  };
   const handleShowDeleteForm = (id) => {
-    // Find the selected map based on the ID
     const selectedMap = maps.find((map) => map.id === id);
 
-    // Set form data with the selected map's data
     setFormData({
       id: selectedMap.id,
       keyId: selectedMap.keyId,
@@ -85,30 +90,19 @@ const MapList = () => {
 
       setMaps(data);
       setLoading(false);
+      setErrorMessage(null); // Reset error message
+      setSuccessMessage(null); // Reset success message
     } catch (error) {
       console.error("Error fetching maps:", error.message);
-      setError("Error fetching maps. Please try again.");
+      setErrorMessage("Error fetching maps. Please try again.");
       setLoading(false);
     }
   };
 
-  const handleFetchMapById = (id) => {
-    // Fetch map by ID and highlight the selected map
-    const updatedMaps = maps.map((map) => ({
-      ...map,
-      highlighted: map.id === id,
-    }));
-
-    setMaps(updatedMaps);
-    setSelectedMapId(id);
-  };
-
   const handleCreateMap = async () => {
     try {
-      // Kiểm tra xem các trường đã được điền đầy đủ hay không
       if (!formData.keyId || !formData.mapName) {
-        console.error("Please fill in all fields.");
-        setFormValid(false);
+        setErrorMessage("Please fill in all fields.");
         return;
       }
 
@@ -123,30 +117,26 @@ const MapList = () => {
         }
       );
 
-      // Refresh map list
       getAllMaps();
-      // Clear form data
       setFormData({
         keyId: "",
         mapName: "",
       });
-      setFormValid(true);
       setShowCreateForm(false);
+      setSuccessMessage("Map created successfully!");
     } catch (error) {
       console.error("Error creating map:", error);
+      setErrorMessage("Error creating map. Please try again.");
     }
   };
 
   const handleUpdateMap = async () => {
     try {
-      // Kiểm tra xem các trường đã được điền đầy đủ hay không
       if (!formData.keyId || !formData.mapName) {
-        console.error("Please fill in all fields.");
-        setFormValid(false);
+        setErrorMessage("Please fill in all fields.");
         return;
       }
 
-      console.log("Updating map:", selectedMapId, formData);
       await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/map/update/${selectedMapId}`,
         {
@@ -168,18 +158,16 @@ const MapList = () => {
         keyId: "",
         mapName: "",
       });
-      setFormValid(true);
       setShowUpdateForm(false);
+      setSuccessMessage("Map updated successfully!");
     } catch (error) {
       console.error("Error updating map:", error);
+      setErrorMessage("Error updating map. Please try again.");
     }
   };
 
-  // ...
-
   const handleDeleteMap = async () => {
     try {
-      console.log("Deleting map:", selectedMapId);
       await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/map/delete/${selectedMapId}`,
         {
@@ -200,17 +188,16 @@ const MapList = () => {
         mapName: "",
       });
       setShowDeleteForm(false);
+      setSuccessMessage("Map deleted successfully!");
     } catch (error) {
       console.error("Error deleting map:", error);
+      setErrorMessage("Error deleting map. Please try again.");
     }
   };
-
-  // ...
 
   return (
     <div id="map-list-container">
       <h2>Map List</h2>
-      {/* Buttons for Create, Update, Delete */}
       <div>
         <button className="create-button" onClick={handleShowCreateForm}>
           Create Map
@@ -232,8 +219,10 @@ const MapList = () => {
       </div>
       {loading ? (
         <p>Loading...</p>
-      ) : error ? (
-        <p>{error}</p>
+      ) : errorMessage ? (
+        <p className="error-message">{errorMessage}</p>
+      ) : successMessage ? (
+        <p className="success-message">{successMessage}</p>
       ) : (
         <table>
           <thead>
