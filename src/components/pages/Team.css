@@ -1,0 +1,143 @@
+/* CSS cho bảng */
+table {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+th,
+td {
+  padding: 12px;
+  text-align: center;
+  font-size: 18px;
+}
+
+td {
+  font-family: Tahoma;
+}
+
+th {
+  background-color: #4ccd99;
+  color: white;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+/* CSS cho nút */
+button {
+  padding: 10px 20px;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+  font-size: 16px;
+}
+
+.btn-update {
+  background-color: #67c6e3;
+  margin-right: 8px;
+}
+
+.btn-delete {
+  background-color: #ff004d;
+  margin-left: 8px;
+}
+
+.btn-delete:hover {
+  background-color: #b80000;
+}
+
+.btn-update:hover {
+  background-color: #0056b3;
+}
+
+.btn-cancel {
+  margin: 0 8px;
+  background-color: #b2a59b;
+}
+
+.btn-cancel:hover {
+  background-color: #c69774;
+}
+
+/* CSS cho các biểu mẫu popup */
+/* CSS cho các biểu mẫu popup */
+/* CSS cho các biểu mẫu popup */
+.popup-form {
+  background-color: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  width: 420px; /* Điều chỉnh chiều rộng của popup */
+}
+
+.popup-form h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.popup-form label {
+  font-size: 18px;
+  display: block;
+  margin-bottom: 10px;
+  text-align: left;
+}
+.popup-form input[type='text'],
+.popup-form input[type='email'],
+.popup-form input[type='password'] {
+  width: calc(100% - 22px); /* Trừ đi chiều rộng của thanh cuộn */
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  height: 35px; /* Giảm chiều cao xuống 35px */
+}
+
+.popup-form select {
+  width: 100%; /* Điều chỉnh chiều rộng của thanh role */
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  height: 36px; /* Giảm chiều cao xuống 35px */
+}
+
+.popup-form .form-group {
+  margin-bottom: 20px;
+}
+
+.popup-form .form-group:last-child {
+  margin-bottom: 0; /* Loại bỏ margin dưới của form-group cuối cùng */
+}
+
+
+.btn-cancel {
+  width: 120px;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 4px;
+}
+.btn-create{
+  width: 120px;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 4px;
+  background-color: green;
+}
+.btn-create:hover{
+  background-color: darkgreen;
+}
+
+.btn-cancel {
+  margin-right: 10px;
+}
