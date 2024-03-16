@@ -41,7 +41,7 @@ function ActivityType() {
 
   useEffect(() => {
     fetchActivities();
-  }, []);
+  });
 
   const fetchActivities = async () => {
     try {
@@ -276,7 +276,7 @@ function HighSchool() {
 
   useEffect(() => {
     fetchHighSchools();
-  }, []);
+  });
 
   const fetchHighSchools = async () => {
     try {
@@ -509,7 +509,7 @@ function Map() {
 
   useEffect(() => {
     fetchMaps();
-  }, []);
+  });
 
   const fetchMaps = async () => {
     try {
@@ -1594,7 +1594,6 @@ function Round() {
   });
   const [showModal, setShowModal] = useState(false);
   const [modalActionType, setModalActionType] = useState("update");
-  const [error, setError] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("error");
 
@@ -2129,6 +2128,8 @@ function Team() {
 
 function Tournament() {
   const token = localStorage.getItem("token");
+  const [matches, setMatches] = useState([]);
+
   const [tournaments, setTournaments] = useState([]);
   const [selectedTournamentId, setSelectedTournamentId] = useState(null);
   const [updatedTournamentData, setUpdatedTournamentData] = useState({
@@ -2139,14 +2140,18 @@ function Tournament() {
   });
   const [showModal, setShowModal] = useState(false);
   const [modalActionType, setModalActionType] = useState("update");
-  const [error, setError] = useState("");
+  const [error] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("error");
 
   useEffect(() => {
     fetchTournaments();
   }, []);
-
+  useEffect(() => {
+    if (selectedTournamentId) {
+      fetchMatchesByTournamentId(selectedTournamentId);
+    }
+  }, [selectedTournamentId]);
   const fetchTournaments = async () => {
     try {
       const response = await fetch(
@@ -2161,6 +2166,22 @@ function Tournament() {
       }
     } catch (error) {
       console.error("Error fetching tournaments:", error.message);
+    }
+  };
+  const fetchMatchesByTournamentId = async (tournamentId) => {
+    try {
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/match/get-by-tournament-id/${tournamentId}`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setMatches(data);
+      } else {
+        console.error("Error fetching matches");
+      }
+    } catch (error) {
+      console.error("Error fetching matches:", error.message);
     }
   };
 
@@ -2337,6 +2358,16 @@ function Tournament() {
             </div>
           </div>
         ))}
+      </div>
+      <div className="match-list">
+        <h3>Matches</h3>
+        <ul>
+          {matches.map((match) => (
+            <li key={match.id}>
+              {match.keyId} - {match.mapName} - {match.matchDate}
+            </li>
+          ))}
+        </ul>
       </div>
       <button className="create-button" onClick={handleCreate}>
         <div className="btn-add">
