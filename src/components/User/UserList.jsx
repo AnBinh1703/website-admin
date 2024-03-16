@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from "react";
+import "./UserList.css"; // Make sure to update the import path based on your project structure
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
-  const [newUser, setNewUser] = useState({
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [formValid, setFormValid] = useState(true);
+
+  const [formData, setFormData] = useState({
+    id: "",
     userName: "",
     userEmail: "",
     password: "",
@@ -14,63 +20,42 @@ const UserList = () => {
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [showDeleteForm, setShowDeleteForm] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
-  const [searchKey, setSearchKey] = useState("");
 
   useEffect(() => {
-    // Fetch the list of users on component mount
-    fetchUsers();
+    getAllUsers();
   }, []);
 
-  const fetchUsers = async (searchKey = "") => {
+  const fetchUsers = async () => {
     try {
       const response = await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/user/get-all?searchKey=${searchKey}`
       );
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch users. Server returned ${response.status} ${response.statusText}`
-        );
-      }
-
       const data = await response.json();
+
       setUsers(data);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching users:", error.message);
-    }
-  };
-
-  const fetchUserById = async (id) => {
-    try {
-      const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/user/get-by-id/${id}`
-      );
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch user. Server returned ${response.status} ${response.statusText}`
-        );
-      }
-
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Error fetching user by ID:", error.message);
+      setError("Error fetching users. Please try again.");
+      setLoading(false);
     }
   };
 
   const handleCreateUser = async () => {
     try {
-      // Check if all required fields are filled
       if (
-        !newUser.userName ||
-        !newUser.userEmail ||
-        !newUser.password ||
-        !newUser.fullName
+        !formData.userName ||
+        !formData.userEmail ||
+        !formData.password ||
+        !formData.fullName ||
+        !formData.role
       ) {
-        console.error("Please fill in all required fields.");
+        console.error("Please fill in all fields.");
+        setFormValid(false);
         return;
       }
 
-      const response = await fetch(
+      await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/user/create",
         {
           method: "POST",
@@ -78,19 +63,25 @@ const UserList = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            userName: newUser.userName,
-            userEmail: newUser.userEmail,
-            password: newUser.password,
-            fullName: newUser.fullName,
-            role: parseInt(newUser.role, 2), // Ensure role is parsed as an integer
+            userRequestModel: {
+              userName: newUser.userName,
+              userEmail: newUser.userEmail,
+              password: newUser.password,
+              fullName: newUser.fullName,
+            },
+            role: newUser.role,
           }),
         }
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Create user API error:", errorData);
-        return;
+        const errorText = await response.text();
+        console.error(
+          `Failed to create user. Server returned ${response.status} ${response.statusText}: ${errorText}`
+        );
+        throw new Error(
+          `Failed to create user. Server returned ${response.status} ${response.statusText}: ${errorText}`
+        );
       }
 
       await fetchUsers();
@@ -101,30 +92,42 @@ const UserList = () => {
         fullName: "",
         role: "",
       });
+      setFormValid(true);
       setShowCreateForm(false);
     } catch (error) {
-      console.error("Error creating user:", error.message);
+      console.error("Error creating user:", error);
     }
   };
 
   const handleUpdateUser = async () => {
     try {
-      const response = await fetch(
+      if (
+        !formData.userName ||
+        !formData.userEmail ||
+        !formData.fullName ||
+        !formData.role
+      ) {
+        console.error("Please fill in all fields.");
+        setFormValid(false);
+        return;
+      }
+
+      await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/user/update/${selectedUserId}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(newUser),
+          body: JSON.stringify(formData),
         }
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Update user API error:", errorData);
-        console.log("Validation errors:", errorData.errors);
-
+        if (response.status === 400) {
+          const errorData = await response.json();
+          console.error("Validation Errors:", errorData);
+        }
         throw new Error(
           `Failed to update user. Server returned ${response.status} ${response.statusText}`
         );
@@ -138,6 +141,7 @@ const UserList = () => {
         fullName: "",
         role: "",
       });
+      setFormValid(true);
       setShowUpdateForm(false);
     } catch (error) {
       console.error("Error updating user:", error.message);
@@ -146,7 +150,7 @@ const UserList = () => {
 
   const handleDeleteUser = async () => {
     try {
-      const response = await fetch(
+      await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/user/delete/${selectedUserId}`,
         {
           method: "DELETE",
@@ -154,6 +158,10 @@ const UserList = () => {
       );
 
       if (!response.ok) {
+        if (response.status === 400) {
+          const errorData = await response.json();
+          console.error("Validation Errors:", errorData);
+        }
         throw new Error(
           `Failed to delete user. Server returned ${response.status} ${response.statusText}`
         );
@@ -172,31 +180,18 @@ const UserList = () => {
       console.error("Error deleting user:", error);
     }
   };
-  const getRoleLabel = (role) => {
-    switch (role) {
-      case 0:
-        return "Admin";
-      case 1:
-        return "Head-Reference";
-      case 2:
-        return "Round-Reference";
-      default:
-        return "Unknown Role";
-    }
-  };
 
   const handleRowClick = async (id) => {
     try {
-      const updatedUsers = users.map((user) => {
-        return {
-          ...user,
-          highlighted: user.id === id,
-        };
-      });
+      const data = await fetchUserById(id);
+
+      const updatedUsers = users.map((user) => ({
+        ...user,
+        highlighted: user.id === id,
+      }));
+
       setUsers(updatedUsers);
       setSelectedUserId(id);
-
-      const data = await fetchUserById(id);
       setNewUser({
         userName: data.userName,
         userEmail: data.userEmail,
@@ -217,17 +212,22 @@ const UserList = () => {
   };
 
   return (
-    <div>
-      <div className="button-function">
-        <button onClick={() => setShowCreateForm(true)}>Create User</button>
+    <div id="user-list-container">
+      <h2>User List</h2>
+      <div>
+        <button className="create-button" onClick={handleShowCreateForm}>
+          Create User
+        </button>
         <button
-          onClick={() => setShowUpdateForm(true)}
+          className="update-button"
+          onClick={() => selectedUserId && handleShowUpdateForm(selectedUserId)}
           disabled={!selectedUserId}
         >
           Update User
         </button>
         <button
-          onClick={() => setShowDeleteForm(true)}
+          className="delete-button"
+          onClick={() => selectedUserId && handleShowDeleteForm(selectedUserId)}
           disabled={!selectedUserId}
         >
           Delete User
@@ -242,37 +242,112 @@ const UserList = () => {
           <button onClick={() => fetchUsers(searchKey)}>Search</button>
         </div>
       </div>
-
-      {/* Create User Form Popup */}
+      {loading ? (
+        <p>Loading...</p>
+      ) : error ? (
+        <p>{error}</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>UserName</th>
+              <th>UserEmail</th>
+              <th>FullName</th>
+              <th>Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map((user) => (
+              <tr
+                key={user.id}
+                style={{
+                  backgroundColor:
+                    user.id === selectedUserId ? "gray" : "transparent",
+                }}
+                onClick={() => setSelectedUserId(user.id)}
+              >
+                <td>{user.keyId}</td>
+                <td>{user.userName}</td>
+                <td>{user.userEmail}</td>
+                <td>{user.fullName}</td>
+                <td>{user.role}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
       {showCreateForm && (
         <div className="popup-form">
-          <h2>Create User</h2>
-          <label>User Name:</label>
+          <h3>Create New User</h3>
+          <label>UserName:</label>
           <input
             type="text"
             name="userName"
-            value={newUser.userName}
+            value={formData.userName}
             onChange={handleInputChange}
           />
-          <label>Email:</label>
+          <label>UserEmail:</label>
           <input
-            type="email"
+            type="text"
             name="userEmail"
-            value={newUser.userEmail}
+            value={formData.userEmail}
             onChange={handleInputChange}
           />
           <label>Password:</label>
           <input
             type="password"
             name="password"
-            value={newUser.password}
+            value={formData.password}
             onChange={handleInputChange}
           />
-          <label>Full Name:</label>
+          <label>FullName:</label>
           <input
             type="text"
             name="fullName"
-            value={newUser.fullName}
+            value={formData.fullName}
+            onChange={handleInputChange}
+          />
+          <label>Role:</label>
+          <input
+            type="number"
+            name="role"
+            value={formData.role}
+            onChange={handleInputChange}
+          />
+          <button onClick={handleCreateUser}>Create User</button>
+          <button onClick={handleCloseForms}>Close</button>
+        </div>
+      )}
+      {showUpdateForm && (
+        <div className="popup-form">
+          <h3>Update User</h3>
+          <label>UserName:</label>
+          <input
+            type="text"
+            name="userName"
+            value={formData.userName}
+            onChange={handleInputChange}
+          />
+          <label>UserEmail:</label>
+          <input
+            type="text"
+            name="userEmail"
+            value={formData.userEmail}
+            onChange={handleInputChange}
+          />
+          <label>Password:</label>
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleInputChange}
+          />
+          <label>FullName:</label>
+          <input
+            type="text"
+            name="fullName"
+            value={formData.fullName}
             onChange={handleInputChange}
           />
           <label>Role:</label>
@@ -282,61 +357,16 @@ const UserList = () => {
             value={newUser.role}
             onChange={handleInputChange}
           />
-          <button onClick={handleCreateUser}>Create User</button>
-          <button onClick={() => setShowCreateForm(false)}>Cancel</button>
-        </div>
-      )}
-
-      {/* Update User Form Popup */}
-      {showUpdateForm && (
-        <div className="popup-form">
-          <h2>Update User</h2>
-          <label>User Name:</label>
-          <input
-            type="text"
-            name="userName"
-            value={newUser.userName}
-            onChange={handleInputChange}
-          />
-          <label>Email:</label>
-          <input
-            type="email"
-            name="userEmail"
-            value={newUser.userEmail}
-            onChange={handleInputChange}
-          />
-          <label>Password:</label>
-          <input
-            type="password"
-            name="password"
-            value={newUser.password}
-            onChange={handleInputChange}
-          />
-          <label>Full Name:</label>
-          <input
-            type="text"
-            name="fullName"
-            value={newUser.fullName}
-            onChange={handleInputChange}
-          />
-          <label>Role:</label>
-          <select name="role" value={newUser.role} onChange={handleInputChange}>
-            <option value={0}>Admin</option>
-            <option value={1}>Head-Reference</option>
-            <option value={2}>Round-Reference</option>
-          </select>
           <button onClick={handleUpdateUser}>Update User</button>
-          <button onClick={() => setShowUpdateForm(false)}>Cancel</button>
+          <button onClick={handleCloseForms}>Close</button>
         </div>
       )}
-
-      {/* Delete User Form Popup */}
       {showDeleteForm && (
         <div className="popup-form">
-          <h2>Delete User</h2>
+          <h3>Delete User</h3>
           <p>Are you sure you want to delete this user?</p>
           <button onClick={handleDeleteUser}>Delete User</button>
-          <button onClick={() => setShowDeleteForm(false)}>Cancel</button>
+          <button onClick={handleCloseForms}>Cancel</button>
         </div>
       )}
 
@@ -351,7 +381,6 @@ const UserList = () => {
           </tr>
         </thead>
         <tbody>
-          {/* Inside the table body */}
           {users.map((user) => (
             <tr
               key={user.id}
@@ -361,7 +390,7 @@ const UserList = () => {
               <td>{user.userName}</td>
               <td>{user.fullName}</td>
               <td>{user.userEmail}</td>
-              <td>{getRoleLabel(user.role)}</td> {/* Display role label */}
+              <td>{user.role}</td>
             </tr>
           ))}
         </tbody>

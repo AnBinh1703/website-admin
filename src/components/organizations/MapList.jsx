@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
-import "./css/MapList.css";
+import React, { useEffect, useState } from 'react';
 
 const MapList = () => {
   const [maps, setMaps] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
+  const [error, setError] = useState(null);
+  const [formValid, setFormValid] = useState(true);
 
   const [formData, setFormData] = useState({
     id: "",
@@ -24,8 +23,10 @@ const MapList = () => {
   };
 
   const handleShowUpdateForm = (id) => {
+    // Find the selected map based on the ID
     const selectedMap = maps.find((map) => map.id === id);
 
+    // Set form data with the selected map's data
     setFormData({
       id: selectedMap.id,
       keyId: selectedMap.keyId,
@@ -35,19 +36,12 @@ const MapList = () => {
     setShowUpdateForm(true);
     setSelectedMapId(id);
   };
-  const handleFetchMapById = (id) => {
-    // Fetch map by ID and highlight the selected map
-    const updatedMaps = maps.map((map) => ({
-      ...map,
-      highlighted: map.id === id,
-    }));
 
-    setMaps(updatedMaps);
-    setSelectedMapId(id);
-  };
   const handleShowDeleteForm = (id) => {
+    // Find the selected map based on the ID
     const selectedMap = maps.find((map) => map.id === id);
 
+    // Set form data with the selected map's data
     setFormData({
       id: selectedMap.id,
       keyId: selectedMap.keyId,
@@ -73,36 +67,47 @@ const MapList = () => {
   };
 
   useEffect(() => {
+    // Fetch all maps on component mount
     getAllMaps();
   }, []);
 
   const getAllMaps = async () => {
-    try {
-      const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/map/get-all"
-      );
+  try {
+    const response = await fetch('/api/Map/get-all-maps');
+    console.log('Full response:', response);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
+    if (!response.ok) {
+      throw new Error(`Failed to fetch maps: ${response.status} - ${response.statusText}`);
+    }
 
       const data = await response.json();
 
       setMaps(data);
       setLoading(false);
-      setErrorMessage(null); // Reset error message
-      setSuccessMessage(null); // Reset success message
     } catch (error) {
       console.error("Error fetching maps:", error.message);
-      setErrorMessage("Error fetching maps. Please try again.");
+      setError("Error fetching maps. Please try again.");
       setLoading(false);
     }
   };
 
+  const handleFetchMapById = (id) => {
+    // Fetch map by ID and highlight the selected map
+    const updatedMaps = maps.map((map) => ({
+      ...map,
+      highlighted: map.id === id,
+    }));
+
+    setMaps(updatedMaps);
+    setSelectedMapId(id);
+  };
+
   const handleCreateMap = async () => {
     try {
+      // Kiểm tra xem các trường đã được điền đầy đủ hay không
       if (!formData.keyId || !formData.mapName) {
-        setErrorMessage("Please fill in all fields.");
+        console.error("Please fill in all fields.");
+        setFormValid(false);
         return;
       }
 
@@ -119,24 +124,26 @@ const MapList = () => {
 
       getAllMaps();
       setFormData({
-        keyId: "",
-        mapName: "",
+        keyId: '',
+        mapName: '',
       });
+      setFormValid(true);
       setShowCreateForm(false);
-      setSuccessMessage("Map created successfully!");
     } catch (error) {
       console.error("Error creating map:", error);
-      setErrorMessage("Error creating map. Please try again.");
     }
   };
 
-  const handleUpdateMap = async () => {
+  const handleUpdateMap = async (id) => {
     try {
+      // Kiểm tra xem các trường đã được điền đầy đủ hay không
       if (!formData.keyId || !formData.mapName) {
-        setErrorMessage("Please fill in all fields.");
+        console.error("Please fill in all fields.");
+        setFormValid(false);
         return;
       }
 
+      console.log("Updating map:", selectedMapId, formData);
       await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/map/update/${selectedMapId}`,
         {
@@ -153,21 +160,21 @@ const MapList = () => {
       );
 
       getAllMaps();
+      // Clear form data
       setFormData({
-        id: "",
-        keyId: "",
-        mapName: "",
+        keyId: '',
+        mapName: '',
       });
+      setFormValid(true);
       setShowUpdateForm(false);
-      setSuccessMessage("Map updated successfully!");
     } catch (error) {
       console.error("Error updating map:", error);
-      setErrorMessage("Error updating map. Please try again.");
     }
   };
 
-  const handleDeleteMap = async () => {
+  const handleDeleteMap = async (id) => {
     try {
+      console.log("Deleting map:", selectedMapId);
       await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/map/delete/${selectedMapId}`,
         {
@@ -188,16 +195,15 @@ const MapList = () => {
         mapName: "",
       });
       setShowDeleteForm(false);
-      setSuccessMessage("Map deleted successfully!");
     } catch (error) {
       console.error("Error deleting map:", error);
-      setErrorMessage("Error deleting map. Please try again.");
     }
   };
 
   return (
-    <div id="map-list-container">
+    <div>
       <h2>Map List</h2>
+      {/* Buttons for Create, Update, Delete */}
       <div>
         <button className="create-button" onClick={handleShowCreateForm}>
           Create Map
@@ -219,10 +225,8 @@ const MapList = () => {
       </div>
       {loading ? (
         <p>Loading...</p>
-      ) : errorMessage ? (
-        <p className="error-message">{errorMessage}</p>
-      ) : successMessage ? (
-        <p className="success-message">{successMessage}</p>
+      ) : error ? (
+        <p>{error}</p>
       ) : (
         <table>
           <thead>
@@ -248,65 +252,13 @@ const MapList = () => {
         </table>
       )}
 
-      {/* Create Map Form */}
-      {showCreateForm && (
-        <div className="popup-form">
-          <h3>Create New Map</h3>
-          <label>KeyID:</label>
-          <input
-            type="text"
-            name="keyId"
-            value={formData.keyId}
-            onChange={handleInputChange}
-          />
-          <label>Name:</label>
-          <input
-            type="text"
-            name="mapName"
-            value={formData.mapName}
-            onChange={handleInputChange}
-          />
-          <button onClick={handleCreateMap}>Create Map</button>
-          <button onClick={handleCloseForms}>Close</button>
-        </div>
-      )}
-
-      {/* Update Map Form */}
-      {showUpdateForm && (
-        <div className="popup-form">
-          <h3>Update Map</h3>
-          <label>KeyID:</label>
-          <input
-            type="text"
-            name="keyId"
-            value={formData.keyId}
-            onChange={handleInputChange}
-          />
-          <label>Name:</label>
-          <input
-            type="text"
-            name="mapName"
-            value={formData.mapName}
-            onChange={handleInputChange}
-          />
-          <button onClick={() => handleUpdateMap(selectedMapId)}>
-            Update Map
-          </button>
-          <button onClick={handleCloseForms}>Close</button>
-        </div>
-      )}
-
-      {/* Delete Map Confirmation */}
-      {showDeleteForm && (
-        <div className="popup-form">
-          <h3>Delete Map</h3>
-          <p>Are you sure you want to delete this map?</p>
-          <button onClick={() => handleDeleteMap(selectedMapId)}>
-            Delete Map
-          </button>
-          <button onClick={handleCloseForms}>Cancel</button>
-        </div>
-      )}
+      {/* Form for creating new maps */}
+      <h3>Create New Map</h3>
+      <label>KeyID:</label>
+      <input type="text" name="keyId" value={formData.keyId} onChange={handleInputChange} />
+      <label>Name:</label>
+      <input type="text" name="mapName" value={formData.mapName} onChange={handleInputChange} />
+      <button onClick={handleCreateMap}>Create Map</button>
     </div>
   );
 };

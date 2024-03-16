@@ -1,0 +1,227 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: #292929; /* Màu sắc sidebar mới */
+  color: #fff;
+  padding-top: 20px;
+  overflow-y: auto;
+}
+
+.sidebar-list {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar-list li {
+  margin-bottom: 10px;
+}
+
+.sidebar-list li button {
+  color: #fff;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 10px 50px;
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-size: 18px;
+  transition: background-color 0.3s ease;
+}
+
+.sidebar-list li button:hover {
+  background-color: #555;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  background-color: #f2f2f2;
+  text-align: center;
+  font-size: 35px;
+  font-weight: bold;
+  overflow-y: auto;
+}
+
+.content-wrapper {
+  width: 80%;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.content {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.tournament-title {
+  width: 100%;
+  height: 90px;
+  background: #292929; /* Màu sắc header mới */
+  border-radius: 5px;
+  margin: 5px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff; /* Màu chữ trắng */
+  font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+  font-size: 20px;
+}
+
+.tournament-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.tournament-container-list {
+  width: 30%;
+  margin: 10px;
+  background-color: #ccc; /* Màu sắc container list mới */
+  border-radius: 8px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  box-sizing: border-box;
+  color: #333; /* Màu chữ đen */
+}
+
+.tour-title {
+  color: yellow;
+  font-size: 18px; /* Giảm kích thước chữ tiêu đề của dữ liệu */
+}
+
+span {
+  margin: 0 5px;
+  font-size: 16px;
+}
+
+.tournament-list p{
+    font-size: 15px;
+}
+.update-button {
+  background-color: #4caf50; /* Màu xanh lá cây */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 10px;
+  font-size: 16px;
+}
+
+.delete-button {
+  background-color: #f44336; /* Màu đỏ */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.update-button:hover,
+.delete-button:hover {
+  opacity: 0.8;
+}
+
+/* Modal styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Một lớp đen mờ */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 100%;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.modal-header h3 {
+  margin: 0;
+}
+
+.modal-body input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 15px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.modal-footer button {
+  padding: 8px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.modal-footer button:hover {
+  background-color: #0056b3;
+}
+
+.create-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  width: 80px; /* Kích thước chiều rộng */
+  height: 80px; /* Kích thước chiều cao */
+  border-radius: 50%; /* Biến thành hình tròn */
+  background-color: #13b340; /* Màu nền */
+  color: #fff; /* Màu chữ */
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Đổ bóng */
+  transition: background-color 0.3s ease;
+}
+
+.create-button:hover {
+  background-color: #0056b3; /* Màu nền khi hover */
+}
+.btn-add {
+  font-size: 24px; /* Kích thước của dấu cộng */
+}
+
+
+

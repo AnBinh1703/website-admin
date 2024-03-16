@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate from react-router-dom
+import { useNavigate } from "react-router-dom";
 import "./LoginPage.css";
 import passwordIcon from "./password.png";
 import userIcon from "./person.png";
 
-const LoginPage = () => {
-  const navigate = useNavigate(); // Create a navigate object
+const LoginPage = ({ setIsLoggedIn }) => {
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     userName: "",
@@ -37,13 +37,12 @@ const LoginPage = () => {
 
       if (response.ok) {
         const data = await response.json();
-        // Handle successful login, e.g., store user data in state or context
         console.log("Login successful", data);
-
-        // Redirect to the home page after successful login
-        navigate("/home");
+        // Lưu token vào localStorage
+        localStorage.setItem("token", data.token);
+        setIsLoggedIn(true); // Cập nhật trạng thái isLoggedIn thành true
+        navigate("/");
       } else {
-        // Handle failed login, e.g., display error message
         console.error("Login failed:", response.statusText);
       }
     } catch (error) {

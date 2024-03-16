@@ -69,9 +69,3 @@ tr:hover {
 }
 
 /* Add any additional styling as needed */
-select option {
-  max-width: 200px; /* Adjust the value based on your preference */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
