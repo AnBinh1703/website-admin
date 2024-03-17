@@ -20,7 +20,6 @@ import HighSchoolModal from "./HighSchoolModal";
 import RoundModal from "./RoundModal";
 import MapModal from "./MapModal";
 import "./Team.css";
-import Calendar from "react-calendar";  
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -776,6 +775,7 @@ function Match() {
 
   const handleCancelForms = () => {
     setShowUpdateFormMatches(false);
+
   };
 
   const handleInputChange = (e) => {
@@ -873,36 +873,45 @@ function Match() {
   };
 
   const handleUpdateTeamInMatch = async () => {
-    const { matchKeyId, teamName, ...updatedData } = formDataTeamInMatch;
+  const { result, ...updatedData } = formDataTeamInMatch;
 
-    try {
-      const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/update-result-for-team-in-match-id/${selectedTeamInMatchId}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updatedData),
-        }
-      );
-
-      if (!response.ok) {
-        console.error("Error updating teamInMatch:", response.statusText);
-        return;
-      }
-
-      const updatedTeamInMatches = await TeamInMatch(
-        selectedTeamInMatchId
-      ).getAllTeamInMatchByMatchId();
-      setTeamInMatches(updatedTeamInMatches);
-      setShowUpdateFormMatches(false);
-      // Update UI or do other necessary tasks after successful update
-    } catch (error) {
-      console.error("Error updating teamInMatch:", error.message);
+  try {
+    if (!selectedTeamInMatchId) {
+      console.error("No team in match selected for update.");
+      return;
     }
-  };
+
+    const response = await fetch(
+      `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/update-result-for-team-in-match-id/${selectedTeamInMatchId}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedData),
+      }
+    );
+
+    if (!response.ok) {
+      console.error("Error updating team in match:", response.statusText);
+      return;
+    }
+
+    const updatedTeamInMatches = [...teamInMatches];
+    const index = updatedTeamInMatches.findIndex(
+      (teamInMatch) => teamInMatch.id === selectedTeamInMatchId
+    );
+    updatedTeamInMatches[index] = {
+      ...updatedTeamInMatches[index],
+      ...formDataTeamInMatch,
+    };
+    setTeamInMatches(updatedTeamInMatches);
+    setShowUpdateFormMatches(false);
+  } catch (error) {
+    console.error("Error updating team in match:", error.message);
+  }
+};
 
   const handleDeleteMatch = async () => {
     try {
@@ -1333,9 +1342,9 @@ function Match() {
             value={formDataTeamInMatch.result}
             onChange={handleInputChangeTeamInMatch}
           >
+            <option value={""}>Null</option>
             <option value={"Win"}>Win</option>
             <option value={"Lose"}>Lose</option>
-            <option value={""}>Null</option>
           </select>
           <button
             className="button btn-update"
