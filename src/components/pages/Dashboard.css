@@ -70,7 +70,7 @@ body {
 .tournament-title {
   width: 100%;
   height: 90px;
-  background: #292929; /* Màu sắc header mới */
+  background: #292929;
   border-radius: 5px;
   margin: 5px 0;
   display: flex;
@@ -92,7 +92,7 @@ body {
 .tournament-container-list {
   width: 30%;
   margin: 10px;
-  background-color: #ccc; /* Màu sắc container list mới */
+  background-color: #AAD7D9; /* Màu sắc container list mới */
   border-radius: 8px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
   padding: 15px;
