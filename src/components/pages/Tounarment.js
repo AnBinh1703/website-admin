@@ -15,6 +15,8 @@ import { IoAdd } from "react-icons/io5";
 import { TbSchool } from "react-icons/tb";
 import { TfiCup } from "react-icons/tfi";
 
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import "../../App.css";
 import ActivityModal from "./ActivityModal";
 import "./Dashboard.css";
@@ -722,10 +724,19 @@ function Map() {
 function Match() {
   const token = localStorage.getItem("token");
   const [matches, setMatches] = useState([]);
+  const [teamInMatches, setTeamInMatches] = useState([]);
   const [selectedMatchId, setSelectedMatchId] = useState(null);
+  const [selectedTeamInMatchId, setSelectedTeamInMatchId] = useState(null);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const [showActivityForm, setShowActivityForm] = useState(false);
+  const [showUpdateFormMatches, setShowUpdateFormMatches] = useState(false);
   const [showDeleteForm, setShowDeleteForm] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showTeamInMatchForm, setShowTeamInMatchForm] = useState(false);
+  const [teamActivities, setTeamActivities] = useState([]);
+  const [createTeamInMatchForm, setCreateTeamInMatchForm] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState(null);
+
   const [formData, setFormData] = useState({
     keyId: "",
     mapId: "",
@@ -736,19 +747,38 @@ function Match() {
     tournamentId: "",
     tournamentName: "",
   });
+
+  const [formDataTeamInMatch, setFormDataTeamInMatch] = useState({
+    teamId: "",
+    teamName: "",
+    matchId: "",
+    matchKeyId: "",
+    score: 0,
+    duration: "",
+    result: "",
+  });
+
   const [maps, setMaps] = useState([]);
   const [rounds, setRounds] = useState([]);
   const [tournaments, setTournaments] = useState([]);
+  const [selectedTournamentId, setSelectedTournamentId] = useState("");
+  const [teams, setTeams] = useState([]);
   const [showCalendar, setShowCalendar] = useState(false);
+
   const [alertSeverity, setAlertSeverity] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
 
   useEffect(() => {
-    getAllMatches();
+    if (selectedTournamentId) {
+      getMatchesByTournament(selectedTournamentId);
+    } else {
+      getAllMatches();
+    }
     fetchMaps();
     fetchRounds();
     fetchTournaments();
-  }, []);
+    fetchTeams();
+  }, [selectedTournamentId]);
 
   const getAllMatches = async () => {
     try {
@@ -761,7 +791,17 @@ function Match() {
       console.error("Error fetching matches: ", error.message);
     }
   };
-
+  const getMatchesByTournament = async (tournamentId) => {
+    try {
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/match/get-by-tournament-id/${tournamentId}`
+      );
+      const data = await response.json();
+      setMatches(data);
+    } catch (error) {
+      console.error("Error fetching matches by tournament:", error.message);
+    }
+  };
   const fetchMaps = async () => {
     try {
       const response = await fetch(
@@ -797,7 +837,32 @@ function Match() {
       console.error("Error fetching tournaments: ", error.message);
     }
   };
+  const fetchTeams = async () => {
+    try {
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/team/get-all"
+      );
+      const data = await response.json();
+      setTeams(data);
+    } catch (error) {
+      console.error("Error fetching teams: ", error.message);
+    }
+  };
 
+  const handleTournamentFilterChange = (selectedId) => {
+    setSelectedTournamentId(selectedId);
+  };
+  const handleShowUpdateFormMatches = (id) => {
+    const selectedMatch = teamInMatches.find(
+      (teamInMatch) => teamInMatch.id === id
+    );
+    setFormDataTeamInMatch({
+      ...selectedMatch, // Thêm vào formData từ selectedMatch
+      matchDate: new Date(selectedMatch.matchDate),
+    });
+    setSelectedTeamInMatchId(id);
+    setShowUpdateFormMatches(true);
+  };
   const handleShowUpdateForm = (id) => {
     const selectedMatch = matches.find((match) => match.id === id);
     setFormData({
@@ -818,7 +883,33 @@ function Match() {
     setShowDeleteForm(false);
     setShowCreateForm(false);
     setSelectedMatchId(null);
+    setShowTeamInMatchForm(false);
+    setShowActivityForm(false);
     setAlertMessage("");
+  };
+  const handleCancelForms = () => {
+    setShowUpdateFormMatches(false);
+  };
+  const handleDeleteTeamInMatch = async (id) => {
+    try {
+      await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/delete-team-with-id/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const updatedTeamInMatches = teamInMatches.filter(
+        (teamInMatch) => teamInMatch.id !== id
+      );
+      setTeamInMatches(updatedTeamInMatches);
+    } catch (error) {
+      console.error("Error deleting teamInMatch:", error);
+    }
   };
 
   const handleInputChange = (e) => {
@@ -836,7 +927,13 @@ function Match() {
     });
     setShowCalendar(false);
   };
-
+  const handleInputChangeTeamInMatch = (e) => {
+    const { name, value } = e.target;
+    setFormDataTeamInMatch({
+      ...formDataTeamInMatch,
+      [name]: value,
+    });
+  };
   const handleCreateMatch = async () => {
     if (!validateInput()) return;
 
@@ -872,6 +969,46 @@ function Match() {
       }
     } catch (error) {
       console.error("Error creating match:", error);
+    }
+  };
+  const handleUpdateTeamInMatch = async () => {
+    const { result, ...updatedData } = formDataTeamInMatch;
+
+    try {
+      if (!selectedTeamInMatchId) {
+        console.error("No team in match selected for update.");
+        return;
+      }
+
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/update-result-for-team-in-match-id/${selectedTeamInMatchId}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedData),
+        }
+      );
+
+      if (!response.ok) {
+        console.error("Error updating team in match:", response.statusText);
+        return;
+      }
+
+      const updatedTeamInMatches = [...teamInMatches];
+      const index = updatedTeamInMatches.findIndex(
+        (teamInMatch) => teamInMatch.id === selectedTeamInMatchId
+      );
+      updatedTeamInMatches[index] = {
+        ...updatedTeamInMatches[index],
+        ...formDataTeamInMatch,
+      };
+      setTeamInMatches(updatedTeamInMatches);
+      setShowUpdateFormMatches(false);
+    } catch (error) {
+      console.error("Error updating team in match:", error.message);
     }
   };
 
@@ -982,12 +1119,191 @@ function Match() {
       console.error("Error deleting match:", error);
     }
   };
+  const handleAddTeamToMatch = async () => {
+    try {
+      if (!selectedMatch) {
+        console.error("No match selected.");
+        return;
+      }
 
+      const { teamId } = formDataTeamInMatch;
+      if (!teamId) {
+        console.error("No team selected.");
+        return;
+      }
+
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/team-in-match/add-team-to-match",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            matchId: selectedMatch.id,
+            teamId: teamId,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        console.error("Error adding team to match:", response.statusText);
+        return;
+      }
+
+      // Refresh teamInMatches after adding a new team
+      const updatedTeamInMatches = await TeamInMatch(
+        selectedMatch.id
+      ).getAllTeamInMatchByMatchId();
+      setTeamInMatches(updatedTeamInMatches);
+
+      // Close the form after adding the team
+      setShowCreateForm(false);
+    } catch (error) {
+      console.error("Error adding team to match:", error.message);
+    }
+  };
+
+  const handleDoubleClick = async (id) => {
+    try {
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/match/get-by-id/${id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        console.error("Error GET match:", response.statusText);
+        return;
+      }
+
+      const matchData = await response.json(); // Await the JSON parsing
+      setSelectedMatch(matchData); // Set the selected match
+
+      const teamInMatchResponse = await TeamInMatch(
+        id
+      ).getAllTeamInMatchByMatchId(); // Fetch team details
+      setTeamInMatches(teamInMatchResponse); // Set team details
+      setShowTeamInMatchForm(true); // Show team details form
+    } catch (error) {
+      console.error("Error GET match:", error.message);
+    }
+  };
+
+  const handleDoubleClickTeamInMatch = async (id) => {
+    try {
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/team-activity/get-activities-by-team-in-match-id/${id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        console.error(
+          "Error fetching teamInMatch details:",
+          response.statusText
+        );
+        return;
+      }
+
+      const data = await response.json();
+      setTeamActivities(data);
+      setShowActivityForm(true);
+    } catch (error) {
+      console.error(
+        "Error handling double click on teamInMatch:",
+        error.message
+      );
+    }
+  };
+
+  const TeamInMatch = (idMatch) => {
+    const token = localStorage.getItem("token");
+
+    const getAllTeamInMatchByMatchId = async () => {
+      try {
+        const response = await fetch(
+          `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/get-all-teams-in-match-id/${idMatch}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          console.error("Error updating teamInMatch:", response.statusText);
+          return;
+        }
+
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error("Error updating teamInMatch:", error.message);
+        return null;
+      }
+    };
+
+    const getUpdateTeamInMatch = async () => {
+      try {
+        const response = await fetch(
+          `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/update-result-for-team-in-match-id/${selectedTeamInMatchId}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify(formDataTeamInMatch),
+          }
+        );
+
+        if (!response.ok) {
+          console.error("Error updating team in match:", response.statusText);
+          return;
+        }
+
+        setShowUpdateFormMatches(false);
+      } catch (error) {
+        console.error("Error updating team in match:", error.message);
+      }
+    };
+
+    return { getAllTeamInMatchByMatchId, getUpdateTeamInMatch };
+  };
   return (
     <div>
       <div className="team-title">
         <h2>Match</h2>
+        <div className="select-filter">
+          <select
+            onChange={(e) => handleTournamentFilterChange(e.target.value)}
+          >
+            <option value="">All Tournaments</option>
+            {tournaments.map((tournament) => (
+              <option key={tournament.id} value={tournament.id}>
+                {tournament.tournamentName}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
+
       {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
       <table>
         <thead>
@@ -1002,7 +1318,10 @@ function Match() {
         </thead>
         <tbody>
           {matches.map((match) => (
-            <tr key={match.id}>
+            <tr
+              key={match.id}
+              onDoubleClick={() => handleDoubleClick(match.id)}
+            >
               <td>{match.keyId}</td>
               <td>{new Date(match.matchDate).toLocaleString()} </td>
               <td>{match.roundName}</td>
@@ -1056,19 +1375,26 @@ function Match() {
           </select>
           <label>Match Date:</label>
           <div className="calendar-wrapper">
-            <input
-              type="text"
-              className="date-input"
-              value={formData.matchDate.toLocaleString()}
-              readOnly
+            <DatePicker
+              selected={formData.matchDate}
+              onChange={handleCalendarChange}
+              showTimeSelect
+              timeFormat="HH:mm"
+              timeIntervals={15} // Đặt khoảng thời gian giữa các mốc thời gian
+              dateFormat="dd/MM/yyyy HH:mm" // Định dạng ngày và giờ
               onClick={() => setShowCalendar(true)}
+              className="date-input"
             />
             {showCalendar && (
-              <Calendar
+              <DatePicker
+                selected={formData.matchDate}
                 onChange={handleCalendarChange}
-                value={formData.matchDate}
+                showTimeSelect
+                timeFormat="HH:mm"
+                timeIntervals={15}
+                dateFormat="dd/MM/yyyy HH:mm"
                 onClose={() => setShowCalendar(false)}
-                className="custom-calendar"
+                className="date-input"
               />
             )}
           </div>
@@ -1106,6 +1432,105 @@ function Match() {
           </button>
         </div>
       )}
+      {showTeamInMatchForm && (
+        <div className="popup-info">
+          <div>
+            <h4>TeamInMatch</h4>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Team Name</th>
+                <th>Match Key ID</th>
+                <th>Score</th>
+                <th>Duration</th>
+                <th>Result</th>
+                <th>Action Type</th>
+              </tr>
+            </thead>
+            <tbody>
+              {teamInMatches.map((teamInMatch) => (
+                <tr
+                  key={teamInMatch.id}
+                  onDoubleClick={() =>
+                    handleDoubleClickTeamInMatch(teamInMatch.id)
+                  }
+                >
+                  <td>{teamInMatch.teamName}</td>
+                  <td>{teamInMatch.matchKeyId}</td>
+                  <td>{teamInMatch.score}</td>
+                  <td>{teamInMatch.duration}</td>
+                  <td>{teamInMatch.result}</td>
+                  <td>
+                    <button
+                      className="button btn-update"
+                      onClick={() =>
+                        handleShowUpdateFormMatches(teamInMatch.id)
+                      }
+                    >
+                      Update
+                    </button>
+                    <button
+                      className="button btn-delete"
+                      onClick={() => handleDeleteTeamInMatch(teamInMatch.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button
+            className="button btn-create"
+            onClick={() => setCreateTeamInMatchForm(true)}
+          >
+            Create
+          </button>
+          <button className="button btn-cancel" onClick={handleCloseForms}>
+            Close
+          </button>
+        </div>
+      )}
+
+      {showUpdateFormMatches && (
+        <div className="popup-form show">
+          <h3>Update Result</h3>
+          <label>Score:</label>
+          <input
+            type="text"
+            name="score"
+            value={formDataTeamInMatch.score}
+            onChange={handleInputChangeTeamInMatch}
+          />
+          <label>Duration:</label>
+          <input
+            type="text"
+            name="duration"
+            value={formDataTeamInMatch.duration}
+            onChange={handleInputChangeTeamInMatch}
+          />
+          <label>Result:</label>
+          <select
+            name="result"
+            value={formDataTeamInMatch.result}
+            onChange={handleInputChangeTeamInMatch}
+          >
+            <option value={""}>Null</option>
+            <option value={"Win"}>Win</option>
+            <option value={"Lose"}>Lose</option>
+          </select>
+          <button
+            className="button btn-update"
+            onClick={handleUpdateTeamInMatch}
+          >
+            Update
+          </button>
+          <button className="button btn-cancel" onClick={handleCancelForms}>
+            Cancel
+          </button>
+        </div>
+      )}
 
       {showCreateForm && (
         <div className="popup-form show">
@@ -1127,20 +1552,27 @@ function Match() {
             ))}
           </select>
           <label>Match Date:</label>
-          <div>
-            <input
-              type="text"
-              value={formData.matchDate.toLocaleString()}
+          <div className="calendar-wrapper">
+            <DatePicker
+              selected={formData.matchDate}
+              onChange={handleCalendarChange}
+              showTimeSelect // Hiển thị lựa chọn thời gian
+              timeFormat="HH:mm" // Định dạng thời gian
               onClick={() => setShowCalendar(true)}
+              className="date-input"
             />
             {showCalendar && (
-              <Calendar
+              <DatePicker
+                selected={formData.matchDate}
                 onChange={handleCalendarChange}
-                value={formData.matchDate}
+                showTimeSelect
+                timeFormat="HH:mm"
                 onClose={() => setShowCalendar(false)}
+                className="date-input"
               />
             )}
           </div>
+
           <label>Round ID:</label>
           <select name="roundId" onChange={handleInputChange}>
             <option value="">Select Round</option>
@@ -1168,6 +1600,74 @@ function Match() {
         </div>
       )}
 
+      {createTeamInMatchForm && (
+        <div className="popup-addTeamInMatch show">
+          <h4>Add TeamInMatch</h4>
+          <label>Match Name:</label>
+          <input
+            type="text"
+            value={selectedMatch ? selectedMatch.keyId : ""}
+            readOnly
+          />
+          <label>Team:</label>
+          <select name="teamId" onChange={handleInputChangeTeamInMatch}>
+            <option value="">Select Team</option>
+            {teams.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.teamName}
+              </option>
+            ))}
+          </select>
+          <button className="button btn-create" onClick={handleAddTeamToMatch}>
+            Add Team
+          </button>
+          <button
+            className="button btn-cancel"
+            onClick={() => setCreateTeamInMatchForm(false)}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+      {showActivityForm && (
+        <div className="popup-activity show">
+          <h3>Activity Detail:</h3>
+          <div className="activity-table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Duration</th>
+                  <th>Score</th>
+                  <th>Violation</th>
+                  <th>Activity Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                {teamActivities.map((activity, index) => (
+                  <tr key={index}>
+                    <td>{activity.description}</td>
+                    <td>{new Date(activity.startTime).toLocaleString()}</td>
+                    <td>{new Date(activity.endTime).toLocaleString()}</td>
+                    <td>{activity.duration}</td>
+                    <td>{activity.score}</td>
+                    <td>{activity.violation}</td>
+                    <td>{activity.activityTypeName}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <button
+            className="button btn-cancel"
+            onClick={() => setShowActivityForm(false)}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
       {showDeleteForm && (
         <div className="popup-form show">
           <h3>Delete Player</h3>
@@ -1199,6 +1699,8 @@ function Player() {
   });
   const [teams, setTeams] = useState([]);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [selectedTeamId, setSelectedTeamId] = useState("");
+
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("error");
 
@@ -1233,7 +1735,24 @@ function Player() {
       console.error("Error fetching teams: ", error.message);
     }
   };
-
+  const handleTeamsFilterChange = async (selectedId) => {
+    if (selectedId) {
+      setSelectedTeamId(selectedId); // Update selected team ID
+      try {
+        const response = await fetch(
+          `https://fptbottournamentweb.azurewebsites.net/api/player/get-by-team-id/${selectedId}`
+        );
+        const data = await response.json();
+        setPlayers(data);
+      } catch (error) {
+        console.error("Error fetching players by team: ", error.message);
+      }
+    } else {
+      // If no team is selected, fetch all players
+      getAllPlayers();
+      setSelectedTeamId(""); // Reset selected team ID
+    }
+  };
   const handleShowUpdateForm = (id) => {
     const selectedPlayer = players.find((player) => player.id === id);
     setFormData({
@@ -1417,15 +1936,19 @@ function Player() {
   return (
     <div>
       <div className="team-title">
-        <h2>Player</h2>
+        <h2>Player</h2>{" "}
+        <div className="select-filter">
+          <select onChange={(e) => handleTeamsFilterChange(e.target.value)}>
+            <option value="">All Players</option>
+            {teams.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.teamName}
+              </option>
+            ))}
+          </select>
+        </div>
         {/* Display alert if validation fails */}
-        <Alert
-          severity={alertSeverity}
-          onClose={() => setAlertMessage("")}
-          sx={{ marginBottom: "1rem" }}
-        >
-          {alertMessage}
-        </Alert>
+        {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
       </div>
       <table>
         <thead>
@@ -1441,7 +1964,7 @@ function Player() {
           {players.map((player) => (
             <tr key={player.id}>
               <td>{player.name}</td>
-              <td>{player.dob}</td>
+              <td>{new Date(player.dob).toLocaleDateString("en-GB")}</td>
               <td>{player.keyId}</td>
               <td>{player.teamName}</td>
               <td>
@@ -1479,21 +2002,12 @@ function Player() {
           />
           <label>Dob:</label>
           <div className="calendar-wrapper">
-            <input
-              type="text"
+            <DatePicker
+              selected={formData.dob}
+              onChange={handleCalendarChange}
+              onClickDay={(date) => handleCalendarChange(date)}
               className="date-input"
-              value={formData.dob.toDateString()}
-              readOnly
-              onClick={() => setShowCalendar(true)}
             />
-            {showCalendar && (
-              <Calendar
-                onChange={handleCalendarChange}
-                value={formData.dob}
-                onClose={() => setShowCalendar(false)}
-                className="custom-calendar"
-              />
-            )}
           </div>
           <label>KeyId:</label>
           <input
@@ -1571,7 +2085,7 @@ function Player() {
       {showDeleteForm && (
         <div className="popup-form show">
           <h3>Delete Player</h3>
-          <p>Are you sure you want to delete this team?</p>
+          <p>Are you sure you want to delete this player?</p>
           <button className="button btn-delete" onClick={handleDeletePlayer}>
             Delete
           </button>
@@ -1745,13 +2259,7 @@ function Round() {
       <div className="team-title">
         <h2>Round</h2>
         {/* Display alert if validation fails */}
-        <Alert
-          severity={alertSeverity}
-          onClose={() => setAlertMessage("")}
-          sx={{ marginBottom: "1rem" }}
-        >
-          {alertMessage}
-        </Alert>
+        {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
       </div>
       <div className="line"></div>
       <div className="tournament-list">
@@ -1835,7 +2343,10 @@ function Team() {
   const fetchHighSchools = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/highschool/get-all"
+        "https://fptbottournamentweb.azurewebsites.net/api/highschool/get-all",
+        {
+          method: "GET",
+        }
       );
       if (response.ok) {
         const data = await response.json();
@@ -1886,7 +2397,6 @@ function Team() {
       setAlertSeverity("error");
       return false;
     }
-    // Add more validation rules if needed
     return true;
   };
 
@@ -2363,7 +2873,7 @@ function Tournament() {
         <ul>
           {matches.map((match) => (
             <li key={match.id}>
-              {match.keyId} - {match.mapName} - {match.matchDate}
+              {match.keyId} | {match.mapName}
             </li>
           ))}
         </ul>
