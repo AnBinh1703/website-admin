@@ -1327,7 +1327,7 @@ function Match() {
               onDoubleClick={() => handleDoubleClick(match.id)}
             >
               <td>{match.keyId}</td>
-              <td>{new Date(match.matchDate).toLocaleString()} </td>
+              <td>{new Date(match.matchDate).toLocaleString("en-GB")} </td>
               <td>{match.roundName}</td>
               <td>{match.mapName}</td>
               <td>{match.tournamentName}</td>
@@ -1653,8 +1653,12 @@ function Match() {
                 {teamActivities.map((activity, index) => (
                   <tr key={index}>
                     <td>{activity.description}</td>
-                    <td>{new Date(activity.startTime).toLocaleString()}</td>
-                    <td>{new Date(activity.endTime).toLocaleString()}</td>
+                    <td>
+                      {new Date(activity.startTime).toLocaleString("en-GB")}
+                    </td>
+                    <td>
+                      {new Date(activity.endTime).toLocaleString("en-GB")}
+                    </td>
                     <td>{activity.duration}</td>
                     <td>{activity.score}</td>
                     <td>{activity.violation}</td>
@@ -1674,8 +1678,8 @@ function Match() {
       )}
       {showDeleteForm && (
         <div className="popup-form show">
-          <h3>Delete Player</h3>
-          <p>Are you sure you want to delete this team?</p>
+          <h3>Delete Match</h3>
+          <p>Are you sure you want to delete this match?</p>
           <button className="button btn-delete" onClick={handleDeleteMatch}>
             Delete
           </button>
@@ -2853,10 +2857,11 @@ function Tournament() {
               <p className="">{tournament.tournamentName}</p>
               <p>
                 Start Date:{" "}
-                {new Date(tournament.startDate).toLocaleDateString()}
+                {new Date(tournament.startDate).toLocaleDateString("en-GB")}
               </p>
               <p>
-                End Date: {new Date(tournament.endDate).toLocaleDateString()}
+                End Date:{" "}
+                {new Date(tournament.endDate).toLocaleDateString("en-GB")}
               </p>
               <div>
                 <button
@@ -2876,7 +2881,7 @@ function Tournament() {
           </div>
         ))}
       </div>
-      
+
       <button className="create-button" onClick={handleCreate}>
         <div className="btn-add">
           <IoAdd />
