@@ -1,29 +1,30 @@
-import React, { useState, useEffect } from "react";
-import "../../App.css";
-import "./Dashboard.css";
-import "./Modal.css";
-import { BsFlag } from "react-icons/bs";
-import { TbSchool } from "react-icons/tb";
-import { FaRegMap } from "react-icons/fa";
-import { IoAdd } from "react-icons/io5";
-import {
-  AiOutlineTeam,
-  AiOutlineUser,
-  AiOutlineApartment,
-  AiOutlineGroup,
-} from "react-icons/ai";
-import { TfiCup } from "react-icons/tfi";
-import { FaRegUserCircle } from "react-icons/fa";
-import Modal from "./Modal";
-import ActivityModal from "./ActivityModal";
-import HighSchoolModal from "./HighSchoolModal";
-import RoundModal from "./RoundModal";
-import MapModal from "./MapModal";
-import "./Team.css";
+import "@mui/lab";
+import Alert from "@mui/material/Alert";
+import React, { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
+import {
+  AiOutlineApartment,
+  AiOutlineGroup,
+  AiOutlineTeam,
+  AiOutlineUser,
+} from "react-icons/ai";
+import { BsFlag } from "react-icons/bs";
+import { FaRegMap, FaRegUserCircle } from "react-icons/fa";
+import { IoAdd } from "react-icons/io5";
+import { TbSchool } from "react-icons/tb";
+import { TfiCup } from "react-icons/tfi";
 
-
+import "../../App.css";
+import ActivityModal from "./ActivityModal";
+import "./AlertPopup";
+import "./Dashboard.css";
+import HighSchoolModal from "./HighSchoolModal";
+import MapModal from "./MapModal";
+import Modal from "./Modal";
+import "./Modal.css";
+import RoundModal from "./RoundModal";
+import "./Team.css";
 
 function ActivityType() {
   const token = localStorage.getItem("token");
@@ -34,10 +35,13 @@ function ActivityType() {
   });
   const [showModal, setShowModal] = useState(false);
   const [modalActionType, setModalActionType] = useState("update");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState("success");
+  const [showAlert, setShowAlert] = useState(false);
 
   useEffect(() => {
     fetchActivities();
-  }, []);
+  });
 
   const fetchActivities = async () => {
     try {
@@ -50,9 +54,11 @@ function ActivityType() {
         setActivities(data);
       } else {
         console.error("Error fetching activities");
+        showAlertMessage("Error fetching activities", "error");
       }
     } catch (error) {
       console.error("Error fetching activities:", error.message);
+      showAlertMessage("Error fetching activities: " + error.message, "error");
     }
   };
 
@@ -80,11 +86,17 @@ function ActivityType() {
 
       if (response.ok) {
         fetchActivities();
+        showAlertMessage("Activity deleted successfully", "success");
       } else {
         console.error("Error deleting activity");
+        showAlertMessage("Failed to delete activity", "error");
       }
     } catch (error) {
       console.error("Error deleting activity:", error.message);
+      showAlertMessage(
+        "An error occurred while deleting activity: " + error.message,
+        "error"
+      );
     }
   };
 
@@ -97,6 +109,8 @@ function ActivityType() {
   };
 
   const handleCreateSubmit = async () => {
+    if (!validateInput()) return;
+
     try {
       const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/activity-type/create",
@@ -113,15 +127,23 @@ function ActivityType() {
       if (response.ok) {
         fetchActivities();
         setShowModal(false);
+        showAlertMessage("Activity created successfully", "success");
       } else {
         console.error("Error creating activity");
+        showAlertMessage("Failed to create activity", "error");
       }
     } catch (error) {
       console.error("Error creating activity:", error.message);
+      showAlertMessage(
+        "An error occurred while creating activity: " + error.message,
+        "error"
+      );
     }
   };
 
   const handleUpdateSubmit = async () => {
+    if (!validateInput()) return;
+
     try {
       const response = await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/activity-type/update/${selectedActivityId}`,
@@ -138,11 +160,17 @@ function ActivityType() {
       if (response.ok) {
         fetchActivities();
         setShowModal(false);
+        showAlertMessage("Activity updated successfully", "success");
       } else {
         console.error("Error updating activity");
+        showAlertMessage("Failed to update activity", "error");
       }
     } catch (error) {
       console.error("Error updating activity:", error.message);
+      showAlertMessage(
+        "An error occurred while updating activity: " + error.message,
+        "error"
+      );
     }
   };
 
@@ -162,12 +190,35 @@ function ActivityType() {
     });
   };
 
+  const validateInput = () => {
+    if (!updatedActivityData.typeName.trim()) {
+      showAlertMessage("Please provide a valid activity type name", "error");
+      return false;
+    }
+    return true;
+  };
+
+  const showAlertMessage = (message, severity) => {
+    setAlertMessage(message);
+    setAlertSeverity(severity);
+    setShowAlert(true);
+  };
+
+  const handleAlertClose = () => {
+    setShowAlert(false);
+  };
+
   return (
     <div className="tournament-container">
       <div className="team-title">
         <h2>Activity Type</h2>
       </div>
       <div className="line"></div>
+      {showAlert && (
+        <Alert severity={alertSeverity} onClose={handleAlertClose}>
+          {alertMessage}
+        </Alert>
+      )}
       <div className="tournament-list">
         {activities.map((activity) => (
           <div key={activity.id} className="tournament-container-list">
@@ -196,14 +247,16 @@ function ActivityType() {
           <IoAdd />
         </div>
       </button>
-      <ActivityModal
-        show={showModal}
-        onClose={() => setShowModal(false)}
-        onSubmit={handleSubmitAction}
-        activityData={updatedActivityData}
-        onChange={handleInputChange}
-        actionType={modalActionType}
-      />
+      {showModal && (
+        <ActivityModal
+          show={showModal}
+          onClose={() => setShowModal(false)}
+          onSubmit={handleSubmitAction}
+          activityData={updatedActivityData}
+          onChange={handleInputChange}
+          actionType={modalActionType}
+        />
+      )}
     </div>
   );
 }
@@ -218,10 +271,12 @@ function HighSchool() {
   });
   const [showModal, setShowModal] = useState(false);
   const [modalActionType, setModalActionType] = useState("update");
+  const [alertMessage, setAlertMessage] = useState(null);
+  const [alertSeverity, setAlertSeverity] = useState("success");
 
   useEffect(() => {
     fetchHighSchools();
-  }, []);
+  });
 
   const fetchHighSchools = async () => {
     try {
@@ -234,9 +289,14 @@ function HighSchool() {
         setHighSchools(data);
       } else {
         console.error("Error fetching high schools");
+        showAlertMessage("Error fetching high schools", "error");
       }
     } catch (error) {
       console.error("Error fetching high schools:", error.message);
+      showAlertMessage(
+        "Error fetching high schools: " + error.message,
+        "error"
+      );
     }
   };
 
@@ -253,7 +313,7 @@ function HighSchool() {
   const handleDelete = async (highSchoolId) => {
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/highSchool/delete/${highSchoolId}`, // Replace this with your API endpoint
+        `https://fptbottournamentweb.azurewebsites.net/api/highSchool/delete/${highSchoolId}`,
         {
           method: "DELETE",
           headers: {
@@ -265,11 +325,14 @@ function HighSchool() {
 
       if (response.ok) {
         fetchHighSchools();
+        showAlertMessage("High school deleted successfully");
       } else {
         console.error("Error deleting high school");
+        showAlertMessage("Failed to delete high school", "error");
       }
     } catch (error) {
       console.error("Error deleting high school:", error.message);
+      showAlertMessage("An error occurred while deleting high school", "error");
     }
   };
 
@@ -283,9 +346,11 @@ function HighSchool() {
   };
 
   const handleCreateSubmit = async () => {
+    if (!validateInput()) return;
+
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/highSchool/create", // Replace this with your API endpoint
+        "https://fptbottournamentweb.azurewebsites.net/api/highSchool/create",
         {
           method: "POST",
           headers: {
@@ -299,18 +364,23 @@ function HighSchool() {
       if (response.ok) {
         fetchHighSchools();
         setShowModal(false);
+        showAlertMessage("High school created successfully");
       } else {
         console.error("Error creating high school");
+        showAlertMessage("Failed to create high school", "error");
       }
     } catch (error) {
       console.error("Error creating high school:", error.message);
+      showAlertMessage("An error occurred while creating high school", "error");
     }
   };
 
   const handleUpdateSubmit = async () => {
+    if (!validateInput()) return;
+
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/highSchool/update/${selectedHighSchoolId}`, // Replace this with your API endpoint
+        `https://fptbottournamentweb.azurewebsites.net/api/highSchool/update/${selectedHighSchoolId}`,
         {
           method: "PUT",
           headers: {
@@ -324,15 +394,23 @@ function HighSchool() {
       if (response.ok) {
         fetchHighSchools();
         setShowModal(false);
+        showAlertMessage("High school updated successfully");
       } else {
         console.error("Error updating high school");
+        showAlertMessage("Failed to update high school", "error");
       }
     } catch (error) {
       console.error("Error updating high school:", error.message);
+      showAlertMessage("An error occurred while updating high school", "error");
     }
   };
 
   const handleSubmitAction = () => {
+    if (!updatedHighSchoolData.highSchoolName.trim()) {
+      showAlertMessage("Please provide a valid high school name", "error");
+      return;
+    }
+
     if (modalActionType === "update") {
       handleUpdateSubmit();
     } else if (modalActionType === "create") {
@@ -348,12 +426,34 @@ function HighSchool() {
     });
   };
 
+  const validateInput = () => {
+    if (!updatedHighSchoolData.highSchoolName.trim()) {
+      showAlertMessage("Please provide a valid high school name", "error");
+      return false;
+    }
+    if (!updatedHighSchoolData.keyId.trim()) {
+      showAlertMessage("Please provide a valid keyId", "error");
+      return false;
+    }
+    return true;
+  };
+
+  const showAlertMessage = (message, severity = "success") => {
+    setAlertSeverity(severity);
+    setAlertMessage(message);
+    setTimeout(() => {
+      setAlertMessage(null);
+      setAlertSeverity("success"); // Reset severity after hiding the alert
+    }, 5000); // Hide the alert after 5 seconds
+  };
+
   return (
     <div className="tournament-container">
       <div className="team-title">
         <h2>High Schools</h2>
       </div>
       <div className="line"></div>
+      {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
       <div className="tournament-list">
         {highSchools.map((highSchool) => (
           <div key={highSchool.id} className="tournament-container-list">
@@ -404,15 +504,17 @@ function Map() {
   });
   const [showModal, setShowModal] = useState(false);
   const [modalActionType, setModalActionType] = useState("update");
+  const [alertMessage, setAlertMessage] = useState(null);
+  const [alertSeverity, setAlertSeverity] = useState("success");
 
   useEffect(() => {
     fetchMaps();
-  }, []);
+  });
 
   const fetchMaps = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/map/get-all" // Replace "your-api-url" with your actual API endpoint
+        "https://fptbottournamentweb.azurewebsites.net/api/map/get-all"
       );
 
       if (response.ok) {
@@ -420,9 +522,11 @@ function Map() {
         setMaps(data);
       } else {
         console.error("Error fetching maps");
+        showAlertMessage("Error fetching maps", "error");
       }
     } catch (error) {
       console.error("Error fetching maps:", error.message);
+      showAlertMessage("Error fetching maps: " + error.message, "error");
     }
   };
 
@@ -439,7 +543,7 @@ function Map() {
   const handleDelete = async (mapId) => {
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/map/delete/${mapId}`, // Replace "your-api-url" with your actual API endpoint
+        `https://fptbottournamentweb.azurewebsites.net/api/map/delete/${mapId}`,
         {
           method: "DELETE",
           headers: {
@@ -451,11 +555,14 @@ function Map() {
 
       if (response.ok) {
         fetchMaps();
+        showAlertMessage("Map deleted successfully");
       } else {
         console.error("Error deleting map");
+        showAlertMessage("Failed to delete map", "error");
       }
     } catch (error) {
       console.error("Error deleting map:", error.message);
+      showAlertMessage("An error occurred while deleting map", "error");
     }
   };
 
@@ -469,9 +576,11 @@ function Map() {
   };
 
   const handleCreateSubmit = async () => {
+    if (!validateInput()) return;
+
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/map/create", // Replace "your-api-url" with your actual API endpoint
+        "https://fptbottournamentweb.azurewebsites.net/api/map/create",
         {
           method: "POST",
           headers: {
@@ -485,18 +594,23 @@ function Map() {
       if (response.ok) {
         fetchMaps();
         setShowModal(false);
+        showAlertMessage("Map created successfully");
       } else {
         console.error("Error creating map");
+        showAlertMessage("Failed to create map", "error");
       }
     } catch (error) {
       console.error("Error creating map:", error.message);
+      showAlertMessage("An error occurred while creating map", "error");
     }
   };
 
   const handleUpdateSubmit = async () => {
+    if (!validateInput()) return;
+
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/map/update/${selectedMapId}`, // Replace "your-api-url" with your actual API endpoint
+        `https://fptbottournamentweb.azurewebsites.net/api/map/update/${selectedMapId}`,
         {
           method: "PUT",
           headers: {
@@ -510,11 +624,14 @@ function Map() {
       if (response.ok) {
         fetchMaps();
         setShowModal(false);
+        showAlertMessage("Map updated successfully");
       } else {
         console.error("Error updating map");
+        showAlertMessage("Failed to update map", "error");
       }
     } catch (error) {
       console.error("Error updating map:", error.message);
+      showAlertMessage("An error occurred while updating map", "error");
     }
   };
 
@@ -534,12 +651,34 @@ function Map() {
     });
   };
 
+  const validateInput = () => {
+    if (!updatedMapData.keyId.trim()) {
+      showAlertMessage("Please provide a valid keyId", "error");
+      return false;
+    }
+    if (!updatedMapData.mapName.trim()) {
+      showAlertMessage("Please provide a valid map name", "error");
+      return false;
+    }
+    return true;
+  };
+
+  const showAlertMessage = (message, severity = "success") => {
+    setAlertSeverity(severity);
+    setAlertMessage(message);
+    setTimeout(() => {
+      setAlertMessage(null);
+      setAlertSeverity("success"); // Reset severity after hiding the alert
+    }, 5000); // Hide the alert after 5 seconds
+  };
+
   return (
     <div className="map-container">
       <div className="team-title">
         <h2>Maps</h2>
       </div>
       <div className="line"></div>
+      {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
       <div className="tournament-list">
         {maps.map((map) => (
           <div key={map.id} className="tournament-container-list">
@@ -602,6 +741,8 @@ function Match() {
   const [rounds, setRounds] = useState([]);
   const [tournaments, setTournaments] = useState([]);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [alertSeverity, setAlertSeverity] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
 
   useEffect(() => {
     getAllMatches();
@@ -661,7 +802,7 @@ function Match() {
   const handleShowUpdateForm = (id) => {
     const selectedMatch = matches.find((match) => match.id === id);
     setFormData({
-      ...selectedMatch, // Thêm vào formData từ selectedMatch
+      ...selectedMatch,
       matchDate: new Date(selectedMatch.matchDate),
     });
     setSelectedMatchId(id);
@@ -678,6 +819,7 @@ function Match() {
     setShowDeleteForm(false);
     setShowCreateForm(false);
     setSelectedMatchId(null);
+    setAlertMessage("");
   };
 
   const handleInputChange = (e) => {
@@ -697,6 +839,8 @@ function Match() {
   };
 
   const handleCreateMatch = async () => {
+    if (!validateInput()) return;
+
     try {
       const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/match/create",
@@ -711,24 +855,55 @@ function Match() {
         }
       );
 
-      const data = await response.json();
-      console.log(data);
-
-      getAllMatches();
-      setFormData({
-        mapId: "",
-        matchDate: new Date(),
-        roundId: "",
-        tournamentId: "",
-      });
-
-      setShowCreateForm(false);
+      if (response.ok) {
+        setAlertSeverity("success");
+        setAlertMessage("Match created successfully.");
+        getAllMatches();
+        setFormData({
+          keyId: "",
+          mapId: "",
+          matchDate: new Date(),
+          roundId: "",
+          tournamentId: "",
+        });
+        setShowCreateForm(false);
+      } else {
+        setAlertSeverity("error");
+        setAlertMessage("Failed to create match. Please try again.");
+      }
     } catch (error) {
       console.error("Error creating match:", error);
     }
   };
 
+  const validateInput = () => {
+    if (!formData.keyId.trim()) {
+      setAlertSeverity("error");
+      setAlertMessage("Please provide a valid keyId for the match.");
+      return false;
+    }
+    if (!formData.mapId.trim()) {
+      setAlertSeverity("error");
+      setAlertMessage("Please select a map for the match.");
+      return false;
+    }
+    if (!formData.roundId.trim()) {
+      setAlertSeverity("error");
+      setAlertMessage("Please select a round for the match.");
+      return false;
+    }
+    if (!formData.tournamentId.trim()) {
+      setAlertSeverity("error");
+      setAlertMessage("Please select a tournament for the match.");
+      return false;
+    }
+    setAlertMessage("");
+    return true;
+  };
+
   const handleUpdateMatch = async () => {
+    if (!validateInput()) return;
+
     try {
       const response = await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/match/update/${selectedMatchId}`,
@@ -742,25 +917,26 @@ function Match() {
         }
       );
 
-      if (!response.ok) {
-        console.error("Error updating match:", response.statusText);
-        return;
+      if (response.ok) {
+        setAlertSeverity("success");
+        setAlertMessage("Match updated successfully.");
+        getAllMatches();
+        setFormData({
+          keyId: "",
+          mapId: "",
+          mapName: "",
+          matchDate: new Date(),
+          roundId: "",
+          roundName: "",
+          tournamentId: "",
+          tournamentName: "",
+        });
+        setSelectedMatchId(null);
+        setShowUpdateForm(false);
+      } else {
+        setAlertSeverity("error");
+        setAlertMessage("Failed to update match. Please try again.");
       }
-
-      getAllMatches();
-
-      setFormData({
-        keyId: "",
-        mapId: "",
-        mapName: "",
-        matchDate: new Date(),
-        roundId: "",
-        roundName: "",
-        tournamentId: "",
-        tournamentName: "",
-      });
-      setSelectedMatchId(null);
-      setShowUpdateForm(false);
     } catch (error) {
       console.error("Error updating match:", error.message);
     }
@@ -773,7 +949,7 @@ function Match() {
         return;
       }
 
-      await fetch(
+      const response = await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/match/delete/${selectedMatchId}`,
         {
           method: "DELETE",
@@ -783,18 +959,26 @@ function Match() {
           },
         }
       );
-      getAllMatches();
-      setFormData({
-        keyId: "",
-        mapId: "",
-        mapName: "",
-        matchDate: new Date(),
-        roundId: "",
-        roundName: "",
-        tournamentId: "",
-        tournamentName: "",
-      });
-      setShowDeleteForm(false);
+
+      if (response.ok) {
+        setAlertSeverity("success");
+        setAlertMessage("Match deleted successfully.");
+        getAllMatches();
+        setFormData({
+          keyId: "",
+          mapId: "",
+          mapName: "",
+          matchDate: new Date(),
+          roundId: "",
+          roundName: "",
+          tournamentId: "",
+          tournamentName: "",
+        });
+        setShowDeleteForm(false);
+      } else {
+        setAlertSeverity("error");
+        setAlertMessage("Failed to delete match. Please try again.");
+      }
     } catch (error) {
       console.error("Error deleting match:", error);
     }
@@ -805,12 +989,14 @@ function Match() {
       <div className="team-title">
         <h2>Match</h2>
       </div>
+      {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
       <table>
         <thead>
           <tr>
             <th>KeyId Match</th>
             <th>Match Date</th>
             <th>Round Name</th>
+            <th>Map Name</th>
             <th>Tournament Name</th>
             <th>Action Type</th>
           </tr>
@@ -819,8 +1005,9 @@ function Match() {
           {matches.map((match) => (
             <tr key={match.id}>
               <td>{match.keyId}</td>
-              <td>{new Date(match.matchDate).toLocaleString()}</td>
+              <td>{new Date(match.matchDate).toLocaleString()} </td>
               <td>{match.roundName}</td>
+              <td>{match.mapName}</td>
               <td>{match.tournamentName}</td>
               <td>
                 <button
@@ -997,7 +1184,6 @@ function Match() {
     </div>
   );
 }
-
 function Player() {
   const token = localStorage.getItem("token");
   const [players, setPlayers] = useState([]);
@@ -1012,8 +1198,10 @@ function Player() {
     teamId: "",
     teamName: "",
   });
-  const [teams, setteams] = useState([]);
+  const [teams, setTeams] = useState([]);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState("error");
 
   useEffect(() => {
     getAllPlayers();
@@ -1041,7 +1229,7 @@ function Player() {
         }
       );
       const data = await response.json();
-      setteams(data);
+      setTeams(data);
     } catch (error) {
       console.error("Error fetching teams: ", error.message);
     }
@@ -1075,11 +1263,10 @@ function Player() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if (name === "teamName") {
-      // Tìm teamId dựa trên teamName và cập nhật giá trị cho teamId
       const selectedTeam = teams.find((team) => team.teamName === value);
       setFormData({
         ...formData,
-        teamId: selectedTeam ? selectedTeam.id : "", // Nếu tìm thấy, lấy teamId, nếu không, gán giá trị rỗng
+        teamId: selectedTeam ? selectedTeam.id : "",
         [name]: value,
       });
     } else {
@@ -1091,6 +1278,7 @@ function Player() {
   };
 
   const handleCreatePlayer = async () => {
+    if (!validateInput()) return;
     try {
       const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/player/create",
@@ -1118,12 +1306,18 @@ function Player() {
       });
 
       setShowCreateForm(false);
+      setAlertMessage("Player created successfully.");
+      setAlertSeverity("success");
     } catch (error) {
       console.error("Error creating player:", error);
+      setAlertMessage("Failed to create player. Please try again.");
+      setAlertSeverity("error");
     }
   };
 
   const handleUpdatePlayer = async () => {
+    if (!validateInput()) return;
+
     try {
       const response = await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/player/update/${selectedPlayerId}`,
@@ -1153,8 +1347,12 @@ function Player() {
       });
       setSelectedPlayerId(null);
       setShowUpdateForm(false);
+      setAlertMessage("Player updated successfully.");
+      setAlertSeverity("success");
     } catch (error) {
       console.error("Error updating player:", error.message);
+      setAlertMessage("Failed to update player. Please try again.");
+      setAlertSeverity("error");
     }
   };
 
@@ -1187,8 +1385,12 @@ function Player() {
         teamName: "",
       });
       setShowDeleteForm(false);
+      setAlertMessage("Player deleted successfully.");
+      setAlertSeverity("success");
     } catch (error) {
       console.error("Error deleting player:", error);
+      setAlertMessage("Failed to delete player. Please try again.");
+      setAlertSeverity("error");
     }
   };
 
@@ -1200,10 +1402,31 @@ function Player() {
     setShowCalendar(false);
   };
 
+  const validateInput = () => {
+    if (
+      !formData.name.trim() ||
+      !formData.keyId.trim() ||
+      !formData.teamId.trim()
+    ) {
+      setAlertMessage("Please provide valid values for all fields.");
+      setAlertSeverity("error");
+      return false;
+    }
+    return true;
+  };
+
   return (
     <div>
       <div className="team-title">
         <h2>Player</h2>
+        {/* Display alert if validation fails */}
+        <Alert
+          severity={alertSeverity}
+          onClose={() => setAlertMessage("")}
+          sx={{ marginBottom: "1rem" }}
+        >
+          {alertMessage}
+        </Alert>
       </div>
       <table>
         <thead>
@@ -1261,7 +1484,7 @@ function Player() {
               type="text"
               className="date-input"
               value={formData.dob.toDateString()}
-              readOnly // Không cho phép chỉnh sửa trực tiếp giá trị ngày
+              readOnly
               onClick={() => setShowCalendar(true)}
             />
             {showCalendar && (
@@ -1371,6 +1594,8 @@ function Round() {
   });
   const [showModal, setShowModal] = useState(false);
   const [modalActionType, setModalActionType] = useState("update");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState("error");
 
   useEffect(() => {
     fetchRounds();
@@ -1433,7 +1658,18 @@ function Round() {
     setModalActionType("create");
   };
 
+  const validateInput = () => {
+    if (!updatedRoundData.roundName.trim()) {
+      setAlertMessage("Round name cannot be empty");
+      setAlertSeverity("error");
+      return false;
+    }
+    return true;
+  };
+
   const handleCreateSubmit = async () => {
+    if (!validateInput()) return;
+
     try {
       const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/round/create",
@@ -1450,6 +1686,8 @@ function Round() {
       if (response.ok) {
         fetchRounds();
         setShowModal(false);
+        setAlertMessage("Round created successfully.");
+        setAlertSeverity("success");
       } else {
         console.error("Error creating round");
       }
@@ -1459,6 +1697,8 @@ function Round() {
   };
 
   const handleUpdateSubmit = async () => {
+    if (!validateInput()) return;
+
     try {
       const response = await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/round/update/${selectedRoundId}`,
@@ -1475,6 +1715,8 @@ function Round() {
       if (response.ok) {
         fetchRounds();
         setShowModal(false);
+        setAlertMessage("Round updated successfully.");
+        setAlertSeverity("success");
       } else {
         console.error("Error updating round");
       }
@@ -1503,6 +1745,14 @@ function Round() {
     <div className="tournament-container">
       <div className="team-title">
         <h2>Round</h2>
+        {/* Display alert if validation fails */}
+        <Alert
+          severity={alertSeverity}
+          onClose={() => setAlertMessage("")}
+          sx={{ marginBottom: "1rem" }}
+        >
+          {alertMessage}
+        </Alert>
       </div>
       <div className="line"></div>
       <div className="tournament-list">
@@ -1558,6 +1808,9 @@ function Team() {
     highSchoolId: "",
   });
   const [highSchools, setHighSchools] = useState([]);
+  const [error, setError] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState("error");
 
   useEffect(() => {
     getAllTeams();
@@ -1569,25 +1822,30 @@ function Team() {
       const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/team/get-all"
       );
-      const data = await response.json();
-      setTeams(data);
+      if (response.ok) {
+        const data = await response.json();
+        setTeams(data);
+      } else {
+        setError("Error fetching teams");
+      }
     } catch (error) {
-      console.error("Error fetching teams: ", error.message);
+      setError("Error fetching teams: " + error.message);
     }
   };
 
   const fetchHighSchools = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/highschool/get-all",
-        {
-          method: "GET",
-        }
+        "https://fptbottournamentweb.azurewebsites.net/api/highschool/get-all"
       );
-      const data = await response.json();
-      setHighSchools(data);
+      if (response.ok) {
+        const data = await response.json();
+        setHighSchools(data);
+      } else {
+        setError("Error fetching high schools");
+      }
     } catch (error) {
-      console.error("Error fetching high schools: ", error.message);
+      setError("Error fetching high schools: " + error.message);
     }
   };
 
@@ -1612,6 +1870,8 @@ function Team() {
     setShowDeleteForm(false);
     setShowCreateForm(false);
     setSelectedTeamId(null);
+    setAlertMessage("");
+    setAlertSeverity("error");
   };
 
   const handleInputChange = (e) => {
@@ -1621,39 +1881,51 @@ function Team() {
     });
   };
 
+  const validateInput = () => {
+    if (!formData.keyId || !formData.teamName || !formData.highSchoolId) {
+      setAlertMessage("All fields are required");
+      setAlertSeverity("error");
+      return false;
+    }
+    // Add more validation rules if needed
+    return true;
+  };
+
   const handleCreateTeam = async () => {
+    if (!validateInput()) return;
     try {
       const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/team/create",
         {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
-            Accept: "application/json",
           },
-
           body: JSON.stringify(formData),
         }
       );
 
-      const data = await response.json();
-      console.log(data);
-
-      getAllTeams();
-      setFormData({
-        keyId: "",
-        teamName: "",
-        highSchoolId: "",
-      });
-
-      setShowCreateForm(false);
+      if (response.ok) {
+        getAllTeams();
+        setFormData({
+          keyId: "",
+          teamName: "",
+          highSchoolId: "",
+        });
+        setShowCreateForm(false);
+        setAlertMessage("Team created successfully");
+        setAlertSeverity("success");
+      } else {
+        setError("Error creating team");
+      }
     } catch (error) {
-      console.error("Error creating team:", error);
+      setError("Error creating team: " + error.message);
     }
   };
 
   const handleUpdateTeam = async () => {
+    if (!validateInput()) return;
     try {
       const response = await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/team/update/${selectedTeamId}`,
@@ -1667,33 +1939,33 @@ function Team() {
         }
       );
 
-      if (!response.ok) {
-        console.error("Error updating team:", response.statusText);
-        return;
+      if (response.ok) {
+        getAllTeams();
+        setFormData({
+          keyId: "",
+          teamName: "",
+          highSchoolId: "",
+        });
+        setSelectedTeamId(null);
+        setShowUpdateForm(false);
+        setAlertMessage("Team updated successfully");
+        setAlertSeverity("success");
+      } else {
+        setError("Error updating team");
       }
-
-      getAllTeams();
-
-      setFormData({
-        keyId: "",
-        teamName: "",
-        highSchoolId: "",
-      });
-      setSelectedTeamId(null);
-      setShowUpdateForm(false);
     } catch (error) {
-      console.error("Error updating team:", error.message);
+      setError("Error updating team: " + error.message);
     }
   };
 
   const handleDeleteTeam = async () => {
     try {
       if (!selectedTeamId) {
-        console.error("No team selected for deletion.");
+        setError("No team selected for deletion.");
         return;
       }
 
-      await fetch(
+      const response = await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/team/delete/${selectedTeamId}`,
         {
           method: "DELETE",
@@ -1706,15 +1978,22 @@ function Team() {
           }),
         }
       );
-      getAllTeams();
-      setFormData({
-        keyId: "",
-        teamName: "",
-        highSchoolId: "",
-      });
-      setShowDeleteForm(false);
+
+      if (response.ok) {
+        getAllTeams();
+        setFormData({
+          keyId: "",
+          teamName: "",
+          highSchoolId: "",
+        });
+        setShowDeleteForm(false);
+        setAlertMessage("Team deleted successfully");
+        setAlertSeverity("success");
+      } else {
+        setError("Error deleting team");
+      }
     } catch (error) {
-      console.error("Error deleting team:", error);
+      setError("Error deleting team: " + error.message);
     }
   };
 
@@ -1722,6 +2001,8 @@ function Team() {
     <div>
       <div className="team-title">
         <h2>Teams</h2>
+        {error && <Alert severity="error">{error}</Alert>}
+        {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
       </div>
       <table>
         <thead>
@@ -1847,6 +2128,8 @@ function Team() {
 
 function Tournament() {
   const token = localStorage.getItem("token");
+  const [matches, setMatches] = useState([]);
+
   const [tournaments, setTournaments] = useState([]);
   const [selectedTournamentId, setSelectedTournamentId] = useState(null);
   const [updatedTournamentData, setUpdatedTournamentData] = useState({
@@ -1857,11 +2140,18 @@ function Tournament() {
   });
   const [showModal, setShowModal] = useState(false);
   const [modalActionType, setModalActionType] = useState("update");
+  const [error] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState("error");
 
   useEffect(() => {
     fetchTournaments();
   }, []);
-
+  useEffect(() => {
+    if (selectedTournamentId) {
+      fetchMatchesByTournamentId(selectedTournamentId);
+    }
+  }, [selectedTournamentId]);
   const fetchTournaments = async () => {
     try {
       const response = await fetch(
@@ -1876,6 +2166,22 @@ function Tournament() {
       }
     } catch (error) {
       console.error("Error fetching tournaments:", error.message);
+    }
+  };
+  const fetchMatchesByTournamentId = async (tournamentId) => {
+    try {
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/match/get-by-tournament-id/${tournamentId}`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setMatches(data);
+      } else {
+        console.error("Error fetching matches");
+      }
+    } catch (error) {
+      console.error("Error fetching matches:", error.message);
     }
   };
 
@@ -1906,6 +2212,8 @@ function Tournament() {
 
       if (response.ok) {
         fetchTournaments();
+        setAlertMessage("Tournament deleted successfully");
+        setAlertSeverity("success");
       } else {
         console.error("Error deleting tournament");
       }
@@ -1926,6 +2234,8 @@ function Tournament() {
   };
 
   const handleCreateSubmit = async () => {
+    if (!validateInput()) return;
+
     try {
       const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/tournament/create",
@@ -1942,6 +2252,8 @@ function Tournament() {
       if (response.ok) {
         fetchTournaments();
         setShowModal(false);
+        setAlertMessage("Tournament created successfully");
+        setAlertSeverity("success");
       } else {
         console.error("Error creating tournament");
       }
@@ -1951,6 +2263,8 @@ function Tournament() {
   };
 
   const handleUpdateSubmit = async () => {
+    if (!validateInput()) return;
+
     try {
       const response = await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/tournament/update/${selectedTournamentId}`,
@@ -1967,6 +2281,8 @@ function Tournament() {
       if (response.ok) {
         fetchTournaments();
         setShowModal(false);
+        setAlertMessage("Tournament updated successfully");
+        setAlertSeverity("success");
       } else {
         console.error("Error updating tournament");
       }
@@ -1974,7 +2290,20 @@ function Tournament() {
       console.error("Error updating tournament:", error.message);
     }
   };
-
+  const validateInput = () => {
+    if (
+      !updatedTournamentData.keyId ||
+      !updatedTournamentData.tournamentName ||
+      !updatedTournamentData.startDate ||
+      !updatedTournamentData.endDate
+    ) {
+      setAlertMessage("All fields are required");
+      setAlertSeverity("error");
+      return false;
+    }
+    // Additional validation logic if needed
+    return true;
+  };
   const handleSubmitAction = () => {
     if (modalActionType === "update") {
       handleUpdateSubmit();
@@ -1995,6 +2324,8 @@ function Tournament() {
     <div className="tournament-container">
       <div className="team-title">
         <h2>TOURNAMENT</h2>
+        {error && <Alert severity="error">{error}</Alert>}
+        {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
       </div>
       <div className="line"></div>
       <div className="tournament-list">
@@ -2028,11 +2359,22 @@ function Tournament() {
           </div>
         ))}
       </div>
+      <div className="match-list">
+        <h3>Matches</h3>
+        <ul>
+          {matches.map((match) => (
+            <li key={match.id}>
+              {match.keyId} - {match.mapName} - {match.matchDate}
+            </li>
+          ))}
+        </ul>
+      </div>
       <button className="create-button" onClick={handleCreate}>
         <div className="btn-add">
           <IoAdd />
         </div>
       </button>
+
       <Modal
         show={showModal}
         onClose={() => setShowModal(false)}
@@ -2060,6 +2402,9 @@ function User() {
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState("error");
 
   useEffect(() => {
     getAllUsers();
@@ -2070,10 +2415,14 @@ function User() {
       const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/user/get-all"
       );
-      const data = await response.json();
-      setUsers(data);
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data);
+      } else {
+        setError("Error fetching users");
+      }
     } catch (error) {
-      console.error("Error fetching users: ", error.message);
+      setError("Error fetching users: " + error.message);
     }
   };
 
@@ -2107,6 +2456,8 @@ function User() {
       role: "Organizer",
       password: "",
     });
+    setError("");
+    setAlertMessage("");
   };
 
   const handleInputChange = (e) => {
@@ -2118,6 +2469,7 @@ function User() {
   };
 
   const handleCreateUser = async () => {
+    if (!validateInput()) return;
     try {
       const response = await fetch(
         "https://fptbottournamentweb.azurewebsites.net/api/user/create",
@@ -2135,12 +2487,13 @@ function User() {
       if (!response.ok) {
         const errorData = await response.json();
         if (errorData.errors && errorData.errors.userRequestModel) {
-          alert(errorData.errors.userRequestModel[0]);
+          setAlertMessage(errorData.errors.userRequestModel[0]);
         } else if (errorData.errors && errorData.errors["$.role"]) {
-          alert(errorData.errors["$.role"][0]);
+          setAlertMessage(errorData.errors["$.role"][0]);
         } else {
-          alert("An error occurred while creating the user.");
+          setAlertMessage("An error occurred while creating the user.");
         }
+        setAlertSeverity("error");
         return;
       }
 
@@ -2157,12 +2510,16 @@ function User() {
       });
 
       setShowCreateForm(false);
+      setAlertMessage("User created successfully");
+      setAlertSeverity("success");
     } catch (error) {
-      console.error("Error creating user:", error);
+      setAlertMessage("Error creating user: " + error.message);
+      setAlertSeverity("error");
     }
   };
 
   const handleUpdateUser = async () => {
+    if (!validateInput()) return;
     try {
       const response = await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/user/update/${selectedUserId}`,
@@ -2192,8 +2549,11 @@ function User() {
       });
       setSelectedUserId(null);
       setShowUpdateForm(false);
+      setAlertMessage("User updated successfully");
+      setAlertSeverity("success");
     } catch (error) {
-      console.error("Error updating user:", error.message);
+      setAlertMessage("Error updating user: " + error.message);
+      setAlertSeverity("error");
     }
   };
 
@@ -2223,13 +2583,33 @@ function User() {
         password: "",
       });
       setShowDeleteForm(false);
+      setAlertMessage("User deleted successfully");
+      setAlertSeverity("success");
     } catch (error) {
-      console.error("Error deleting user:", error);
+      setAlertMessage("Error deleting user: " + error.message);
+      setAlertSeverity("error");
     }
+  };
+
+  const validateInput = () => {
+    if (
+      !formData.userName ||
+      !formData.userEmail ||
+      !formData.fullName ||
+      !formData.password
+    ) {
+      setAlertMessage("All fields are required");
+      setAlertSeverity("error");
+      return false;
+    }
+    return true;
   };
 
   return (
     <div>
+      {error && <Alert severity="error">{error}</Alert>}
+      {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
+
       <div className="user-title">
         <h2>User</h2>
       </div>
@@ -2408,7 +2788,6 @@ function User() {
     </div>
   );
 }
-
 
 function MainContent() {
   const [selectedTab, setSelectedTab] = useState("activity");
