@@ -42,7 +42,7 @@ function ActivityType() {
 
   useEffect(() => {
     fetchActivities();
-  });
+  }, []);
 
   const fetchActivities = async () => {
     try {
@@ -277,7 +277,7 @@ function HighSchool() {
 
   useEffect(() => {
     fetchHighSchools();
-  });
+  }, []);
 
   const fetchHighSchools = async () => {
     try {
@@ -510,7 +510,7 @@ function Map() {
 
   useEffect(() => {
     fetchMaps();
-  });
+  }, []);
 
   const fetchMaps = async () => {
     try {
@@ -768,17 +768,21 @@ function Match() {
   const [alertSeverity, setAlertSeverity] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
 
-  useEffect(() => {
-    if (selectedTournamentId) {
-      getMatchesByTournament(selectedTournamentId);
-    } else {
-      getAllMatches();
-    }
-    fetchMaps();
-    fetchRounds();
-    fetchTournaments();
-    fetchTeams();
-  }, [selectedTournamentId]);
+  useEffect(
+    () => {
+      if (selectedTournamentId) {
+        getMatchesByTournament(selectedTournamentId);
+      } else {
+        getAllMatches();
+      }
+      fetchMaps();
+      fetchRounds();
+      fetchTournaments();
+      fetchTeams();
+    },
+    [selectedTournamentId],
+    []
+  );
 
   const getAllMatches = async () => {
     try {
@@ -2656,11 +2660,15 @@ function Tournament() {
   useEffect(() => {
     fetchTournaments();
   }, []);
-  useEffect(() => {
-    if (selectedTournamentId) {
-      fetchMatchesByTournamentId(selectedTournamentId);
-    }
-  }, [selectedTournamentId]);
+  useEffect(
+    () => {
+      if (selectedTournamentId) {
+        fetchMatchesByTournamentId(selectedTournamentId);
+      }
+    },
+    [selectedTournamentId],
+    []
+  );
   const fetchTournaments = async () => {
     try {
       const response = await fetch(
