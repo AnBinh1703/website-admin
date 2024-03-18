@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
 const MapList = () => {
   const [maps, setMaps] = useState([]);
@@ -23,10 +23,8 @@ const MapList = () => {
   };
 
   const handleShowUpdateForm = (id) => {
-    // Find the selected map based on the ID
     const selectedMap = maps.find((map) => map.id === id);
 
-    // Set form data with the selected map's data
     setFormData({
       id: selectedMap.id,
       keyId: selectedMap.keyId,
@@ -38,10 +36,8 @@ const MapList = () => {
   };
 
   const handleShowDeleteForm = (id) => {
-    // Find the selected map based on the ID
     const selectedMap = maps.find((map) => map.id === id);
 
-    // Set form data with the selected map's data
     setFormData({
       id: selectedMap.id,
       keyId: selectedMap.keyId,
@@ -72,13 +68,15 @@ const MapList = () => {
   }, []);
 
   const getAllMaps = async () => {
-  try {
-    const response = await fetch('/api/Map/get-all-maps');
-    console.log('Full response:', response);
+    try {
+      const response = await fetch("/api/Map/get-all-maps");
+      console.log("Full response:", response);
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch maps: ${response.status} - ${response.statusText}`);
-    }
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch maps: ${response.status} - ${response.statusText}`
+        );
+      }
 
       const data = await response.json();
 
@@ -124,8 +122,8 @@ const MapList = () => {
 
       getAllMaps();
       setFormData({
-        keyId: '',
-        mapName: '',
+        keyId: "",
+        mapName: "",
       });
       setFormValid(true);
       setShowCreateForm(false);
@@ -162,8 +160,8 @@ const MapList = () => {
       getAllMaps();
       // Clear form data
       setFormData({
-        keyId: '',
-        mapName: '',
+        keyId: "",
+        mapName: "",
       });
       setFormValid(true);
       setShowUpdateForm(false);
@@ -255,9 +253,19 @@ const MapList = () => {
       {/* Form for creating new maps */}
       <h3>Create New Map</h3>
       <label>KeyID:</label>
-      <input type="text" name="keyId" value={formData.keyId} onChange={handleInputChange} />
+      <input
+        type="text"
+        name="keyId"
+        value={formData.keyId}
+        onChange={handleInputChange}
+      />
       <label>Name:</label>
-      <input type="text" name="mapName" value={formData.mapName} onChange={handleInputChange} />
+      <input
+        type="text"
+        name="mapName"
+        value={formData.mapName}
+        onChange={handleInputChange}
+      />
       <button onClick={handleCreateMap}>Create Map</button>
     </div>
   );
