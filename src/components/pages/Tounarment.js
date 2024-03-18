@@ -17,7 +17,6 @@ import { TfiCup } from "react-icons/tfi";
 
 import "../../App.css";
 import ActivityModal from "./ActivityModal";
-import "./AlertPopup";
 import "./Dashboard.css";
 import HighSchoolModal from "./HighSchoolModal";
 import MapModal from "./MapModal";
