@@ -2868,16 +2868,7 @@ function Tournament() {
           </div>
         ))}
       </div>
-      <div className="match-list">
-        <h3>Matches</h3>
-        <ul>
-          {matches.map((match) => (
-            <li key={match.id}>
-              {match.keyId} | {match.mapName}
-            </li>
-          ))}
-        </ul>
-      </div>
+      
       <button className="create-button" onClick={handleCreate}>
         <div className="btn-add">
           <IoAdd />
