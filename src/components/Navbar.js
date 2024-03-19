@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { Button } from "./Button";
 import { Link } from "react-router-dom";
+import { Button } from "./Button";
 import "./Navbar.css";
-import * as FaIcons from "react-icons/fa";
 
 function Navbar({ isLoggedIn, handleLogout }) {
   const [click, setClick] = useState(false);
@@ -33,7 +32,7 @@ function Navbar({ isLoggedIn, handleLogout }) {
                     className="nav-links"
                     onClick={closeMobileMenu}
                   >
-                    Services
+                    Blogs
                   </Link>
                 </li>
                 <li className="nav-item">
@@ -42,7 +41,7 @@ function Navbar({ isLoggedIn, handleLogout }) {
                     className="nav-links"
                     onClick={closeMobileMenu}
                   >
-                    Tournaments
+                    Organizations
                   </Link>
                 </li>
                 <li className="nav-item">

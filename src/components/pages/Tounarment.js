@@ -3044,6 +3044,17 @@ function User() {
     getAllUsers();
   }, []);
 
+  useEffect(() => {
+    if (alertMessage) {
+      const timeout = setTimeout(() => {
+        setAlertMessage("");
+        setAlertSeverity("error");
+      }, 2000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [alertMessage]);
+
   const getAllUsers = async () => {
     try {
       const response = await fetch(
@@ -3197,7 +3208,12 @@ function User() {
         console.error("No user selected for deletion.");
         return;
       }
-
+      const userToDelete = users.find((user) => user.id === selectedUserId);
+      if (userToDelete.role != "Admin") {
+        setAlertMessage("You cannot delete an admin user.");
+        setAlertSeverity("error");
+        return;
+      }
       await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/user/delete/${selectedUserId}`,
         {
@@ -3241,11 +3257,10 @@ function User() {
 
   return (
     <div>
-      {error && <Alert severity="error">{error}</Alert>}
-      {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
-
       <div className="user-title">
         <h2>User</h2>
+        {error && <Alert severity="success">{error}</Alert>}
+        {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
       </div>
       <table>
         <thead>
@@ -3292,6 +3307,10 @@ function User() {
       {showUpdateForm && (
         <div className="popup-form show">
           <h3>Update User</h3>
+          {error && <Alert severity="error">{error}</Alert>}
+          {alertMessage && (
+            <Alert severity={alertSeverity}>{alertMessage}</Alert>
+          )}
           <label>Username:</label>
           <input
             type="text"
@@ -3351,6 +3370,10 @@ function User() {
       {showCreateForm && (
         <div className="popup-form show">
           <h3>Create New User</h3>
+          {error && <Alert severity="error">{error}</Alert>}
+          {alertMessage && (
+            <Alert severity={alertSeverity}>{alertMessage}</Alert>
+          )}
           <label>Username:</label>
           <input
             type="text"
