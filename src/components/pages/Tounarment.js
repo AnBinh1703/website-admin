@@ -39,6 +39,8 @@ function ActivityType() {
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("success");
   const [showAlert, setShowAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
   useEffect(() => {
     fetchActivities();
@@ -53,6 +55,7 @@ function ActivityType() {
       if (response.ok) {
         const data = await response.json();
         setActivities(data);
+        handleSuccessAlert("Activity deleted successfully");
       } else {
         console.error("Error fetching activities");
         showAlertMessage("Error fetching activities", "error");
@@ -61,7 +64,7 @@ function ActivityType() {
       console.error("Error fetching activities:", error.message);
       showAlertMessage("Error fetching activities: " + error.message, "error");
     }
-  };
+  };#
 
   const handleUpdate = (activity) => {
     setSelectedActivityId(activity.id);
@@ -87,7 +90,6 @@ function ActivityType() {
 
       if (response.ok) {
         fetchActivities();
-        showAlertMessage("Activity deleted successfully", "success");
       } else {
         console.error("Error deleting activity");
         showAlertMessage("Failed to delete activity", "error");
@@ -128,7 +130,7 @@ function ActivityType() {
       if (response.ok) {
         fetchActivities();
         setShowModal(false);
-        showAlertMessage("Activity created successfully", "success");
+        handleSuccessAlert("Activity created successfully");
       } else {
         console.error("Error creating activity");
         showAlertMessage("Failed to create activity", "error");
@@ -161,7 +163,7 @@ function ActivityType() {
       if (response.ok) {
         fetchActivities();
         setShowModal(false);
-        showAlertMessage("Activity updated successfully", "success");
+        handleSuccessAlert("Activity updated successfully");
       } else {
         console.error("Error updating activity");
         showAlertMessage("Failed to update activity", "error");
@@ -207,6 +209,17 @@ function ActivityType() {
 
   const handleAlertClose = () => {
     setShowAlert(false);
+    setAlertMessage(""); // Reset alert message after closing
+  };
+
+  const handleSuccessAlert = (message) => {
+    setShowSuccessAlert(true);
+    setAlertMessage(message);
+
+    setTimeout(() => {
+      setShowSuccessAlert(false);
+      setAlertMessage("");
+    }, 2000); // 2 seconds
   };
 
   return (
@@ -215,8 +228,8 @@ function ActivityType() {
         <h2>Activity Type</h2>
       </div>
       <div className="line"></div>
-      {showAlert && (
-        <Alert severity={alertSeverity} onClose={handleAlertClose}>
+      {showSuccessAlert && (
+        <Alert severity="success" onClose={handleAlertClose}>
           {alertMessage}
         </Alert>
       )}
@@ -256,6 +269,11 @@ function ActivityType() {
           activityData={updatedActivityData}
           onChange={handleInputChange}
           actionType={modalActionType}
+          alertMessage={alertMessage}
+          alertSeverity={alertSeverity}
+          showAlert={showAlert}
+          handleAlertClose={handleAlertClose}
+          errorMessage={errorMessage}
         />
       )}
     </div>
