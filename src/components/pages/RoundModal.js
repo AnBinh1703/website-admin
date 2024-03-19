@@ -1,4 +1,5 @@
-import React from "react";
+import { Alert } from "@mui/material";
+import React, { useState } from "react";
 import "./Modal.css";
 
 const RoundModal = ({
@@ -8,10 +9,22 @@ const RoundModal = ({
   roundData,
   onChange,
   actionType,
+  errorMessage,
 }) => {
+  const [alertVisible, setAlertVisible] = useState(false);
+
   if (!show) {
     return null;
   }
+
+  const handleCloseAlert = () => {
+    setAlertVisible(false);
+  };
+
+  const handleSubmit = () => {
+    setAlertVisible(true);
+    onSubmit();
+  };
 
   return (
     <div className="modal">
@@ -19,6 +32,11 @@ const RoundModal = ({
         <span className="close" onClick={onClose}>
           &times;
         </span>
+        {alertVisible && errorMessage && (
+          <Alert severity="error" onClose={handleCloseAlert}>
+            {errorMessage}
+          </Alert>
+        )}
         {actionType === "update" ? (
           <h2>Update Round</h2>
         ) : actionType === "delete" ? (
@@ -44,7 +62,7 @@ const RoundModal = ({
           <p>Are you sure you want to delete this round?</p>
         )}
         <div className="modal-buttons">
-          <button onClick={onSubmit}>
+          <button onClick={handleSubmit}>
             {actionType === "update"
               ? "Update"
               : actionType === "create"
