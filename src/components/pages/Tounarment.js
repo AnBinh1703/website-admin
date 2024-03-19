@@ -694,19 +694,23 @@ function Map() {
   const showAlertMessage = (message, severity = "success") => {
     setAlertSeverity(severity);
     setAlertMessage(message);
-    setTimeout(() => {
-      setAlertMessage(null);
-      setAlertSeverity("success"); // Reset severity after hiding the alert
-    }, 5000); // Hide the alert after 5 seconds
+    if (message !== null) {
+      // Check if message is not null before setting a timeout
+      setTimeout(() => {
+        setAlertMessage(null);
+        setAlertSeverity("success"); // Reset severity after hiding the alert
+      }, 2000); // Hide the alert after 2 seconds
+    }
   };
-
   return (
     <div className="map-container">
       <div className="team-title">
         <h2>Maps</h2>
       </div>
       <div className="line"></div>
-      {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
+      {alertMessage && alertSeverity === "success" && (
+        <Alert severity={alertSeverity}>{alertMessage}</Alert>
+      )}
       <div className="tournament-list">
         {maps.map((map) => (
           <div key={map.id} className="tournament-container-list">
@@ -743,6 +747,7 @@ function Map() {
         mapData={updatedMapData}
         onChange={handleInputChange}
         actionType={modalActionType}
+        errorMessage={alertMessage} // Pass errorMessage state
       />
     </div>
   );
