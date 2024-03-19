@@ -1069,7 +1069,8 @@ function Match() {
       setAlertMessage("Please select a tournament for the match.");
       return false;
     }
-    setAlertMessage("");
+    setAlertSeverity("success");
+    setAlertMessage("Input validated successfully.");
     return true;
   };
 
@@ -1340,7 +1341,9 @@ function Match() {
         </div>
       </div>
 
-      {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
+      {alertMessage && alertSeverity === "success" && (
+        <Alert severity={alertSeverity}>{alertMessage}</Alert>
+      )}
       <table>
         <thead>
           <tr>
@@ -1389,6 +1392,9 @@ function Match() {
       {showUpdateForm && (
         <div className="popup-form show">
           <h3>Update Match</h3>
+          {alertMessage && alertSeverity === "error" && (
+            <Alert severity="error">{alertMessage}</Alert>
+          )}
           <label>KeyId Match:</label>
           <input
             type="text"
@@ -1468,10 +1474,14 @@ function Match() {
           </button>
         </div>
       )}
+
       {showTeamInMatchForm && (
         <div className="popup-info">
           <div>
             <h4>TeamInMatch</h4>
+            {alertMessage && alertSeverity === "success" && (
+              <Alert severity={alertSeverity}>{alertMessage}</Alert>
+            )}
           </div>
           <table>
             <thead>
@@ -1532,6 +1542,9 @@ function Match() {
       {showUpdateFormMatches && (
         <div className="popup-form show">
           <h3>Update Result</h3>
+          {alertMessage && alertSeverity === "error" && (
+            <Alert severity="error">{alertMessage}</Alert>
+          )}
           <label>Score:</label>
           <input
             type="text"
@@ -1571,6 +1584,9 @@ function Match() {
       {showCreateForm && (
         <div className="popup-form show">
           <h3>Create New Match</h3>
+          {alertMessage && alertSeverity === "error" && (
+            <Alert severity="error">{alertMessage}</Alert>
+          )}
           <label>KeyId Match:</label>
           <input
             type="text"
@@ -1639,6 +1655,9 @@ function Match() {
       {createTeamInMatchForm && (
         <div className="popup-addTeamInMatch show">
           <h4>Add TeamInMatch</h4>
+          {alertMessage && alertSeverity === "error" && (
+            <Alert severity="error">{alertMessage}</Alert>
+          )}
           <label>Match Name:</label>
           <input
             type="text"
@@ -1907,10 +1926,18 @@ function Player() {
       setShowUpdateForm(false);
       setAlertMessage("Player updated successfully.");
       setAlertSeverity("success");
+      setTimeout(() => {
+        setAlertSeverity("");
+        setAlertMessage("");
+      }, 2000);
     } catch (error) {
       console.error("Error updating player:", error.message);
       setAlertMessage("Failed to update player. Please try again.");
       setAlertSeverity("error");
+      setTimeout(() => {
+        setAlertSeverity("");
+        setAlertMessage("");
+      }, 2000);
     }
   };
 
@@ -1988,7 +2015,9 @@ function Player() {
           </select>
         </div>
         {/* Display alert if validation fails */}
-        {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
+        {alertMessage && alertSeverity === "success" && (
+          <Alert severity="sucess">{alertMessage}</Alert>
+        )}{" "}
       </div>
       <table>
         <thead>
@@ -2033,6 +2062,9 @@ function Player() {
       {showUpdateForm && (
         <div className="popup-form show">
           <h3>Update Player</h3>
+          {alertMessage && alertSeverity === "error" && (
+            <Alert severity="error">{alertMessage}</Alert>
+          )}
           <label>Name:</label>
           <input
             type="text"
@@ -2081,6 +2113,9 @@ function Player() {
       {showCreateForm && (
         <div className="popup-form show">
           <h3>Create New Player</h3>
+          {alertMessage && alertSeverity === "error" && (
+            <Alert severity="error">{alertMessage}</Alert>
+          )}
           <label>Name:</label>
           <input type="text" name="name" onChange={handleInputChange} />
           <label>Dob:</label>
