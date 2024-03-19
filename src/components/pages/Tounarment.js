@@ -2411,6 +2411,16 @@ function Team() {
     getAllTeams();
     fetchHighSchools();
   }, []);
+  useEffect(() => {
+    if (alertMessage) {
+      const timeout = setTimeout(() => {
+        setAlertMessage("");
+        setAlertSeverity("error");
+      }, 2000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [alertMessage]);
 
   const getAllTeams = async () => {
     try {
@@ -2598,8 +2608,6 @@ function Team() {
     <div>
       <div className="team-title">
         <h2>Teams</h2>
-        {error && <Alert severity="error">{error}</Alert>}
-        {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
       </div>
       <table>
         <thead>
@@ -2642,6 +2650,7 @@ function Team() {
       {showUpdateForm && (
         <div className="popup-form show">
           <h3>Update Team</h3>
+          {error && <Alert severity="error">{error}</Alert>}
           <label>ID:</label>
           <input
             type="text"
@@ -2669,6 +2678,9 @@ function Team() {
               </option>
             ))}
           </select>
+          {alertMessage && (
+            <Alert severity={alertSeverity}>{alertMessage}</Alert>
+          )}
           <button className="button btn-update" onClick={handleUpdateTeam}>
             Update
           </button>
@@ -2681,6 +2693,7 @@ function Team() {
       {showCreateForm && (
         <div className="popup-form show">
           <h3>Create New Team</h3>
+          {error && <Alert severity="error">{error}</Alert>}
           <label>ID:</label>
           <input type="text" name="keyId" onChange={handleInputChange} />
           <label>Name:</label>
@@ -2698,6 +2711,9 @@ function Team() {
               </option>
             ))}
           </select>
+          {alertMessage && (
+            <Alert severity={alertSeverity}>{alertMessage}</Alert>
+          )}
           <button className="button btn-create" onClick={handleCreateTeam}>
             Create
           </button>
@@ -2706,7 +2722,6 @@ function Team() {
           </button>
         </div>
       )}
-
       {showDeleteForm && (
         <div className="popup-form show">
           <h3>Delete Team</h3>
