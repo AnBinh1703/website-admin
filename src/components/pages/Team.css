@@ -329,3 +329,8 @@ option{
 .calendar-wrapper{
   width: calc(100% - 22px);
 }
+
+.table-wrapper {
+  max-height: 400px; /* Set the maximum height for the table */
+  overflow-y: auto; /* Add vertical scrollbar if needed */
+}

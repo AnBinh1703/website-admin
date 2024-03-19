@@ -1,7 +1,6 @@
 import "@mui/lab";
 import Alert from "@mui/material/Alert";
 import React, { useEffect, useState } from "react";
-import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import {
   AiOutlineApartment,
@@ -485,8 +484,8 @@ function HighSchool() {
         {highSchools.map((highSchool) => (
           <div key={highSchool.id} className="tournament-container-list">
             <div className="tournament-item">
-              <p className="tour-title">{highSchool.keyId}</p>
-              <h4 className="tour-title">{highSchool.highSchoolName}</h4>
+              <h2 className="tour-title">{highSchool.keyId}</h2>
+              <h5 className="">{highSchool.highSchoolName}</h5>
               <div>
                 <button
                   className="update-button"
@@ -715,8 +714,8 @@ function Map() {
         {maps.map((map) => (
           <div key={map.id} className="tournament-container-list">
             <div className="tournament-item">
-              <p className="tour-title">{map.keyId}</p>
-              <h4 className="tour-title">{map.mapName}</h4>
+              <h3 className="tour-title">{map.keyId}</h3>
+              <h4 className="">{map.mapName}</h4>
               <div>
                 <button
                   className="update-button"
@@ -1008,7 +1007,7 @@ function Match() {
     }
   };
   const handleUpdateTeamInMatch = async () => {
-    const { result, ...updatedData } = formDataTeamInMatch;
+    const { ...updatedData } = formDataTeamInMatch;
 
     try {
       if (!selectedTeamInMatchId) {
@@ -1483,50 +1482,52 @@ function Match() {
               <Alert severity={alertSeverity}>{alertMessage}</Alert>
             )}
           </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Team Name</th>
-                <th>Match Key ID</th>
-                <th>Score</th>
-                <th>Duration</th>
-                <th>Result</th>
-                <th>Action Type</th>
-              </tr>
-            </thead>
-            <tbody>
-              {teamInMatches.map((teamInMatch) => (
-                <tr
-                  key={teamInMatch.id}
-                  onDoubleClick={() =>
-                    handleDoubleClickTeamInMatch(teamInMatch.id)
-                  }
-                >
-                  <td>{teamInMatch.teamName}</td>
-                  <td>{teamInMatch.matchKeyId}</td>
-                  <td>{teamInMatch.score}</td>
-                  <td>{teamInMatch.duration}</td>
-                  <td>{teamInMatch.result}</td>
-                  <td>
-                    <button
-                      className="button btn-update"
-                      onClick={() =>
-                        handleShowUpdateFormMatches(teamInMatch.id)
-                      }
-                    >
-                      Update
-                    </button>
-                    <button
-                      className="button btn-delete"
-                      onClick={() => handleDeleteTeamInMatch(teamInMatch.id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Team Name</th>
+                  <th>Match Key ID</th>
+                  <th>Score</th>
+                  <th>Duration</th>
+                  <th>Result</th>
+                  <th>Action Type</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {teamInMatches.map((teamInMatch) => (
+                  <tr
+                    key={teamInMatch.id}
+                    onDoubleClick={() =>
+                      handleDoubleClickTeamInMatch(teamInMatch.id)
+                    }
+                  >
+                    <td>{teamInMatch.teamName}</td>
+                    <td>{teamInMatch.matchKeyId}</td>
+                    <td>{teamInMatch.score}</td>
+                    <td>{teamInMatch.duration}</td>
+                    <td>{teamInMatch.result}</td>
+                    <td>
+                      <button
+                        className="button btn-update"
+                        onClick={() =>
+                          handleShowUpdateFormMatches(teamInMatch.id)
+                        }
+                      >
+                        Update
+                      </button>
+                      <button
+                        className="button btn-delete"
+                        onClick={() => handleDeleteTeamInMatch(teamInMatch.id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <button
             className="button btn-create"
             onClick={() => setCreateTeamInMatchForm(true)}
@@ -1674,7 +1675,7 @@ function Match() {
             ))}
           </select>
           <button className="button btn-create" onClick={handleAddTeamToMatch}>
-            Add Team
+            Add
           </button>
           <button
             className="button btn-cancel"
@@ -2120,19 +2121,30 @@ function Player() {
           <input type="text" name="name" onChange={handleInputChange} />
           <label>Dob:</label>
           <div>
-            <input
-              type="text"
-              value={formData.dob.toDateString()}
+            <DatePicker
+              selected={formData.dob}
+              onChange={handleCalendarChange}
               onClick={() => setShowCalendar(true)}
+              dateFormat="MMMM d, yyyy"
+              showYearDropdown
+              scrollableYearDropdown
+              yearDropdownItemNumber={15}
+              peekNextMonth
+              showMonthDropdown
+              dropdownMode="select"
+              className="date-input"
             />
             {showCalendar && (
-              <Calendar
-                onChange={handleCalendarChange}
-                value={formData.dob}
-                onClose={() => setShowCalendar(false)}
-              />
+              <div className="calendar-wrapper">
+                <DatePicker
+                  onChange={handleCalendarChange}
+                  selected={formData.dob}
+                  onClose={() => setShowCalendar(false)}
+                />
+              </div>
             )}
           </div>
+
           <label>KeyId:</label>
           <input type="text" name="keyId" onChange={handleInputChange} />
           <label>Team:</label>
@@ -2230,6 +2242,8 @@ function Round() {
 
       if (response.ok) {
         fetchRounds();
+        setAlertSeverity("success");
+        setAlertMessage("Round deleted successfully.");
       } else {
         console.error("Error deleting round");
       }
@@ -2274,8 +2288,8 @@ function Round() {
       if (response.ok) {
         fetchRounds();
         setShowModal(false);
-        setAlertMessage("Round created successfully.");
         setAlertSeverity("success");
+        setAlertMessage("Round created successfully.");
       } else {
         console.error("Error creating round");
       }
@@ -2303,8 +2317,8 @@ function Round() {
       if (response.ok) {
         fetchRounds();
         setShowModal(false);
-        setAlertMessage("Round updated successfully.");
         setAlertSeverity("success");
+        setAlertMessage("Round updated successfully.");
       } else {
         console.error("Error updating round");
       }
@@ -2333,8 +2347,8 @@ function Round() {
     <div className="tournament-container">
       <div className="team-title">
         <h2>Round</h2>
-        {/* Display alert if validation fails */}
-        {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
+        {/* Display alert if there's a success message */}
+        {alertMessage && <Alert severity="success">{alertMessage}</Alert>}
       </div>
       <div className="line"></div>
       <div className="tournament-list">
@@ -2361,9 +2375,7 @@ function Round() {
         ))}
       </div>
       <button className="create-button" onClick={handleCreate}>
-        <div className="btn-add">
-          <IoAdd />
-        </div>
+        Create Round
       </button>
       <RoundModal
         show={showModal}
@@ -2372,6 +2384,7 @@ function Round() {
         roundData={updatedRoundData}
         onChange={handleInputChange}
         actionType={modalActionType}
+        errorMessage={alertMessage} // Pass the errorMessage here
       />
     </div>
   );
