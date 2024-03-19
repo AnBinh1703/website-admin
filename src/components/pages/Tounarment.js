@@ -64,7 +64,7 @@ function ActivityType() {
       console.error("Error fetching activities:", error.message);
       showAlertMessage("Error fetching activities: " + error.message, "error");
     }
-  };#
+  };
 
   const handleUpdate = (activity) => {
     setSelectedActivityId(activity.id);
@@ -292,6 +292,7 @@ function HighSchool() {
   const [modalActionType, setModalActionType] = useState("update");
   const [alertMessage, setAlertMessage] = useState(null);
   const [alertSeverity, setAlertSeverity] = useState("success");
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
   useEffect(() => {
     fetchHighSchools();
@@ -344,6 +345,7 @@ function HighSchool() {
 
       if (response.ok) {
         fetchHighSchools();
+        setShowSuccessAlert(true); // Show success alert
         showAlertMessage("High school deleted successfully");
       } else {
         console.error("Error deleting high school");
@@ -383,6 +385,7 @@ function HighSchool() {
       if (response.ok) {
         fetchHighSchools();
         setShowModal(false);
+        setShowSuccessAlert(true); // Show success alert
         showAlertMessage("High school created successfully");
       } else {
         console.error("Error creating high school");
@@ -457,13 +460,14 @@ function HighSchool() {
     return true;
   };
 
+  // Function to handle showing success alert
   const showAlertMessage = (message, severity = "success") => {
     setAlertSeverity(severity);
     setAlertMessage(message);
     setTimeout(() => {
       setAlertMessage(null);
       setAlertSeverity("success"); // Reset severity after hiding the alert
-    }, 5000); // Hide the alert after 5 seconds
+    }, 2000); // Hide the alert after 2 seconds
   };
 
   return (
@@ -472,7 +476,11 @@ function HighSchool() {
         <h2>High Schools</h2>
       </div>
       <div className="line"></div>
-      {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
+      {showSuccessAlert && (
+        <Alert severity="success" onClose={() => setShowSuccessAlert(false)}>
+          {alertMessage}
+        </Alert>
+      )}
       <div className="tournament-list">
         {highSchools.map((highSchool) => (
           <div key={highSchool.id} className="tournament-container-list">
@@ -509,6 +517,7 @@ function HighSchool() {
         highSchoolData={updatedHighSchoolData}
         onChange={handleInputChange}
         actionType={modalActionType}
+        errorMessage={alertMessage}
       />
     </div>
   );
