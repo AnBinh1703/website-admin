@@ -2741,7 +2741,6 @@ function Team() {
 function Tournament() {
   const token = localStorage.getItem("token");
   const [matches, setMatches] = useState([]);
-
   const [tournaments, setTournaments] = useState([]);
   const [selectedTournamentId, setSelectedTournamentId] = useState(null);
   const [updatedTournamentData, setUpdatedTournamentData] = useState({
@@ -2752,22 +2751,41 @@ function Tournament() {
   });
   const [showModal, setShowModal] = useState(false);
   const [modalActionType, setModalActionType] = useState("update");
-  const [error] = useState("");
+  const [createFormError, setCreateFormError] = useState("");
+  const [updateFormError, setUpdateFormError] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("error");
 
   useEffect(() => {
     fetchTournaments();
   }, []);
-  useEffect(
-    () => {
-      if (selectedTournamentId) {
-        fetchMatchesByTournamentId(selectedTournamentId);
-      }
-    },
-    [selectedTournamentId],
-    []
-  );
+  useEffect(() => {
+    if (alertMessage) {
+      const timeout = setTimeout(() => {
+        setAlertMessage("");
+        setAlertSeverity("error");
+      }, 1000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [alertMessage]);
+  useEffect(() => {
+    if (selectedTournamentId) {
+      fetchMatchesByTournamentId(selectedTournamentId);
+    }
+  }, [selectedTournamentId]);
+
+  useEffect(() => {
+    if (alertMessage) {
+      const timeout = setTimeout(() => {
+        setAlertMessage("");
+        setAlertSeverity("error");
+      }, 2000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [alertMessage]);
+
   const fetchTournaments = async () => {
     try {
       const response = await fetch(
@@ -2784,6 +2802,7 @@ function Tournament() {
       console.error("Error fetching tournaments:", error.message);
     }
   };
+
   const fetchMatchesByTournamentId = async (tournamentId) => {
     try {
       const response = await fetch(
@@ -2811,6 +2830,7 @@ function Tournament() {
     });
     setShowModal(true);
     setModalActionType("update");
+    setUpdateFormError(""); // Clear update form error when opening the modal
   };
 
   const handleDelete = async (tournamentId) => {
@@ -2847,10 +2867,14 @@ function Tournament() {
     });
     setShowModal(true);
     setModalActionType("create");
+    setCreateFormError(""); // Clear create form error when opening the modal
   };
 
   const handleCreateSubmit = async () => {
-    if (!validateInput()) return;
+    if (!validateInput(updatedTournamentData)) {
+      setCreateFormError("All fields are required");
+      return;
+    }
 
     try {
       const response = await fetch(
@@ -2879,7 +2903,10 @@ function Tournament() {
   };
 
   const handleUpdateSubmit = async () => {
-    if (!validateInput()) return;
+    if (!validateInput(updatedTournamentData)) {
+      setUpdateFormError("All fields are required");
+      return;
+    }
 
     try {
       const response = await fetch(
@@ -2906,20 +2933,16 @@ function Tournament() {
       console.error("Error updating tournament:", error.message);
     }
   };
-  const validateInput = () => {
-    if (
-      !updatedTournamentData.keyId ||
-      !updatedTournamentData.tournamentName ||
-      !updatedTournamentData.startDate ||
-      !updatedTournamentData.endDate
-    ) {
-      setAlertMessage("All fields are required");
-      setAlertSeverity("error");
-      return false;
-    }
-    // Additional validation logic if needed
-    return true;
+
+  const validateInput = (data) => {
+    return (
+      data.keyId.trim() !== "" &&
+      data.tournamentName.trim() !== "" &&
+      data.startDate.trim() !== "" &&
+      data.endDate.trim() !== ""
+    );
   };
+
   const handleSubmitAction = () => {
     if (modalActionType === "update") {
       handleUpdateSubmit();
@@ -2935,13 +2958,14 @@ function Tournament() {
       [name]: value,
     });
   };
-
   return (
     <div className="tournament-container">
       <div className="team-title">
         <h2>TOURNAMENT</h2>
-        {error && <Alert severity="error">{error}</Alert>}
-        {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
+        {/* Error alert for main screen */}
+        {alertMessage && alertSeverity === "success" && (
+          <Alert severity={alertSeverity}>{alertMessage}</Alert>
+        )}
       </div>
       <div className="line"></div>
       <div className="tournament-list">
@@ -2990,6 +3014,8 @@ function Tournament() {
         tournamentData={updatedTournamentData}
         onChange={handleInputChange}
         actionType={modalActionType}
+        createFormError={createFormError}
+        updateFormError={updateFormError}
       />
     </div>
   );
