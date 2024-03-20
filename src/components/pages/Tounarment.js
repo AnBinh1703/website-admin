@@ -54,7 +54,6 @@ function ActivityType() {
       if (response.ok) {
         const data = await response.json();
         setActivities(data);
-        handleSuccessAlert("Activity deleted successfully");
       } else {
         console.error("Error fetching activities");
         showAlertMessage("Error fetching activities", "error");
@@ -3039,7 +3038,6 @@ function User() {
   const [error, setError] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("error");
-
   useEffect(() => {
     getAllUsers();
   }, []);
@@ -3085,8 +3083,15 @@ function User() {
   };
 
   const handleShowDeleteForm = (id) => {
-    setSelectedUserId(id);
-    setShowDeleteForm(true);
+    const userToDelete = users.find((user) => user.id === id);
+
+    if (userToDelete.role === "Admin") {
+      setAlertMessage("You cannot delete an admin user.");
+      setAlertSeverity("error");
+    } else {
+      setSelectedUserId(id);
+      setShowDeleteForm(true);
+    }
   };
 
   const handleCloseForms = () => {
@@ -3209,11 +3214,20 @@ function User() {
         return;
       }
       const userToDelete = users.find((user) => user.id === selectedUserId);
-      if (userToDelete.role != "Admin") {
+      if (userToDelete.role == "Admin") {
         setAlertMessage("You cannot delete an admin user.");
         setAlertSeverity("error");
         return;
       }
+      if (userToDelete.role !== "Admin") {
+        setAlertMessage(
+          "Warning: You are not an admin user. Are you sure you want to delete this user?"
+        );
+        setAlertSeverity("warning");
+        setShowDeleteForm(true);
+        return;
+      }
+
       await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/user/delete/${selectedUserId}`,
         {
@@ -3259,8 +3273,9 @@ function User() {
     <div>
       <div className="user-title">
         <h2>User</h2>
-        {error && <Alert severity="success">{error}</Alert>}
-        {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
+        {alertMessage && alertSeverity === "success" && (
+          <Alert severity={alertSeverity}>{alertMessage}</Alert>
+        )}
       </div>
       <table>
         <thead>
@@ -3282,18 +3297,24 @@ function User() {
               <td>{showPassword ? user.password : "********"}</td>
               <td>{user.role}</td>
               <td>
-                <button
-                  className="button btn-update"
-                  onClick={() => handleShowUpdateForm(user.id)}
-                >
-                  Update
-                </button>
-                <button
-                  className="button btn-delete"
-                  onClick={() => handleShowDeleteForm(user.id)}
-                >
-                  Delete
-                </button>
+                {user.role == "Admin" ? (
+                  <>
+                    <button
+                      className="button btn-update"
+                      onClick={() => handleShowUpdateForm(user.id)}
+                    >
+                      Update
+                    </button>
+                    <button
+                      className="button btn-delete"
+                      onClick={() => handleShowDeleteForm(user.id)}
+                    >
+                      Delete
+                    </button>
+                  </>
+                ) : (
+                  <span style={{ color: "red" }}>Not Permitted</span>
+                )}
               </td>
             </tr>
           ))}
