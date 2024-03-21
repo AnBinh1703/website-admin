@@ -3297,7 +3297,7 @@ function User() {
               <td>{showPassword ? user.password : "********"}</td>
               <td>{user.role}</td>
               <td>
-                {user.role == "Admin" ? (
+                {user.role == "Organizer" ? (
                   <>
                     <button
                       className="button btn-update"
