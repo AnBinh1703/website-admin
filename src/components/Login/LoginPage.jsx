@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./LoginPage.css";
 import passwordIcon from "./password.png";
 import userIcon from "./person.png";
+import Alert from "@mui/material/Alert";
 
 const LoginPage = ({ setIsLoggedIn }) => {
   const navigate = useNavigate();
@@ -11,6 +12,21 @@ const LoginPage = ({ setIsLoggedIn }) => {
     userName: "",
     password: "",
   });
+  const [error, setError] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState("error");
+  
+  useEffect(() => {
+    if (alertMessage) {
+      const timeout = setTimeout(() => {
+        setAlertMessage("");
+        setAlertSeverity("error");
+      }, 2000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [alertMessage]);
+  
 
   const handleInputChange = (e) => {
     setFormData({
@@ -44,14 +60,22 @@ const LoginPage = ({ setIsLoggedIn }) => {
         navigate("/");
       } else {
         console.error("Login failed:", response.statusText);
+        setAlertMessage("Login failed. Please check your credentials.");
+        setAlertSeverity("error");
       }
     } catch (error) {
       console.error("Error during login:", error.message);
+      setAlertMessage("An error occurred. Please try again later.");
+      setAlertSeverity("error");
     }
   };
 
   return (
     <div className="container">
+      {error && <Alert severity="error">{error}</Alert>}
+          {alertMessage && (
+            <Alert severity={alertSeverity}>{alertMessage}</Alert>
+          )}
       <div className="header">
         <div className="text">Login</div>
         <div className="underline"></div>

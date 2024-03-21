@@ -1,7 +1,6 @@
 import "@mui/lab";
 import Alert from "@mui/material/Alert";
 import React, { useEffect, useState } from "react";
-import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import {
   AiOutlineApartment,
@@ -15,9 +14,11 @@ import { IoAdd } from "react-icons/io5";
 import { TbSchool } from "react-icons/tb";
 import { TfiCup } from "react-icons/tfi";
 
+import { jwtDecode } from "jwt-decode";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import "../../App.css";
 import ActivityModal from "./ActivityModal";
-import "./AlertPopup";
 import "./Dashboard.css";
 import HighSchoolModal from "./HighSchoolModal";
 import MapModal from "./MapModal";
@@ -38,10 +39,12 @@ function ActivityType() {
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("success");
   const [showAlert, setShowAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
   useEffect(() => {
     fetchActivities();
-  });
+  }, []);
 
   const fetchActivities = async () => {
     try {
@@ -86,7 +89,6 @@ function ActivityType() {
 
       if (response.ok) {
         fetchActivities();
-        showAlertMessage("Activity deleted successfully", "success");
       } else {
         console.error("Error deleting activity");
         showAlertMessage("Failed to delete activity", "error");
@@ -127,7 +129,7 @@ function ActivityType() {
       if (response.ok) {
         fetchActivities();
         setShowModal(false);
-        showAlertMessage("Activity created successfully", "success");
+        handleSuccessAlert("Activity created successfully");
       } else {
         console.error("Error creating activity");
         showAlertMessage("Failed to create activity", "error");
@@ -160,7 +162,7 @@ function ActivityType() {
       if (response.ok) {
         fetchActivities();
         setShowModal(false);
-        showAlertMessage("Activity updated successfully", "success");
+        handleSuccessAlert("Activity updated successfully");
       } else {
         console.error("Error updating activity");
         showAlertMessage("Failed to update activity", "error");
@@ -202,10 +204,20 @@ function ActivityType() {
     setAlertMessage(message);
     setAlertSeverity(severity);
     setShowAlert(true);
+    setTimeout(() => {
+      setShowAlert(false);
+      setAlertMessage("");
+    }, 2000);
   };
 
-  const handleAlertClose = () => {
-    setShowAlert(false);
+  const handleSuccessAlert = (message) => {
+    setShowSuccessAlert(true);
+    setAlertMessage(message);
+
+    setTimeout(() => {
+      setShowSuccessAlert(false);
+      setAlertMessage("");
+    }, 2000); // 2 seconds
   };
 
   return (
@@ -214,11 +226,7 @@ function ActivityType() {
         <h2>Activity Type</h2>
       </div>
       <div className="line"></div>
-      {showAlert && (
-        <Alert severity={alertSeverity} onClose={handleAlertClose}>
-          {alertMessage}
-        </Alert>
-      )}
+      {showSuccessAlert && <Alert severity="success">{alertMessage}</Alert>}
       <div className="tournament-list">
         {activities.map((activity) => (
           <div key={activity.id} className="tournament-container-list">
@@ -255,6 +263,10 @@ function ActivityType() {
           activityData={updatedActivityData}
           onChange={handleInputChange}
           actionType={modalActionType}
+          alertMessage={alertMessage}
+          alertSeverity={alertSeverity}
+          showAlert={showAlert}
+          errorMessage={errorMessage}
         />
       )}
     </div>
@@ -273,10 +285,11 @@ function HighSchool() {
   const [modalActionType, setModalActionType] = useState("update");
   const [alertMessage, setAlertMessage] = useState(null);
   const [alertSeverity, setAlertSeverity] = useState("success");
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
   useEffect(() => {
     fetchHighSchools();
-  });
+  }, []);
 
   const fetchHighSchools = async () => {
     try {
@@ -325,6 +338,7 @@ function HighSchool() {
 
       if (response.ok) {
         fetchHighSchools();
+        setShowSuccessAlert(true); // Show success alert
         showAlertMessage("High school deleted successfully");
       } else {
         console.error("Error deleting high school");
@@ -364,6 +378,7 @@ function HighSchool() {
       if (response.ok) {
         fetchHighSchools();
         setShowModal(false);
+        setShowSuccessAlert(true); // Show success alert
         showAlertMessage("High school created successfully");
       } else {
         console.error("Error creating high school");
@@ -395,6 +410,7 @@ function HighSchool() {
         fetchHighSchools();
         setShowModal(false);
         showAlertMessage("High school updated successfully");
+        setShowSuccessAlert(true);
       } else {
         console.error("Error updating high school");
         showAlertMessage("Failed to update high school", "error");
@@ -438,13 +454,15 @@ function HighSchool() {
     return true;
   };
 
-  const showAlertMessage = (message, severity = "success") => {
+  // Function to handle showing success alert
+  const showAlertMessage = (message, severity) => {
     setAlertSeverity(severity);
     setAlertMessage(message);
     setTimeout(() => {
+      setShowSuccessAlert(false);
       setAlertMessage(null);
-      setAlertSeverity("success"); // Reset severity after hiding the alert
-    }, 5000); // Hide the alert after 5 seconds
+      setAlertSeverity(); // Reset severity after hiding the alert
+    }, 2000); // Hide the alert after 2 seconds
   };
 
   return (
@@ -453,13 +471,13 @@ function HighSchool() {
         <h2>High Schools</h2>
       </div>
       <div className="line"></div>
-      {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
+      {showSuccessAlert && <Alert severity="success">{alertMessage}</Alert>}
       <div className="tournament-list">
         {highSchools.map((highSchool) => (
           <div key={highSchool.id} className="tournament-container-list">
             <div className="tournament-item">
-              <p className="tour-title">{highSchool.keyId}</p>
-              <h4 className="tour-title">{highSchool.highSchoolName}</h4>
+              <h2 className="tour-title">{highSchool.keyId}</h2>
+              <h5 className="">{highSchool.highSchoolName}</h5>
               <div>
                 <button
                   className="update-button"
@@ -490,6 +508,7 @@ function HighSchool() {
         highSchoolData={updatedHighSchoolData}
         onChange={handleInputChange}
         actionType={modalActionType}
+        errorMessage={alertMessage}
       />
     </div>
   );
@@ -506,10 +525,11 @@ function Map() {
   const [modalActionType, setModalActionType] = useState("update");
   const [alertMessage, setAlertMessage] = useState(null);
   const [alertSeverity, setAlertSeverity] = useState("success");
+  const [showAlert, setShowAlert] = useState(false);
 
   useEffect(() => {
     fetchMaps();
-  });
+  }, []);
 
   const fetchMaps = async () => {
     try {
@@ -556,9 +576,11 @@ function Map() {
       if (response.ok) {
         fetchMaps();
         showAlertMessage("Map deleted successfully");
+        setShowAlert(true);
       } else {
         console.error("Error deleting map");
-        showAlertMessage("Failed to delete map", "error");
+        showAlertMessage("This map is in used", "error");
+        setShowAlert(true);
       }
     } catch (error) {
       console.error("Error deleting map:", error.message);
@@ -625,13 +647,16 @@ function Map() {
         fetchMaps();
         setShowModal(false);
         showAlertMessage("Map updated successfully");
+        setShowAlert(true);
       } else {
         console.error("Error updating map");
         showAlertMessage("Failed to update map", "error");
+        setShowAlert(true);
       }
     } catch (error) {
       console.error("Error updating map:", error.message);
       showAlertMessage("An error occurred while updating map", "error");
+      setShowAlert(true);
     }
   };
 
@@ -663,28 +688,30 @@ function Map() {
     return true;
   };
 
-  const showAlertMessage = (message, severity = "success") => {
+  const showAlertMessage = (message, severity) => {
     setAlertSeverity(severity);
     setAlertMessage(message);
-    setTimeout(() => {
-      setAlertMessage(null);
-      setAlertSeverity("success"); // Reset severity after hiding the alert
-    }, 5000); // Hide the alert after 5 seconds
+    if (message !== null) {
+      // Check if message is not null before setting a timeout
+      setTimeout(() => {
+        setAlertMessage(null);
+        setAlertSeverity(""); // Reset severity after hiding the alert
+      }, 2000); // Hide the alert after 2 seconds
+    }
   };
-
   return (
     <div className="map-container">
       <div className="team-title">
         <h2>Maps</h2>
       </div>
       <div className="line"></div>
-      {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
+      {showAlert && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
       <div className="tournament-list">
         {maps.map((map) => (
           <div key={map.id} className="tournament-container-list">
             <div className="tournament-item">
-              <p className="tour-title">{map.keyId}</p>
-              <h4 className="tour-title">{map.mapName}</h4>
+              <h3 className="tour-title">{map.keyId}</h3>
+              <h4 className="">{map.mapName}</h4>
               <div>
                 <button
                   className="update-button"
@@ -715,6 +742,7 @@ function Map() {
         mapData={updatedMapData}
         onChange={handleInputChange}
         actionType={modalActionType}
+        errorMessage={alertMessage} // Pass errorMessage state
       />
     </div>
   );
@@ -723,10 +751,19 @@ function Map() {
 function Match() {
   const token = localStorage.getItem("token");
   const [matches, setMatches] = useState([]);
+  const [teamInMatches, setTeamInMatches] = useState([]);
   const [selectedMatchId, setSelectedMatchId] = useState(null);
+  const [selectedTeamInMatchId, setSelectedTeamInMatchId] = useState(null);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const [showActivityForm, setShowActivityForm] = useState(false);
+  const [showUpdateFormMatches, setShowUpdateFormMatches] = useState(false);
   const [showDeleteForm, setShowDeleteForm] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showTeamInMatchForm, setShowTeamInMatchForm] = useState(false);
+  const [teamActivities, setTeamActivities] = useState([]);
+  const [createTeamInMatchForm, setCreateTeamInMatchForm] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState(null);
+
   const [formData, setFormData] = useState({
     keyId: "",
     mapId: "",
@@ -737,19 +774,42 @@ function Match() {
     tournamentId: "",
     tournamentName: "",
   });
+
+  const [formDataTeamInMatch, setFormDataTeamInMatch] = useState({
+    teamId: "",
+    teamName: "",
+    matchId: "",
+    matchKeyId: "",
+    score: 0,
+    duration: "",
+    result: "",
+  });
+
   const [maps, setMaps] = useState([]);
   const [rounds, setRounds] = useState([]);
   const [tournaments, setTournaments] = useState([]);
+  const [selectedTournamentId, setSelectedTournamentId] = useState("");
+  const [teams, setTeams] = useState([]);
   const [showCalendar, setShowCalendar] = useState(false);
+
   const [alertSeverity, setAlertSeverity] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
 
-  useEffect(() => {
-    getAllMatches();
-    fetchMaps();
-    fetchRounds();
-    fetchTournaments();
-  }, []);
+  useEffect(
+    () => {
+      if (selectedTournamentId) {
+        getMatchesByTournament(selectedTournamentId);
+      } else {
+        getAllMatches();
+      }
+      fetchMaps();
+      fetchRounds();
+      fetchTournaments();
+      fetchTeams();
+    },
+    [selectedTournamentId],
+    []
+  );
 
   const getAllMatches = async () => {
     try {
@@ -762,7 +822,17 @@ function Match() {
       console.error("Error fetching matches: ", error.message);
     }
   };
-
+  const getMatchesByTournament = async (tournamentId) => {
+    try {
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/match/get-by-tournament-id/${tournamentId}`
+      );
+      const data = await response.json();
+      setMatches(data);
+    } catch (error) {
+      console.error("Error fetching matches by tournament:", error.message);
+    }
+  };
   const fetchMaps = async () => {
     try {
       const response = await fetch(
@@ -798,7 +868,32 @@ function Match() {
       console.error("Error fetching tournaments: ", error.message);
     }
   };
+  const fetchTeams = async () => {
+    try {
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/team/get-all"
+      );
+      const data = await response.json();
+      setTeams(data);
+    } catch (error) {
+      console.error("Error fetching teams: ", error.message);
+    }
+  };
 
+  const handleTournamentFilterChange = (selectedId) => {
+    setSelectedTournamentId(selectedId);
+  };
+  const handleShowUpdateFormMatches = (id) => {
+    const selectedMatch = teamInMatches.find(
+      (teamInMatch) => teamInMatch.id === id
+    );
+    setFormDataTeamInMatch({
+      ...selectedMatch, // Thêm vào formData từ selectedMatch
+      matchDate: new Date(selectedMatch.matchDate),
+    });
+    setSelectedTeamInMatchId(id);
+    setShowUpdateFormMatches(true);
+  };
   const handleShowUpdateForm = (id) => {
     const selectedMatch = matches.find((match) => match.id === id);
     setFormData({
@@ -819,7 +914,33 @@ function Match() {
     setShowDeleteForm(false);
     setShowCreateForm(false);
     setSelectedMatchId(null);
+    setShowTeamInMatchForm(false);
+    setShowActivityForm(false);
     setAlertMessage("");
+  };
+  const handleCancelForms = () => {
+    setShowUpdateFormMatches(false);
+  };
+  const handleDeleteTeamInMatch = async (id) => {
+    try {
+      await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/delete-team-with-id/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const updatedTeamInMatches = teamInMatches.filter(
+        (teamInMatch) => teamInMatch.id !== id
+      );
+      setTeamInMatches(updatedTeamInMatches);
+    } catch (error) {
+      console.error("Error deleting teamInMatch:", error);
+    }
   };
 
   const handleInputChange = (e) => {
@@ -837,7 +958,13 @@ function Match() {
     });
     setShowCalendar(false);
   };
-
+  const handleInputChangeTeamInMatch = (e) => {
+    const { name, value } = e.target;
+    setFormDataTeamInMatch({
+      ...formDataTeamInMatch,
+      [name]: value,
+    });
+  };
   const handleCreateMatch = async () => {
     if (!validateInput()) return;
 
@@ -875,6 +1002,46 @@ function Match() {
       console.error("Error creating match:", error);
     }
   };
+  const handleUpdateTeamInMatch = async () => {
+    const { ...updatedData } = formDataTeamInMatch;
+
+    try {
+      if (!selectedTeamInMatchId) {
+        console.error("No team in match selected for update.");
+        return;
+      }
+
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/update-result-for-team-in-match-id/${selectedTeamInMatchId}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedData),
+        }
+      );
+
+      if (!response.ok) {
+        console.error("Error updating team in match:", response.statusText);
+        return;
+      }
+
+      const updatedTeamInMatches = [...teamInMatches];
+      const index = updatedTeamInMatches.findIndex(
+        (teamInMatch) => teamInMatch.id === selectedTeamInMatchId
+      );
+      updatedTeamInMatches[index] = {
+        ...updatedTeamInMatches[index],
+        ...formDataTeamInMatch,
+      };
+      setTeamInMatches(updatedTeamInMatches);
+      setShowUpdateFormMatches(false);
+    } catch (error) {
+      console.error("Error updating team in match:", error.message);
+    }
+  };
 
   const validateInput = () => {
     if (!formData.keyId.trim()) {
@@ -897,7 +1064,8 @@ function Match() {
       setAlertMessage("Please select a tournament for the match.");
       return false;
     }
-    setAlertMessage("");
+    setAlertSeverity("success");
+    setAlertMessage("Input validated successfully.");
     return true;
   };
 
@@ -983,13 +1151,194 @@ function Match() {
       console.error("Error deleting match:", error);
     }
   };
+  const handleAddTeamToMatch = async () => {
+    try {
+      if (!selectedMatch) {
+        console.error("No match selected.");
+        return;
+      }
 
+      const { teamId } = formDataTeamInMatch;
+      if (!teamId) {
+        console.error("No team selected.");
+        return;
+      }
+
+      const response = await fetch(
+        "https://fptbottournamentweb.azurewebsites.net/api/team-in-match/add-team-to-match",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            matchId: selectedMatch.id,
+            teamId: teamId,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        console.error("Error adding team to match:", response.statusText);
+        return;
+      }
+
+      // Refresh teamInMatches after adding a new team
+      const updatedTeamInMatches = await TeamInMatch(
+        selectedMatch.id
+      ).getAllTeamInMatchByMatchId();
+      setTeamInMatches(updatedTeamInMatches);
+
+      // Close the form after adding the team
+      setShowCreateForm(false);
+    } catch (error) {
+      console.error("Error adding team to match:", error.message);
+    }
+  };
+
+  const handleDoubleClick = async (id) => {
+    try {
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/match/get-by-id/${id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        console.error("Error GET match:", response.statusText);
+        return;
+      }
+
+      const matchData = await response.json(); // Await the JSON parsing
+      setSelectedMatch(matchData); // Set the selected match
+
+      const teamInMatchResponse = await TeamInMatch(
+        id
+      ).getAllTeamInMatchByMatchId(); // Fetch team details
+      setTeamInMatches(teamInMatchResponse); // Set team details
+      setShowTeamInMatchForm(true); // Show team details form
+    } catch (error) {
+      console.error("Error GET match:", error.message);
+    }
+  };
+
+  const handleDoubleClickTeamInMatch = async (id) => {
+    try {
+      const response = await fetch(
+        `https://fptbottournamentweb.azurewebsites.net/api/team-activity/get-activities-by-team-in-match-id/${id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        console.error(
+          "Error fetching teamInMatch details:",
+          response.statusText
+        );
+        return;
+      }
+
+      const data = await response.json();
+      setTeamActivities(data);
+      setShowActivityForm(true);
+    } catch (error) {
+      console.error(
+        "Error handling double click on teamInMatch:",
+        error.message
+      );
+    }
+  };
+
+  const TeamInMatch = (idMatch) => {
+    const token = localStorage.getItem("token");
+
+    const getAllTeamInMatchByMatchId = async () => {
+      try {
+        const response = await fetch(
+          `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/get-all-teams-in-match-id/${idMatch}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          console.error("Error updating teamInMatch:", response.statusText);
+          return;
+        }
+
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error("Error updating teamInMatch:", error.message);
+        return null;
+      }
+    };
+
+    const getUpdateTeamInMatch = async () => {
+      try {
+        const response = await fetch(
+          `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/update-result-for-team-in-match-id/${selectedTeamInMatchId}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify(formDataTeamInMatch),
+          }
+        );
+
+        if (!response.ok) {
+          console.error("Error updating team in match:", response.statusText);
+          return;
+        }
+
+        setShowUpdateFormMatches(false);
+      } catch (error) {
+        console.error("Error updating team in match:", error.message);
+      }
+    };
+
+    return { getAllTeamInMatchByMatchId, getUpdateTeamInMatch };
+  };
   return (
     <div>
       <div className="team-title">
         <h2>Match</h2>
+        <div className="select-filter">
+          <select
+            onChange={(e) => handleTournamentFilterChange(e.target.value)}
+          >
+            <option value="">All Tournaments</option>
+            {tournaments.map((tournament) => (
+              <option key={tournament.id} value={tournament.id}>
+                {tournament.tournamentName}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
-      {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
+
+      {alertMessage && alertSeverity === "success" && (
+        <Alert severity={alertSeverity}>{alertMessage}</Alert>
+      )}
       <table>
         <thead>
           <tr>
@@ -1003,9 +1352,12 @@ function Match() {
         </thead>
         <tbody>
           {matches.map((match) => (
-            <tr key={match.id}>
+            <tr
+              key={match.id}
+              onDoubleClick={() => handleDoubleClick(match.id)}
+            >
               <td>{match.keyId}</td>
-              <td>{new Date(match.matchDate).toLocaleString()} </td>
+              <td>{new Date(match.matchDate).toLocaleString("en-GB")} </td>
               <td>{match.roundName}</td>
               <td>{match.mapName}</td>
               <td>{match.tournamentName}</td>
@@ -1035,6 +1387,9 @@ function Match() {
       {showUpdateForm && (
         <div className="popup-form show">
           <h3>Update Match</h3>
+          {alertMessage && alertSeverity === "error" && (
+            <Alert severity="error">{alertMessage}</Alert>
+          )}
           <label>KeyId Match:</label>
           <input
             type="text"
@@ -1057,19 +1412,26 @@ function Match() {
           </select>
           <label>Match Date:</label>
           <div className="calendar-wrapper">
-            <input
-              type="text"
-              className="date-input"
-              value={formData.matchDate.toLocaleString()}
-              readOnly
+            <DatePicker
+              selected={formData.matchDate}
+              onChange={handleCalendarChange}
+              showTimeSelect
+              timeFormat="HH:mm"
+              timeIntervals={15} // Đặt khoảng thời gian giữa các mốc thời gian
+              dateFormat="dd/MM/yyyy HH:mm" // Định dạng ngày và giờ
               onClick={() => setShowCalendar(true)}
+              className="date-input"
             />
             {showCalendar && (
-              <Calendar
+              <DatePicker
+                selected={formData.matchDate}
                 onChange={handleCalendarChange}
-                value={formData.matchDate}
+                showTimeSelect
+                timeFormat="HH:mm"
+                timeIntervals={15}
+                dateFormat="dd/MM/yyyy HH:mm"
                 onClose={() => setShowCalendar(false)}
-                className="custom-calendar"
+                className="date-input"
               />
             )}
           </div>
@@ -1108,9 +1470,120 @@ function Match() {
         </div>
       )}
 
+      {showTeamInMatchForm && (
+        <div className="popup-info">
+          <div>
+            <h4>TeamInMatch</h4>
+            {alertMessage && alertSeverity === "success" && (
+              <Alert severity={alertSeverity}>{alertMessage}</Alert>
+            )}
+          </div>
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Team Name</th>
+                  <th>Match Key ID</th>
+                  <th>Score</th>
+                  <th>Duration</th>
+                  <th>Result</th>
+                  <th>Action Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                {teamInMatches.map((teamInMatch) => (
+                  <tr
+                    key={teamInMatch.id}
+                    onDoubleClick={() =>
+                      handleDoubleClickTeamInMatch(teamInMatch.id)
+                    }
+                  >
+                    <td>{teamInMatch.teamName}</td>
+                    <td>{teamInMatch.matchKeyId}</td>
+                    <td>{teamInMatch.score}</td>
+                    <td>{teamInMatch.duration}</td>
+                    <td>{teamInMatch.result}</td>
+                    <td>
+                      <button
+                        className="button btn-update"
+                        onClick={() =>
+                          handleShowUpdateFormMatches(teamInMatch.id)
+                        }
+                      >
+                        Update
+                      </button>
+                      <button
+                        className="button btn-delete"
+                        onClick={() => handleDeleteTeamInMatch(teamInMatch.id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <button
+            className="button btn-create"
+            onClick={() => setCreateTeamInMatchForm(true)}
+          >
+            Create
+          </button>
+          <button className="button btn-cancel" onClick={handleCloseForms}>
+            Close
+          </button>
+        </div>
+      )}
+
+      {showUpdateFormMatches && (
+        <div className="popup-form show">
+          <h3>Update Result</h3>
+          {alertMessage && alertSeverity === "error" && (
+            <Alert severity="error">{alertMessage}</Alert>
+          )}
+          <label>Score:</label>
+          <input
+            type="text"
+            name="score"
+            value={formDataTeamInMatch.score}
+            onChange={handleInputChangeTeamInMatch}
+          />
+          <label>Duration:</label>
+          <input
+            type="text"
+            name="duration"
+            value={formDataTeamInMatch.duration}
+            onChange={handleInputChangeTeamInMatch}
+          />
+          <label>Result:</label>
+          <select
+            name="result"
+            value={formDataTeamInMatch.result}
+            onChange={handleInputChangeTeamInMatch}
+          >
+            <option value={""}>Null</option>
+            <option value={"Win"}>Win</option>
+            <option value={"Lose"}>Lose</option>
+          </select>
+          <button
+            className="button btn-update"
+            onClick={handleUpdateTeamInMatch}
+          >
+            Update
+          </button>
+          <button className="button btn-cancel" onClick={handleCancelForms}>
+            Cancel
+          </button>
+        </div>
+      )}
+
       {showCreateForm && (
         <div className="popup-form show">
           <h3>Create New Match</h3>
+          {alertMessage && alertSeverity === "error" && (
+            <Alert severity="error">{alertMessage}</Alert>
+          )}
           <label>KeyId Match:</label>
           <input
             type="text"
@@ -1128,20 +1601,27 @@ function Match() {
             ))}
           </select>
           <label>Match Date:</label>
-          <div>
-            <input
-              type="text"
-              value={formData.matchDate.toLocaleString()}
+          <div className="calendar-wrapper">
+            <DatePicker
+              selected={formData.matchDate}
+              onChange={handleCalendarChange}
+              showTimeSelect // Hiển thị lựa chọn thời gian
+              timeFormat="HH:mm" // Định dạng thời gian
               onClick={() => setShowCalendar(true)}
+              className="date-input"
             />
             {showCalendar && (
-              <Calendar
+              <DatePicker
+                selected={formData.matchDate}
                 onChange={handleCalendarChange}
-                value={formData.matchDate}
+                showTimeSelect
+                timeFormat="HH:mm"
                 onClose={() => setShowCalendar(false)}
+                className="date-input"
               />
             )}
           </div>
+
           <label>Round ID:</label>
           <select name="roundId" onChange={handleInputChange}>
             <option value="">Select Round</option>
@@ -1169,10 +1649,85 @@ function Match() {
         </div>
       )}
 
+      {createTeamInMatchForm && (
+        <div className="popup-addTeamInMatch show">
+          <h4>Add TeamInMatch</h4>
+          {alertMessage && alertSeverity === "error" && (
+            <Alert severity="error">{alertMessage}</Alert>
+          )}
+          <label>Match Name:</label>
+          <input
+            type="text"
+            value={selectedMatch ? selectedMatch.keyId : ""}
+            readOnly
+          />
+          <label>Team:</label>
+          <select name="teamId" onChange={handleInputChangeTeamInMatch}>
+            <option value="">Select Team</option>
+            {teams.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.teamName}
+              </option>
+            ))}
+          </select>
+          <button className="button btn-create" onClick={handleAddTeamToMatch}>
+            Add
+          </button>
+          <button
+            className="button btn-cancel"
+            onClick={() => setCreateTeamInMatchForm(false)}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+      {showActivityForm && (
+        <div className="popup-activity show">
+          <h3>Activity Detail:</h3>
+          <div className="activity-table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Duration</th>
+                  <th>Score</th>
+                  <th>Violation</th>
+                  <th>Activity Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                {teamActivities.map((activity, index) => (
+                  <tr key={index}>
+                    <td>{activity.description}</td>
+                    <td>
+                      {new Date(activity.startTime).toLocaleString("en-GB")}
+                    </td>
+                    <td>
+                      {new Date(activity.endTime).toLocaleString("en-GB")}
+                    </td>
+                    <td>{activity.duration}</td>
+                    <td>{activity.score}</td>
+                    <td>{activity.violation}</td>
+                    <td>{activity.activityTypeName}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <button
+            className="button btn-cancel"
+            onClick={() => setShowActivityForm(false)}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
       {showDeleteForm && (
         <div className="popup-form show">
-          <h3>Delete Player</h3>
-          <p>Are you sure you want to delete this team?</p>
+          <h3>Delete Match</h3>
+          <p>Are you sure you want to delete this match?</p>
           <button className="button btn-delete" onClick={handleDeleteMatch}>
             Delete
           </button>
@@ -1200,6 +1755,8 @@ function Player() {
   });
   const [teams, setTeams] = useState([]);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [selectedTeamId, setSelectedTeamId] = useState("");
+
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("error");
 
@@ -1234,7 +1791,24 @@ function Player() {
       console.error("Error fetching teams: ", error.message);
     }
   };
-
+  const handleTeamsFilterChange = async (selectedId) => {
+    if (selectedId) {
+      setSelectedTeamId(selectedId); // Update selected team ID
+      try {
+        const response = await fetch(
+          `https://fptbottournamentweb.azurewebsites.net/api/player/get-by-team-id/${selectedId}`
+        );
+        const data = await response.json();
+        setPlayers(data);
+      } catch (error) {
+        console.error("Error fetching players by team: ", error.message);
+      }
+    } else {
+      // If no team is selected, fetch all players
+      getAllPlayers();
+      setSelectedTeamId(""); // Reset selected team ID
+    }
+  };
   const handleShowUpdateForm = (id) => {
     const selectedPlayer = players.find((player) => player.id === id);
     setFormData({
@@ -1349,10 +1923,18 @@ function Player() {
       setShowUpdateForm(false);
       setAlertMessage("Player updated successfully.");
       setAlertSeverity("success");
+      setTimeout(() => {
+        setAlertSeverity("");
+        setAlertMessage("");
+      }, 2000);
     } catch (error) {
       console.error("Error updating player:", error.message);
       setAlertMessage("Failed to update player. Please try again.");
       setAlertSeverity("error");
+      setTimeout(() => {
+        setAlertSeverity("");
+        setAlertMessage("");
+      }, 2000);
     }
   };
 
@@ -1418,15 +2000,21 @@ function Player() {
   return (
     <div>
       <div className="team-title">
-        <h2>Player</h2>
+        <h2>Player</h2>{" "}
+        <div className="select-filter">
+          <select onChange={(e) => handleTeamsFilterChange(e.target.value)}>
+            <option value="">All Players</option>
+            {teams.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.teamName}
+              </option>
+            ))}
+          </select>
+        </div>
         {/* Display alert if validation fails */}
-        <Alert
-          severity={alertSeverity}
-          onClose={() => setAlertMessage("")}
-          sx={{ marginBottom: "1rem" }}
-        >
-          {alertMessage}
-        </Alert>
+        {alertMessage && alertSeverity === "success" && (
+          <Alert severity="success">{alertMessage}</Alert>
+        )}
       </div>
       <table>
         <thead>
@@ -1442,7 +2030,7 @@ function Player() {
           {players.map((player) => (
             <tr key={player.id}>
               <td>{player.name}</td>
-              <td>{player.dob}</td>
+              <td>{new Date(player.dob).toLocaleDateString("en-GB")}</td>
               <td>{player.keyId}</td>
               <td>{player.teamName}</td>
               <td>
@@ -1471,6 +2059,9 @@ function Player() {
       {showUpdateForm && (
         <div className="popup-form show">
           <h3>Update Player</h3>
+          {alertMessage && alertSeverity === "error" && (
+            <Alert severity="error">{alertMessage}</Alert>
+          )}
           <label>Name:</label>
           <input
             type="text"
@@ -1480,21 +2071,12 @@ function Player() {
           />
           <label>Dob:</label>
           <div className="calendar-wrapper">
-            <input
-              type="text"
+            <DatePicker
+              selected={formData.dob}
+              onChange={handleCalendarChange}
+              onClickDay={(date) => handleCalendarChange(date)}
               className="date-input"
-              value={formData.dob.toDateString()}
-              readOnly
-              onClick={() => setShowCalendar(true)}
             />
-            {showCalendar && (
-              <Calendar
-                onChange={handleCalendarChange}
-                value={formData.dob}
-                onClose={() => setShowCalendar(false)}
-                className="custom-calendar"
-              />
-            )}
           </div>
           <label>KeyId:</label>
           <input
@@ -1528,23 +2110,37 @@ function Player() {
       {showCreateForm && (
         <div className="popup-form show">
           <h3>Create New Player</h3>
+          {alertMessage && alertSeverity === "error" && (
+            <Alert severity="error">{alertMessage}</Alert>
+          )}
           <label>Name:</label>
           <input type="text" name="name" onChange={handleInputChange} />
           <label>Dob:</label>
           <div>
-            <input
-              type="text"
-              value={formData.dob.toDateString()}
+            <DatePicker
+              selected={formData.dob}
+              onChange={handleCalendarChange}
               onClick={() => setShowCalendar(true)}
+              dateFormat="MMMM d, yyyy"
+              showYearDropdown
+              scrollableYearDropdown
+              yearDropdownItemNumber={15}
+              peekNextMonth
+              showMonthDropdown
+              dropdownMode="select"
+              className="date-input"
             />
             {showCalendar && (
-              <Calendar
-                onChange={handleCalendarChange}
-                value={formData.dob}
-                onClose={() => setShowCalendar(false)}
-              />
+              <div className="calendar-wrapper">
+                <DatePicker
+                  onChange={handleCalendarChange}
+                  selected={formData.dob}
+                  onClose={() => setShowCalendar(false)}
+                />
+              </div>
             )}
           </div>
+
           <label>KeyId:</label>
           <input type="text" name="keyId" onChange={handleInputChange} />
           <label>Team:</label>
@@ -1572,7 +2168,7 @@ function Player() {
       {showDeleteForm && (
         <div className="popup-form show">
           <h3>Delete Player</h3>
-          <p>Are you sure you want to delete this team?</p>
+          <p>Are you sure you want to delete this player?</p>
           <button className="button btn-delete" onClick={handleDeletePlayer}>
             Delete
           </button>
@@ -1642,6 +2238,11 @@ function Round() {
 
       if (response.ok) {
         fetchRounds();
+        setAlertSeverity("success");
+        setAlertMessage("Round deleted successfully.");
+        setTimeout(() => {
+          setAlertMessage("");
+        }, 2000); // 2 seconds
       } else {
         console.error("Error deleting round");
       }
@@ -1662,6 +2263,9 @@ function Round() {
     if (!updatedRoundData.roundName.trim()) {
       setAlertMessage("Round name cannot be empty");
       setAlertSeverity("error");
+      setTimeout(() => {
+        setAlertMessage("");
+      }, 2000); // 2 seconds
       return false;
     }
     return true;
@@ -1686,8 +2290,11 @@ function Round() {
       if (response.ok) {
         fetchRounds();
         setShowModal(false);
-        setAlertMessage("Round created successfully.");
         setAlertSeverity("success");
+        setAlertMessage("Round created successfully.");
+        setTimeout(() => {
+          setAlertMessage("");
+        }, 2000); // 2 seconds
       } else {
         console.error("Error creating round");
       }
@@ -1715,8 +2322,11 @@ function Round() {
       if (response.ok) {
         fetchRounds();
         setShowModal(false);
-        setAlertMessage("Round updated successfully.");
         setAlertSeverity("success");
+        setAlertMessage("Round updated successfully.");
+        setTimeout(() => {
+          setAlertMessage("");
+        }, 2000); // 2 seconds
       } else {
         console.error("Error updating round");
       }
@@ -1745,14 +2355,10 @@ function Round() {
     <div className="tournament-container">
       <div className="team-title">
         <h2>Round</h2>
-        {/* Display alert if validation fails */}
-        <Alert
-          severity={alertSeverity}
-          onClose={() => setAlertMessage("")}
-          sx={{ marginBottom: "1rem" }}
-        >
-          {alertMessage}
-        </Alert>
+        {/* Display alert if there's a success message */}
+        {alertMessage && alertSeverity === "success" && (
+          <Alert severity="success">{alertMessage}</Alert>
+        )}
       </div>
       <div className="line"></div>
       <div className="tournament-list">
@@ -1779,9 +2385,7 @@ function Round() {
         ))}
       </div>
       <button className="create-button" onClick={handleCreate}>
-        <div className="btn-add">
-          <IoAdd />
-        </div>
+        Create Round
       </button>
       <RoundModal
         show={showModal}
@@ -1790,6 +2394,7 @@ function Round() {
         roundData={updatedRoundData}
         onChange={handleInputChange}
         actionType={modalActionType}
+        errorMessage={alertMessage} // Pass the errorMessage here
       />
     </div>
   );
@@ -1816,6 +2421,16 @@ function Team() {
     getAllTeams();
     fetchHighSchools();
   }, []);
+  useEffect(() => {
+    if (alertMessage) {
+      const timeout = setTimeout(() => {
+        setAlertMessage("");
+        setAlertSeverity("error");
+      }, 2000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [alertMessage]);
 
   const getAllTeams = async () => {
     try {
@@ -1836,7 +2451,10 @@ function Team() {
   const fetchHighSchools = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/highschool/get-all"
+        "https://fptbottournamentweb.azurewebsites.net/api/highschool/get-all",
+        {
+          method: "GET",
+        }
       );
       if (response.ok) {
         const data = await response.json();
@@ -1887,7 +2505,6 @@ function Team() {
       setAlertSeverity("error");
       return false;
     }
-    // Add more validation rules if needed
     return true;
   };
 
@@ -2001,8 +2618,6 @@ function Team() {
     <div>
       <div className="team-title">
         <h2>Teams</h2>
-        {error && <Alert severity="error">{error}</Alert>}
-        {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
       </div>
       <table>
         <thead>
@@ -2045,6 +2660,7 @@ function Team() {
       {showUpdateForm && (
         <div className="popup-form show">
           <h3>Update Team</h3>
+          {error && <Alert severity="error">{error}</Alert>}
           <label>ID:</label>
           <input
             type="text"
@@ -2072,6 +2688,9 @@ function Team() {
               </option>
             ))}
           </select>
+          {alertMessage && (
+            <Alert severity={alertSeverity}>{alertMessage}</Alert>
+          )}
           <button className="button btn-update" onClick={handleUpdateTeam}>
             Update
           </button>
@@ -2084,6 +2703,7 @@ function Team() {
       {showCreateForm && (
         <div className="popup-form show">
           <h3>Create New Team</h3>
+          {error && <Alert severity="error">{error}</Alert>}
           <label>ID:</label>
           <input type="text" name="keyId" onChange={handleInputChange} />
           <label>Name:</label>
@@ -2101,6 +2721,9 @@ function Team() {
               </option>
             ))}
           </select>
+          {alertMessage && (
+            <Alert severity={alertSeverity}>{alertMessage}</Alert>
+          )}
           <button className="button btn-create" onClick={handleCreateTeam}>
             Create
           </button>
@@ -2109,7 +2732,6 @@ function Team() {
           </button>
         </div>
       )}
-
       {showDeleteForm && (
         <div className="popup-form show">
           <h3>Delete Team</h3>
@@ -2129,7 +2751,6 @@ function Team() {
 function Tournament() {
   const token = localStorage.getItem("token");
   const [matches, setMatches] = useState([]);
-
   const [tournaments, setTournaments] = useState([]);
   const [selectedTournamentId, setSelectedTournamentId] = useState(null);
   const [updatedTournamentData, setUpdatedTournamentData] = useState({
@@ -2140,7 +2761,8 @@ function Tournament() {
   });
   const [showModal, setShowModal] = useState(false);
   const [modalActionType, setModalActionType] = useState("update");
-  const [error] = useState("");
+  const [createFormError, setCreateFormError] = useState("");
+  const [updateFormError, setUpdateFormError] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("error");
 
@@ -2148,10 +2770,32 @@ function Tournament() {
     fetchTournaments();
   }, []);
   useEffect(() => {
+    if (alertMessage) {
+      const timeout = setTimeout(() => {
+        setAlertMessage("");
+        setAlertSeverity("error");
+      }, 1000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [alertMessage]);
+  useEffect(() => {
     if (selectedTournamentId) {
       fetchMatchesByTournamentId(selectedTournamentId);
     }
   }, [selectedTournamentId]);
+
+  useEffect(() => {
+    if (alertMessage) {
+      const timeout = setTimeout(() => {
+        setAlertMessage("");
+        setAlertSeverity("error");
+      }, 2000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [alertMessage]);
+
   const fetchTournaments = async () => {
     try {
       const response = await fetch(
@@ -2168,6 +2812,7 @@ function Tournament() {
       console.error("Error fetching tournaments:", error.message);
     }
   };
+
   const fetchMatchesByTournamentId = async (tournamentId) => {
     try {
       const response = await fetch(
@@ -2195,6 +2840,7 @@ function Tournament() {
     });
     setShowModal(true);
     setModalActionType("update");
+    setUpdateFormError(""); // Clear update form error when opening the modal
   };
 
   const handleDelete = async (tournamentId) => {
@@ -2231,10 +2877,14 @@ function Tournament() {
     });
     setShowModal(true);
     setModalActionType("create");
+    setCreateFormError(""); // Clear create form error when opening the modal
   };
 
   const handleCreateSubmit = async () => {
-    if (!validateInput()) return;
+    if (!validateInput(updatedTournamentData)) {
+      setCreateFormError("All fields are required");
+      return;
+    }
 
     try {
       const response = await fetch(
@@ -2263,7 +2913,10 @@ function Tournament() {
   };
 
   const handleUpdateSubmit = async () => {
-    if (!validateInput()) return;
+    if (!validateInput(updatedTournamentData)) {
+      setUpdateFormError("All fields are required");
+      return;
+    }
 
     try {
       const response = await fetch(
@@ -2290,20 +2943,16 @@ function Tournament() {
       console.error("Error updating tournament:", error.message);
     }
   };
-  const validateInput = () => {
-    if (
-      !updatedTournamentData.keyId ||
-      !updatedTournamentData.tournamentName ||
-      !updatedTournamentData.startDate ||
-      !updatedTournamentData.endDate
-    ) {
-      setAlertMessage("All fields are required");
-      setAlertSeverity("error");
-      return false;
-    }
-    // Additional validation logic if needed
-    return true;
+
+  const validateInput = (data) => {
+    return (
+      data.keyId.trim() !== "" &&
+      data.tournamentName.trim() !== "" &&
+      data.startDate.trim() !== "" &&
+      data.endDate.trim() !== ""
+    );
   };
+
   const handleSubmitAction = () => {
     if (modalActionType === "update") {
       handleUpdateSubmit();
@@ -2319,13 +2968,14 @@ function Tournament() {
       [name]: value,
     });
   };
-
   return (
     <div className="tournament-container">
       <div className="team-title">
         <h2>TOURNAMENT</h2>
-        {error && <Alert severity="error">{error}</Alert>}
-        {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
+        {/* Error alert for main screen */}
+        {alertMessage && alertSeverity === "success" && (
+          <Alert severity={alertSeverity}>{alertMessage}</Alert>
+        )}
       </div>
       <div className="line"></div>
       <div className="tournament-list">
@@ -2336,10 +2986,11 @@ function Tournament() {
               <p className="">{tournament.tournamentName}</p>
               <p>
                 Start Date:{" "}
-                {new Date(tournament.startDate).toLocaleDateString()}
+                {new Date(tournament.startDate).toLocaleDateString("en-GB")}
               </p>
               <p>
-                End Date: {new Date(tournament.endDate).toLocaleDateString()}
+                End Date:{" "}
+                {new Date(tournament.endDate).toLocaleDateString("en-GB")}
               </p>
               <div>
                 <button
@@ -2359,16 +3010,7 @@ function Tournament() {
           </div>
         ))}
       </div>
-      <div className="match-list">
-        <h3>Matches</h3>
-        <ul>
-          {matches.map((match) => (
-            <li key={match.id}>
-              {match.keyId} - {match.mapName} - {match.matchDate}
-            </li>
-          ))}
-        </ul>
-      </div>
+
       <button className="create-button" onClick={handleCreate}>
         <div className="btn-add">
           <IoAdd />
@@ -2382,6 +3024,8 @@ function Tournament() {
         tournamentData={updatedTournamentData}
         onChange={handleInputChange}
         actionType={modalActionType}
+        createFormError={createFormError}
+        updateFormError={updateFormError}
       />
     </div>
   );
@@ -2401,14 +3045,26 @@ function User() {
     role: "Organizer",
     password: "",
   });
-  const [showPassword, setShowPassword] = useState(false);
+  // const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("error");
-
+  const decodedToken = jwtDecode(token); // Decoding the JWT token
+  const userRole = decodedToken.role; // Assuming 'role' is the key for role information in the token payload
   useEffect(() => {
     getAllUsers();
   }, []);
+
+  useEffect(() => {
+    if (alertMessage) {
+      const timeout = setTimeout(() => {
+        setAlertMessage("");
+        setAlertSeverity("error");
+      }, 2000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [alertMessage]);
 
   const getAllUsers = async () => {
     try {
@@ -2440,8 +3096,15 @@ function User() {
   };
 
   const handleShowDeleteForm = (id) => {
-    setSelectedUserId(id);
-    setShowDeleteForm(true);
+    const userToDelete = users.find((user) => user.id === id);
+
+    if (userToDelete.role === "Organizer") {
+      setAlertMessage("You cannot delete an organizer user.");
+      setAlertSeverity("error");
+    } else {
+      setSelectedUserId(id);
+      setShowDeleteForm(true);
+    }
   };
 
   const handleCloseForms = () => {
@@ -2563,7 +3226,6 @@ function User() {
         console.error("No user selected for deletion.");
         return;
       }
-
       await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/user/delete/${selectedUserId}`,
         {
@@ -2607,19 +3269,19 @@ function User() {
 
   return (
     <div>
-      {error && <Alert severity="error">{error}</Alert>}
-      {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
-
       <div className="user-title">
         <h2>User</h2>
+        {alertMessage && alertSeverity === "success" && (
+          <Alert severity={alertSeverity}>{alertMessage}</Alert>
+        )}
       </div>
       <table>
         <thead>
           <tr>
+            <th>ID</th>
             <th>Username</th>
             <th>Email</th>
             <th>Full Name</th>
-            <th>Password</th>
             <th>Role</th>
             <th>Action Type</th>
           </tr>
@@ -2627,24 +3289,30 @@ function User() {
         <tbody>
           {users.map((user) => (
             <tr key={user.id}>
+              <td>{user.keyId}</td>
               <td>{user.userName}</td>
               <td>{user.userEmail}</td>
               <td>{user.fullName}</td>
-              <td>{showPassword ? user.password : "********"}</td>
               <td>{user.role}</td>
               <td>
-                <button
-                  className="button btn-update"
-                  onClick={() => handleShowUpdateForm(user.id)}
-                >
-                  Update
-                </button>
-                <button
-                  className="button btn-delete"
-                  onClick={() => handleShowDeleteForm(user.id)}
-                >
-                  Delete
-                </button>
+                {userRole == "Organizer" ? (
+                  <>
+                    <button
+                      className="button btn-update"
+                      onClick={() => handleShowUpdateForm(user.id)}
+                    >
+                      Update
+                    </button>
+                    <button
+                      className="button btn-delete"
+                      onClick={() => handleShowDeleteForm(user.id)}
+                    >
+                      Delete
+                    </button>
+                  </>
+                ) : (
+                  <span style={{ color: "red" }}>Not Permitted</span>
+                )}
               </td>
             </tr>
           ))}
@@ -2658,6 +3326,10 @@ function User() {
       {showUpdateForm && (
         <div className="popup-form show">
           <h3>Update User</h3>
+          {error && <Alert severity="error">{error}</Alert>}
+          {alertMessage && (
+            <Alert severity={alertSeverity}>{alertMessage}</Alert>
+          )}
           <label>Username:</label>
           <input
             type="text"
@@ -2681,7 +3353,7 @@ function User() {
           />
           <label>Password:</label>
           <input
-            type="text"
+            type="password"
             name="password"
             value={formData.password}
             onChange={handleInputChange}
@@ -2696,14 +3368,14 @@ function User() {
             <option value="Head Referee">Head Referee</option>
             <option value="Referee">Referee</option>
           </select>
-          <label>
+          {/* <label>
             Show Password:
             <input
               type="checkbox"
               checked={showPassword}
               onChange={() => setShowPassword(!showPassword)}
             />
-          </label>
+          </label> */}
 
           <button className="button btn-update" onClick={handleUpdateUser}>
             Update
@@ -2717,6 +3389,10 @@ function User() {
       {showCreateForm && (
         <div className="popup-form show">
           <h3>Create New User</h3>
+          {error && <Alert severity="error">{error}</Alert>}
+          {alertMessage && (
+            <Alert severity={alertSeverity}>{alertMessage}</Alert>
+          )}
           <label>Username:</label>
           <input
             type="text"
@@ -2733,7 +3409,7 @@ function User() {
           />
           <label>Password:</label>
           <input
-            type="text"
+            type="password"
             name="password"
             value={formData.password}
             onChange={handleInputChange}
@@ -2755,14 +3431,14 @@ function User() {
             <option value="Head Referee">Head Referee</option>
             <option value="Referee">Referee</option>
           </select>
-          <label>
+          {/* <label>
             Show Password:
             <input
               type="checkbox"
               checked={showPassword}
               onChange={() => setShowPassword(!showPassword)}
             />
-          </label>
+          </label> */}
 
           <button className="button btn-create" onClick={handleCreateUser}>
             Create

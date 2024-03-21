@@ -1,3 +1,4 @@
+import { Alert } from "@mui/material";
 import React from "react";
 import "./Modal.css";
 
@@ -8,6 +9,8 @@ const Modal = ({
   tournamentData,
   onChange,
   actionType,
+  createFormError,
+  updateFormError,
 }) => {
   if (!show) {
     return null;
@@ -68,6 +71,12 @@ const Modal = ({
                 onChange={onChange}
               />
             </div>
+            {actionType === "create" && createFormError && (
+              <Alert severity="error">{createFormError}</Alert>
+            )}
+            {actionType === "update" && updateFormError && (
+              <Alert severity="error">{updateFormError}</Alert>
+            )}
           </>
         )}
         {actionType === "delete" && (
@@ -87,7 +96,5 @@ const Modal = ({
     </div>
   );
 };
-
-
 
 export default Modal;
