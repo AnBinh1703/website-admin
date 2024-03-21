@@ -14,6 +14,7 @@ import { IoAdd } from "react-icons/io5";
 import { TbSchool } from "react-icons/tb";
 import { TfiCup } from "react-icons/tfi";
 
+import { jwtDecode } from "jwt-decode";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "../../App.css";
@@ -25,7 +26,6 @@ import Modal from "./Modal";
 import "./Modal.css";
 import RoundModal from "./RoundModal";
 import "./Team.css";
-import { jwtDecode } from 'jwt-decode';
 
 function ActivityType() {
   const token = localStorage.getItem("token");
@@ -203,7 +203,7 @@ function ActivityType() {
   const showAlertMessage = (message, severity) => {
     setAlertMessage(message);
     setAlertSeverity(severity);
-    setShowAlert(true)
+    setShowAlert(true);
     setTimeout(() => {
       setShowAlert(false);
       setAlertMessage("");
@@ -226,9 +226,7 @@ function ActivityType() {
         <h2>Activity Type</h2>
       </div>
       <div className="line"></div>
-      {showSuccessAlert && (
-        <Alert severity="success">{alertMessage}</Alert>
-      )}
+      {showSuccessAlert && <Alert severity="success">{alertMessage}</Alert>}
       <div className="tournament-list">
         {activities.map((activity) => (
           <div key={activity.id} className="tournament-container-list">
@@ -461,7 +459,7 @@ function HighSchool() {
     setAlertSeverity(severity);
     setAlertMessage(message);
     setTimeout(() => {
-      setShowSuccessAlert(false)
+      setShowSuccessAlert(false);
       setAlertMessage(null);
       setAlertSeverity(); // Reset severity after hiding the alert
     }, 2000); // Hide the alert after 2 seconds
@@ -473,9 +471,7 @@ function HighSchool() {
         <h2>High Schools</h2>
       </div>
       <div className="line"></div>
-      {showSuccessAlert && (
-        <Alert severity="success">{alertMessage}</Alert>
-      )}
+      {showSuccessAlert && <Alert severity="success">{alertMessage}</Alert>}
       <div className="tournament-list">
         {highSchools.map((highSchool) => (
           <div key={highSchool.id} className="tournament-container-list">
@@ -529,9 +525,7 @@ function Map() {
   const [modalActionType, setModalActionType] = useState("update");
   const [alertMessage, setAlertMessage] = useState(null);
   const [alertSeverity, setAlertSeverity] = useState("success");
-  const [showAlert,setShowAlert] = useState(false);
-  
-  
+  const [showAlert, setShowAlert] = useState(false);
 
   useEffect(() => {
     fetchMaps();
@@ -711,9 +705,7 @@ function Map() {
         <h2>Maps</h2>
       </div>
       <div className="line"></div>
-      {
-        showAlert && (<Alert severity={alertSeverity}>{alertMessage}</Alert>)  
-      }
+      {showAlert && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
       <div className="tournament-list">
         {maps.map((map) => (
           <div key={map.id} className="tournament-container-list">
@@ -2021,8 +2013,8 @@ function Player() {
         </div>
         {/* Display alert if validation fails */}
         {alertMessage && alertSeverity === "success" && (
-          <Alert severity="sucess">{alertMessage}</Alert>
-        )}{" "}
+          <Alert severity="success">{alertMessage}</Alert>
+        )}
       </div>
       <table>
         <thead>
@@ -2248,6 +2240,9 @@ function Round() {
         fetchRounds();
         setAlertSeverity("success");
         setAlertMessage("Round deleted successfully.");
+        setTimeout(() => {
+          setAlertMessage("");
+        }, 2000); // 2 seconds
       } else {
         console.error("Error deleting round");
       }
@@ -2268,6 +2263,9 @@ function Round() {
     if (!updatedRoundData.roundName.trim()) {
       setAlertMessage("Round name cannot be empty");
       setAlertSeverity("error");
+      setTimeout(() => {
+        setAlertMessage("");
+      }, 2000); // 2 seconds
       return false;
     }
     return true;
@@ -2294,6 +2292,9 @@ function Round() {
         setShowModal(false);
         setAlertSeverity("success");
         setAlertMessage("Round created successfully.");
+        setTimeout(() => {
+          setAlertMessage("");
+        }, 2000); // 2 seconds
       } else {
         console.error("Error creating round");
       }
@@ -2323,6 +2324,9 @@ function Round() {
         setShowModal(false);
         setAlertSeverity("success");
         setAlertMessage("Round updated successfully.");
+        setTimeout(() => {
+          setAlertMessage("");
+        }, 2000); // 2 seconds
       } else {
         console.error("Error updating round");
       }
@@ -2352,7 +2356,9 @@ function Round() {
       <div className="team-title">
         <h2>Round</h2>
         {/* Display alert if there's a success message */}
-        {alertMessage && <Alert severity="success">{alertMessage}</Alert>}
+        {alertMessage && alertSeverity === "success" && (
+          <Alert severity="success">{alertMessage}</Alert>
+        )}
       </div>
       <div className="line"></div>
       <div className="tournament-list">
@@ -3060,7 +3066,6 @@ function User() {
     }
   }, [alertMessage]);
 
-  
   const getAllUsers = async () => {
     try {
       const response = await fetch(
@@ -3290,8 +3295,7 @@ function User() {
               <td>{user.fullName}</td>
               <td>{user.role}</td>
               <td>
-
-              {userRole == "Organizer" ? (
+                {userRole == "Organizer" ? (
                   <>
                     <button
                       className="button btn-update"
