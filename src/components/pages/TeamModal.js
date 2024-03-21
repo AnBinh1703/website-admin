@@ -8,7 +8,7 @@ const TeamModal = ({
   teamData,
   onChange,
   actionType,
-  highSchoolsUrl = "https://fptbottournamentweb.azurewebsites.net/api/highSchool/get-all",
+  highSchoolsUrl = "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/highSchool/get-all",
 }) => {
   const [highSchoolIds, setHighSchoolIds] = useState([]);
   const [alertMessage, setAlertMessage] = useState(null); // Alert state

@@ -49,7 +49,7 @@ function ActivityType() {
   const fetchActivities = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/activity-type/get-all"
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/activity-type/get-all"
       );
 
       if (response.ok) {
@@ -77,7 +77,7 @@ function ActivityType() {
   const handleDelete = async (activityId) => {
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/activity-type/delete/${activityId}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/activity-type/delete/${activityId}`,
         {
           method: "DELETE",
           headers: {
@@ -115,7 +115,7 @@ function ActivityType() {
 
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/activity-type/create",
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/activity-type/create",
         {
           method: "POST",
           headers: {
@@ -148,7 +148,7 @@ function ActivityType() {
 
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/activity-type/update/${selectedActivityId}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/activity-type/update/${selectedActivityId}`,
         {
           method: "PUT",
           headers: {
@@ -294,7 +294,7 @@ function HighSchool() {
   const fetchHighSchools = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/highSchool/get-all"
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/highSchool/get-all"
       );
 
       if (response.ok) {
@@ -326,7 +326,7 @@ function HighSchool() {
   const handleDelete = async (highSchoolId) => {
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/highSchool/delete/${highSchoolId}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/highSchool/delete/${highSchoolId}`,
         {
           method: "DELETE",
           headers: {
@@ -364,7 +364,7 @@ function HighSchool() {
 
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/highSchool/create",
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/highSchool/create",
         {
           method: "POST",
           headers: {
@@ -395,7 +395,7 @@ function HighSchool() {
 
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/highSchool/update/${selectedHighSchoolId}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/highSchool/update/${selectedHighSchoolId}`,
         {
           method: "PUT",
           headers: {
@@ -534,7 +534,7 @@ function Map() {
   const fetchMaps = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/map/get-all"
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/map/get-all"
       );
 
       if (response.ok) {
@@ -563,7 +563,7 @@ function Map() {
   const handleDelete = async (mapId) => {
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/map/delete/${mapId}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/map/delete/${mapId}`,
         {
           method: "DELETE",
           headers: {
@@ -602,7 +602,7 @@ function Map() {
 
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/map/create",
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/map/create",
         {
           method: "POST",
           headers: {
@@ -632,7 +632,7 @@ function Map() {
 
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/map/update/${selectedMapId}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/map/update/${selectedMapId}`,
         {
           method: "PUT",
           headers: {
@@ -814,7 +814,7 @@ function Match() {
   const getAllMatches = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/match/get-all"
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/match/get-all"
       );
       const data = await response.json();
       setMatches(data);
@@ -825,7 +825,7 @@ function Match() {
   const getMatchesByTournament = async (tournamentId) => {
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/match/get-by-tournament-id/${tournamentId}`
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/match/get-by-tournament-id/${tournamentId}`
       );
       const data = await response.json();
       setMatches(data);
@@ -836,7 +836,7 @@ function Match() {
   const fetchMaps = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/map/get-all"
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/map/get-all"
       );
       const data = await response.json();
       setMaps(data);
@@ -848,7 +848,7 @@ function Match() {
   const fetchRounds = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/round/get-all"
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/round/get-all"
       );
       const data = await response.json();
       setRounds(data);
@@ -860,7 +860,7 @@ function Match() {
   const fetchTournaments = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/tournament/get-all"
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/tournament/get-all"
       );
       const data = await response.json();
       setTournaments(data);
@@ -871,7 +871,7 @@ function Match() {
   const fetchTeams = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/team/get-all"
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/team/get-all"
       );
       const data = await response.json();
       setTeams(data);
@@ -924,7 +924,7 @@ function Match() {
   const handleDeleteTeamInMatch = async (id) => {
     try {
       await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/delete-team-with-id/${id}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/team-in-match/delete-team-with-id/${id}`,
         {
           method: "DELETE",
           headers: {
@@ -970,7 +970,7 @@ function Match() {
 
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/match/create",
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/match/create",
         {
           method: "POST",
           headers: {
@@ -1012,7 +1012,7 @@ function Match() {
       }
 
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/update-result-for-team-in-match-id/${selectedTeamInMatchId}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/team-in-match/update-result-for-team-in-match-id/${selectedTeamInMatchId}`,
         {
           method: "PUT",
           headers: {
@@ -1074,7 +1074,7 @@ function Match() {
 
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/match/update/${selectedMatchId}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/match/update/${selectedMatchId}`,
         {
           method: "PUT",
           headers: {
@@ -1118,7 +1118,7 @@ function Match() {
       }
 
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/match/delete/${selectedMatchId}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/match/delete/${selectedMatchId}`,
         {
           method: "DELETE",
           headers: {
@@ -1165,7 +1165,7 @@ function Match() {
       }
 
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/team-in-match/add-team-to-match",
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/team-in-match/add-team-to-match",
         {
           method: "POST",
           headers: {
@@ -1200,7 +1200,7 @@ function Match() {
   const handleDoubleClick = async (id) => {
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/match/get-by-id/${id}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/match/get-by-id/${id}`,
         {
           method: "GET",
           headers: {
@@ -1231,7 +1231,7 @@ function Match() {
   const handleDoubleClickTeamInMatch = async (id) => {
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/team-activity/get-activities-by-team-in-match-id/${id}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/team-activity/get-activities-by-team-in-match-id/${id}`,
         {
           method: "GET",
           headers: {
@@ -1267,7 +1267,7 @@ function Match() {
     const getAllTeamInMatchByMatchId = async () => {
       try {
         const response = await fetch(
-          `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/get-all-teams-in-match-id/${idMatch}`,
+          `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/team-in-match/get-all-teams-in-match-id/${idMatch}`,
           {
             method: "GET",
             headers: {
@@ -1293,7 +1293,7 @@ function Match() {
     const getUpdateTeamInMatch = async () => {
       try {
         const response = await fetch(
-          `https://fptbottournamentweb.azurewebsites.net/api/team-in-match/update-result-for-team-in-match-id/${selectedTeamInMatchId}`,
+          `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/team-in-match/update-result-for-team-in-match-id/${selectedTeamInMatchId}`,
           {
             method: "PUT",
             headers: {
@@ -1768,7 +1768,7 @@ function Player() {
   const getAllPlayers = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/player/get-all"
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/player/get-all"
       );
       const data = await response.json();
       setPlayers(data);
@@ -1780,7 +1780,7 @@ function Player() {
   const fetchTeams = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/team/get-all",
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/team/get-all",
         {
           method: "GET",
         }
@@ -1796,7 +1796,7 @@ function Player() {
       setSelectedTeamId(selectedId); // Update selected team ID
       try {
         const response = await fetch(
-          `https://fptbottournamentweb.azurewebsites.net/api/player/get-by-team-id/${selectedId}`
+          `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/player/get-by-team-id/${selectedId}`
         );
         const data = await response.json();
         setPlayers(data);
@@ -1855,7 +1855,7 @@ function Player() {
     if (!validateInput()) return;
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/player/create",
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/player/create",
         {
           method: "POST",
           headers: {
@@ -1894,7 +1894,7 @@ function Player() {
 
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/player/update/${selectedPlayerId}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/player/update/${selectedPlayerId}`,
         {
           method: "PUT",
           headers: {
@@ -1946,7 +1946,7 @@ function Player() {
       }
 
       await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/player/delete/${selectedPlayerId}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/player/delete/${selectedPlayerId}`,
         {
           method: "DELETE",
           headers: {
@@ -2200,7 +2200,7 @@ function Round() {
   const fetchRounds = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/round/get-all"
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/round/get-all"
       );
 
       if (response.ok) {
@@ -2226,7 +2226,7 @@ function Round() {
   const handleDelete = async (roundId) => {
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/round/delete/${roundId}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/round/delete/${roundId}`,
         {
           method: "DELETE",
           headers: {
@@ -2276,7 +2276,7 @@ function Round() {
 
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/round/create",
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/round/create",
         {
           method: "POST",
           headers: {
@@ -2308,7 +2308,7 @@ function Round() {
 
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/round/update/${selectedRoundId}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/round/update/${selectedRoundId}`,
         {
           method: "PUT",
           headers: {
@@ -2435,7 +2435,7 @@ function Team() {
   const getAllTeams = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/team/get-all"
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/team/get-all"
       );
       if (response.ok) {
         const data = await response.json();
@@ -2451,7 +2451,7 @@ function Team() {
   const fetchHighSchools = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/highschool/get-all",
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/highschool/get-all",
         {
           method: "GET",
         }
@@ -2512,7 +2512,7 @@ function Team() {
     if (!validateInput()) return;
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/team/create",
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/team/create",
         {
           method: "POST",
           headers: {
@@ -2545,7 +2545,7 @@ function Team() {
     if (!validateInput()) return;
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/team/update/${selectedTeamId}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/team/update/${selectedTeamId}`,
         {
           method: "PUT",
           headers: {
@@ -2583,7 +2583,7 @@ function Team() {
       }
 
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/team/delete/${selectedTeamId}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/team/delete/${selectedTeamId}`,
         {
           method: "DELETE",
           headers: {
@@ -2799,7 +2799,7 @@ function Tournament() {
   const fetchTournaments = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/tournament/get-all"
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/tournament/get-all"
       );
 
       if (response.ok) {
@@ -2816,7 +2816,7 @@ function Tournament() {
   const fetchMatchesByTournamentId = async (tournamentId) => {
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/match/get-by-tournament-id/${tournamentId}`
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/match/get-by-tournament-id/${tournamentId}`
       );
 
       if (response.ok) {
@@ -2846,7 +2846,7 @@ function Tournament() {
   const handleDelete = async (tournamentId) => {
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/tournament/delete/${tournamentId}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/tournament/delete/${tournamentId}`,
         {
           method: "DELETE",
           headers: {
@@ -2888,7 +2888,7 @@ function Tournament() {
 
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/tournament/create",
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/tournament/create",
         {
           method: "POST",
           headers: {
@@ -2920,7 +2920,7 @@ function Tournament() {
 
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/tournament/update/${selectedTournamentId}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/tournament/update/${selectedTournamentId}`,
         {
           method: "PUT",
           headers: {
@@ -3069,7 +3069,7 @@ function User() {
   const getAllUsers = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/user/get-all"
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/user/get-all"
       );
       if (response.ok) {
         const data = await response.json();
@@ -3135,7 +3135,7 @@ function User() {
     if (!validateInput()) return;
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/user/create",
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/user/create",
         {
           method: "POST",
           headers: {
@@ -3185,7 +3185,7 @@ function User() {
     if (!validateInput()) return;
     try {
       const response = await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/user/update/${selectedUserId}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/user/update/${selectedUserId}`,
         {
           method: "PUT",
           headers: {
@@ -3227,7 +3227,7 @@ function User() {
         return;
       }
       await fetch(
-        `https://fptbottournamentweb.azurewebsites.net/api/user/delete/${selectedUserId}`,
+        `https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/user/delete/${selectedUserId}`,
         {
           method: "DELETE",
           headers: {

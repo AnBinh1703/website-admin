@@ -38,7 +38,7 @@ const LoginPage = ({ setIsLoggedIn }) => {
   const handleLogin = async () => {
     try {
       const response = await fetch(
-        "https://fptbottournamentweb.azurewebsites.net/api/Login/login",
+        "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/Login/login",
         {
           method: "POST",
           headers: {
