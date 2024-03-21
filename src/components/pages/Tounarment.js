@@ -203,12 +203,11 @@ function ActivityType() {
   const showAlertMessage = (message, severity) => {
     setAlertMessage(message);
     setAlertSeverity(severity);
-    setShowAlert(true);
-  };
-
-  const handleAlertClose = () => {
-    setShowAlert(false);
-    setAlertMessage(""); // Reset alert message after closing
+    setShowAlert(true)
+    setTimeout(() => {
+      setShowAlert(false);
+      setAlertMessage("");
+    }, 2000);
   };
 
   const handleSuccessAlert = (message) => {
@@ -228,9 +227,7 @@ function ActivityType() {
       </div>
       <div className="line"></div>
       {showSuccessAlert && (
-        <Alert severity="success" onClose={handleAlertClose}>
-          {alertMessage}
-        </Alert>
+        <Alert severity="success">{alertMessage}</Alert>
       )}
       <div className="tournament-list">
         {activities.map((activity) => (
@@ -271,7 +268,6 @@ function ActivityType() {
           alertMessage={alertMessage}
           alertSeverity={alertSeverity}
           showAlert={showAlert}
-          handleAlertClose={handleAlertClose}
           errorMessage={errorMessage}
         />
       )}
@@ -416,6 +412,7 @@ function HighSchool() {
         fetchHighSchools();
         setShowModal(false);
         showAlertMessage("High school updated successfully");
+        setShowSuccessAlert(true);
       } else {
         console.error("Error updating high school");
         showAlertMessage("Failed to update high school", "error");
@@ -460,12 +457,13 @@ function HighSchool() {
   };
 
   // Function to handle showing success alert
-  const showAlertMessage = (message, severity = "success") => {
+  const showAlertMessage = (message, severity) => {
     setAlertSeverity(severity);
     setAlertMessage(message);
     setTimeout(() => {
+      setShowSuccessAlert(false)
       setAlertMessage(null);
-      setAlertSeverity("success"); // Reset severity after hiding the alert
+      setAlertSeverity(); // Reset severity after hiding the alert
     }, 2000); // Hide the alert after 2 seconds
   };
 
@@ -476,9 +474,7 @@ function HighSchool() {
       </div>
       <div className="line"></div>
       {showSuccessAlert && (
-        <Alert severity="success" onClose={() => setShowSuccessAlert(false)}>
-          {alertMessage}
-        </Alert>
+        <Alert severity="success">{alertMessage}</Alert>
       )}
       <div className="tournament-list">
         {highSchools.map((highSchool) => (
@@ -533,6 +529,9 @@ function Map() {
   const [modalActionType, setModalActionType] = useState("update");
   const [alertMessage, setAlertMessage] = useState(null);
   const [alertSeverity, setAlertSeverity] = useState("success");
+  const [showAlert,setShowAlert] = useState(false);
+  
+  
 
   useEffect(() => {
     fetchMaps();
@@ -583,9 +582,11 @@ function Map() {
       if (response.ok) {
         fetchMaps();
         showAlertMessage("Map deleted successfully");
+        setShowAlert(true);
       } else {
         console.error("Error deleting map");
-        showAlertMessage("Failed to delete map", "error");
+        showAlertMessage("This map is in used", "error");
+        setShowAlert(true);
       }
     } catch (error) {
       console.error("Error deleting map:", error.message);
@@ -652,13 +653,16 @@ function Map() {
         fetchMaps();
         setShowModal(false);
         showAlertMessage("Map updated successfully");
+        setShowAlert(true);
       } else {
         console.error("Error updating map");
         showAlertMessage("Failed to update map", "error");
+        setShowAlert(true);
       }
     } catch (error) {
       console.error("Error updating map:", error.message);
       showAlertMessage("An error occurred while updating map", "error");
+      setShowAlert(true);
     }
   };
 
@@ -690,14 +694,14 @@ function Map() {
     return true;
   };
 
-  const showAlertMessage = (message, severity = "success") => {
+  const showAlertMessage = (message, severity) => {
     setAlertSeverity(severity);
     setAlertMessage(message);
     if (message !== null) {
       // Check if message is not null before setting a timeout
       setTimeout(() => {
         setAlertMessage(null);
-        setAlertSeverity("success"); // Reset severity after hiding the alert
+        setAlertSeverity(""); // Reset severity after hiding the alert
       }, 2000); // Hide the alert after 2 seconds
     }
   };
@@ -707,9 +711,9 @@ function Map() {
         <h2>Maps</h2>
       </div>
       <div className="line"></div>
-      {alertMessage && alertSeverity === "success" && (
-        <Alert severity={alertSeverity}>{alertMessage}</Alert>
-      )}
+      {
+        showAlert && (<Alert severity={alertSeverity}>{alertMessage}</Alert>)  
+      }
       <div className="tournament-list">
         {maps.map((map) => (
           <div key={map.id} className="tournament-container-list">
@@ -3269,6 +3273,7 @@ function User() {
       <table>
         <thead>
           <tr>
+            <th>ID</th>
             <th>Username</th>
             <th>Email</th>
             <th>Full Name</th>
@@ -3279,6 +3284,7 @@ function User() {
         <tbody>
           {users.map((user) => (
             <tr key={user.id}>
+              <td>{user.keyId}</td>
               <td>{user.userName}</td>
               <td>{user.userEmail}</td>
               <td>{user.fullName}</td>
