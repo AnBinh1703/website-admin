@@ -25,6 +25,7 @@ import Modal from "./Modal";
 import "./Modal.css";
 import RoundModal from "./RoundModal";
 import "./Team.css";
+import { jwtDecode } from 'jwt-decode';
 
 function ActivityType() {
   const token = localStorage.getItem("token");
@@ -202,12 +203,11 @@ function ActivityType() {
   const showAlertMessage = (message, severity) => {
     setAlertMessage(message);
     setAlertSeverity(severity);
-    setShowAlert(true);
-  };
-
-  const handleAlertClose = () => {
-    setShowAlert(false);
-    setAlertMessage(""); // Reset alert message after closing
+    setShowAlert(true)
+    setTimeout(() => {
+      setShowAlert(false);
+      setAlertMessage("");
+    }, 2000);
   };
 
   const handleSuccessAlert = (message) => {
@@ -227,9 +227,7 @@ function ActivityType() {
       </div>
       <div className="line"></div>
       {showSuccessAlert && (
-        <Alert severity="success" onClose={handleAlertClose}>
-          {alertMessage}
-        </Alert>
+        <Alert severity="success">{alertMessage}</Alert>
       )}
       <div className="tournament-list">
         {activities.map((activity) => (
@@ -270,7 +268,6 @@ function ActivityType() {
           alertMessage={alertMessage}
           alertSeverity={alertSeverity}
           showAlert={showAlert}
-          handleAlertClose={handleAlertClose}
           errorMessage={errorMessage}
         />
       )}
@@ -415,6 +412,7 @@ function HighSchool() {
         fetchHighSchools();
         setShowModal(false);
         showAlertMessage("High school updated successfully");
+        setShowSuccessAlert(true);
       } else {
         console.error("Error updating high school");
         showAlertMessage("Failed to update high school", "error");
@@ -459,12 +457,13 @@ function HighSchool() {
   };
 
   // Function to handle showing success alert
-  const showAlertMessage = (message, severity = "success") => {
+  const showAlertMessage = (message, severity) => {
     setAlertSeverity(severity);
     setAlertMessage(message);
     setTimeout(() => {
+      setShowSuccessAlert(false)
       setAlertMessage(null);
-      setAlertSeverity("success"); // Reset severity after hiding the alert
+      setAlertSeverity(); // Reset severity after hiding the alert
     }, 2000); // Hide the alert after 2 seconds
   };
 
@@ -475,9 +474,7 @@ function HighSchool() {
       </div>
       <div className="line"></div>
       {showSuccessAlert && (
-        <Alert severity="success" onClose={() => setShowSuccessAlert(false)}>
-          {alertMessage}
-        </Alert>
+        <Alert severity="success">{alertMessage}</Alert>
       )}
       <div className="tournament-list">
         {highSchools.map((highSchool) => (
@@ -532,6 +529,9 @@ function Map() {
   const [modalActionType, setModalActionType] = useState("update");
   const [alertMessage, setAlertMessage] = useState(null);
   const [alertSeverity, setAlertSeverity] = useState("success");
+  const [showAlert,setShowAlert] = useState(false);
+  
+  
 
   useEffect(() => {
     fetchMaps();
@@ -582,9 +582,11 @@ function Map() {
       if (response.ok) {
         fetchMaps();
         showAlertMessage("Map deleted successfully");
+        setShowAlert(true);
       } else {
         console.error("Error deleting map");
-        showAlertMessage("Failed to delete map", "error");
+        showAlertMessage("This map is in used", "error");
+        setShowAlert(true);
       }
     } catch (error) {
       console.error("Error deleting map:", error.message);
@@ -651,13 +653,16 @@ function Map() {
         fetchMaps();
         setShowModal(false);
         showAlertMessage("Map updated successfully");
+        setShowAlert(true);
       } else {
         console.error("Error updating map");
         showAlertMessage("Failed to update map", "error");
+        setShowAlert(true);
       }
     } catch (error) {
       console.error("Error updating map:", error.message);
       showAlertMessage("An error occurred while updating map", "error");
+      setShowAlert(true);
     }
   };
 
@@ -689,14 +694,14 @@ function Map() {
     return true;
   };
 
-  const showAlertMessage = (message, severity = "success") => {
+  const showAlertMessage = (message, severity) => {
     setAlertSeverity(severity);
     setAlertMessage(message);
     if (message !== null) {
       // Check if message is not null before setting a timeout
       setTimeout(() => {
         setAlertMessage(null);
-        setAlertSeverity("success"); // Reset severity after hiding the alert
+        setAlertSeverity(""); // Reset severity after hiding the alert
       }, 2000); // Hide the alert after 2 seconds
     }
   };
@@ -706,9 +711,9 @@ function Map() {
         <h2>Maps</h2>
       </div>
       <div className="line"></div>
-      {alertMessage && alertSeverity === "success" && (
-        <Alert severity={alertSeverity}>{alertMessage}</Alert>
-      )}
+      {
+        showAlert && (<Alert severity={alertSeverity}>{alertMessage}</Alert>)  
+      }
       <div className="tournament-list">
         {maps.map((map) => (
           <div key={map.id} className="tournament-container-list">
@@ -3034,10 +3039,12 @@ function User() {
     role: "Organizer",
     password: "",
   });
-  const [showPassword, setShowPassword] = useState(false);
+  // const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("error");
+  const decodedToken = jwtDecode(token); // Decoding the JWT token
+  const userRole = decodedToken.role; // Assuming 'role' is the key for role information in the token payload
   useEffect(() => {
     getAllUsers();
   }, []);
@@ -3053,6 +3060,7 @@ function User() {
     }
   }, [alertMessage]);
 
+  
   const getAllUsers = async () => {
     try {
       const response = await fetch(
@@ -3085,8 +3093,8 @@ function User() {
   const handleShowDeleteForm = (id) => {
     const userToDelete = users.find((user) => user.id === id);
 
-    if (userToDelete.role === "Admin") {
-      setAlertMessage("You cannot delete an admin user.");
+    if (userToDelete.role === "Organizer") {
+      setAlertMessage("You cannot delete an organizer user.");
       setAlertSeverity("error");
     } else {
       setSelectedUserId(id);
@@ -3213,21 +3221,6 @@ function User() {
         console.error("No user selected for deletion.");
         return;
       }
-      const userToDelete = users.find((user) => user.id === selectedUserId);
-      if (userToDelete.role == "Admin") {
-        setAlertMessage("You cannot delete an admin user.");
-        setAlertSeverity("error");
-        return;
-      }
-      if (userToDelete.role !== "Admin") {
-        setAlertMessage(
-          "Warning: You are not an admin user. Are you sure you want to delete this user?"
-        );
-        setAlertSeverity("warning");
-        setShowDeleteForm(true);
-        return;
-      }
-
       await fetch(
         `https://fptbottournamentweb.azurewebsites.net/api/user/delete/${selectedUserId}`,
         {
@@ -3280,10 +3273,10 @@ function User() {
       <table>
         <thead>
           <tr>
+            <th>ID</th>
             <th>Username</th>
             <th>Email</th>
             <th>Full Name</th>
-            <th>Password</th>
             <th>Role</th>
             <th>Action Type</th>
           </tr>
@@ -3291,13 +3284,14 @@ function User() {
         <tbody>
           {users.map((user) => (
             <tr key={user.id}>
+              <td>{user.keyId}</td>
               <td>{user.userName}</td>
               <td>{user.userEmail}</td>
               <td>{user.fullName}</td>
-              <td>{showPassword ? user.password : "********"}</td>
               <td>{user.role}</td>
               <td>
-                {user.role == "Organizer" ? (
+
+              {userRole == "Organizer" ? (
                   <>
                     <button
                       className="button btn-update"
@@ -3355,7 +3349,7 @@ function User() {
           />
           <label>Password:</label>
           <input
-            type="text"
+            type="password"
             name="password"
             value={formData.password}
             onChange={handleInputChange}
@@ -3370,14 +3364,14 @@ function User() {
             <option value="Head Referee">Head Referee</option>
             <option value="Referee">Referee</option>
           </select>
-          <label>
+          {/* <label>
             Show Password:
             <input
               type="checkbox"
               checked={showPassword}
               onChange={() => setShowPassword(!showPassword)}
             />
-          </label>
+          </label> */}
 
           <button className="button btn-update" onClick={handleUpdateUser}>
             Update
@@ -3411,7 +3405,7 @@ function User() {
           />
           <label>Password:</label>
           <input
-            type="text"
+            type="password"
             name="password"
             value={formData.password}
             onChange={handleInputChange}
@@ -3433,14 +3427,14 @@ function User() {
             <option value="Head Referee">Head Referee</option>
             <option value="Referee">Referee</option>
           </select>
-          <label>
+          {/* <label>
             Show Password:
             <input
               type="checkbox"
               checked={showPassword}
               onChange={() => setShowPassword(!showPassword)}
             />
-          </label>
+          </label> */}
 
           <button className="button btn-create" onClick={handleCreateUser}>
             Create
