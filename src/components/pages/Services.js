@@ -1,72 +1,58 @@
-import React from "react";
-import "../../App.css";
+import React from "react"; // Importing React
+
+const TechnicalAspectCard = ({ title, description }) => (
+  <div className="technical-aspect-card">
+    <h3>{title}</h3>
+    <p>{description}</p>
+  </div>
+);
 
 export default function Services() {
+  const technicalAspects = [
+    {
+      title: "Sensors",
+      description: "Collecting data from the environment.",
+    },
+    {
+      title: "Processing",
+      description: "Analyzing and interpreting sensor data.",
+    },
+    {
+      title: "Decision-making",
+      description: "Making decisions based on processed data.",
+    },
+    {
+      title: "Control",
+      description: "Executing actions based on decisions.",
+    },
+    {
+      title: "Learning",
+      description: "Adapting to new situations and environments.",
+    },
+    {
+      title: "Interaction",
+      description: "Communicating with other systems and devices.",
+    },
+  ];
+
   return (
-    <>
-      {/* Add the link for the favicon */}
-      <link
-        rel="icon"
-        href="https://leotronics.eu/favicon.ico"
-        type="image/x-icon"
-      />
-      {/* Add the link for the apple-touch-icon */}
-      <link rel="apple-touch-icon" href="https://leotronics.eu/favicon.ico" />
-      {/* Your component content */}
-      <div className="services">
-        <h1>Technical Aspects of Autonomous Systems</h1>
-        <p>
-          Autonomous systems, such as self-driving cars, drones, and robots,
-          rely on advanced technologies to operate without direct human
-          intervention. Here are some key technical aspects:
-        </p>
-        <ul>
-          <li>
-            Sensor Fusion: Autonomous systems use various sensors, such as
-            cameras, lidar, radar, and GPS, to perceive their environment.
-            Sensor fusion techniques integrate data from these sensors to create
-            a comprehensive understanding of the surroundings.
-          </li>
-          <li>
-            Perception and Object Recognition: Machine learning algorithms
-            analyze sensor data to identify objects, pedestrians, obstacles, and
-            other relevant entities in the environment.
-          </li>
-          <li>
-            Localization and Mapping: Autonomous systems employ simultaneous
-            localization and mapping (SLAM) algorithms to accurately determine
-            their position and create maps of the surroundings in real-time.
-          </li>
-          <li>
-            Path Planning and Control: Based on perception and mapping data,
-            autonomous systems generate optimal paths and trajectories to
-            navigate safely and efficiently in complex environments.
-          </li>
-          <li>
-            Machine Learning and Artificial Intelligence: Deep learning
-            algorithms enable autonomous systems to learn from data, adapt to
-            changing conditions, and improve decision-making capabilities over
-            time.
-          </li>
-          <li>
-            Communication and Connectivity: Autonomous systems may communicate
-            with other vehicles, infrastructure, and central control systems to
-            share information, coordinate actions, and enhance situational
-            awareness.
-          </li>
-          <li>
-            Fault Tolerance and Safety: Redundant sensors, fail-safe mechanisms,
-            and robust control algorithms ensure that autonomous systems can
-            handle unexpected situations and operate safely under various
-            conditions.
-          </li>
-        </ul>
-        <p>
-          These technical aspects play a crucial role in the development and
-          deployment of autonomous systems across various domains, including
-          transportation, logistics, manufacturing, agriculture, and healthcare.
-        </p>
+    <div className="services">
+      <h1>Technical Aspects of Autonomous Systems</h1>
+      <img src="/inspector.jpg" alt="Technical Aspects of Autonomous Systems" />
+      <p>
+        Autonomous systems, such as self-driving cars, drones, and robots, rely
+        on advanced technologies to operate without direct human intervention.
+        Here are some key technical aspects:
+      </p>
+      <div className="technical-aspects-container">
+        {technicalAspects.map((aspect, index) => (
+          <TechnicalAspectCard
+            key={index}
+            title={aspect.title}
+            description={aspect.description}
+          />
+        ))}
       </div>
-    </>
+    </div>
   );
 }
