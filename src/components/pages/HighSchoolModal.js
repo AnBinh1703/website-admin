@@ -1,3 +1,4 @@
+import { Alert } from "@mui/material";
 import React from "react";
 import "./Modal.css";
 
@@ -8,6 +9,7 @@ const HighSchoolModal = ({
   highSchoolData,
   onChange,
   actionType,
+  errorMessage,
 }) => {
   if (!show) {
     return null;
@@ -19,6 +21,7 @@ const HighSchoolModal = ({
         <span className="close" onClick={onClose}>
           ×
         </span>
+        {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
         {actionType === "update" ? (
           <h2>Update High School</h2>
         ) : actionType === "delete" ? (

@@ -1,4 +1,5 @@
-import React from "react";
+import { Alert } from "@mui/material";
+import React, { useEffect, useState } from "react";
 import "./Modal.css";
 
 const RoundModal = ({
@@ -8,10 +9,35 @@ const RoundModal = ({
   roundData,
   onChange,
   actionType,
+  errorMessage,
+  successMessage,
 }) => {
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [isError, setIsError] = useState(false);
+
+  useEffect(() => {
+    if (errorMessage) {
+      setIsError(true);
+      setAlertVisible(true);
+    } else if (successMessage) {
+      setIsError(false);
+      setAlertVisible(true);
+    }
+
+    const timer = setTimeout(() => {
+      setAlertVisible(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [errorMessage, successMessage]);
+
   if (!show) {
     return null;
   }
+
+  const handleSubmit = () => {
+    onSubmit();
+  };
 
   return (
     <div className="modal">
@@ -19,6 +45,12 @@ const RoundModal = ({
         <span className="close" onClick={onClose}>
           &times;
         </span>
+        {alertVisible && (
+          <Alert severity={isError ? "error" : "success"}>
+            {isError ? errorMessage : successMessage}
+          </Alert>
+        )}
+
         {actionType === "update" ? (
           <h2>Update Round</h2>
         ) : actionType === "delete" ? (
@@ -44,7 +76,7 @@ const RoundModal = ({
           <p>Are you sure you want to delete this round?</p>
         )}
         <div className="modal-buttons">
-          <button onClick={onSubmit}>
+          <button onClick={handleSubmit}>
             {actionType === "update"
               ? "Update"
               : actionType === "create"

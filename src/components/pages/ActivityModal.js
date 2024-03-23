@@ -1,3 +1,4 @@
+import { Alert } from "@mui/material";
 import React from "react";
 import "./Modal.css";
 
@@ -8,6 +9,11 @@ const ActivityModal = ({
   activityData,
   onChange,
   actionType,
+  alertMessage,
+  alertSeverity,
+  showAlert,
+  handleAlertClose,
+  errorMessage, // Thêm state để lưu trữ thông báo lỗi
 }) => {
   if (!show) {
     return null;
@@ -19,6 +25,11 @@ const ActivityModal = ({
         <span className="close" onClick={onClose}>
           &times;
         </span>
+        {showAlert && ( // Hiển thị thông báo lỗi
+          <Alert severity="error" onClose={handleAlertClose}>
+            {alertMessage}
+          </Alert>
+        )}
         {actionType === "update" ? (
           <h2>Update Activity</h2>
         ) : actionType === "delete" ? (
@@ -38,8 +49,10 @@ const ActivityModal = ({
                 onChange={onChange}
               />
             </div>
+            {errorMessage && <p className="error">{errorMessage}</p>}
           </>
         )}
+
         {actionType === "delete" && (
           <p>Are you sure you want to delete this activity?</p>
         )}

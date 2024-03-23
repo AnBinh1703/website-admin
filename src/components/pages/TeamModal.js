@@ -1,3 +1,4 @@
+import { Alert } from "@mui/material";
 import React, { useEffect, useState } from "react";
 
 const TeamModal = ({
@@ -7,9 +8,10 @@ const TeamModal = ({
   teamData,
   onChange,
   actionType,
-  highSchoolsUrl = "https://fptbottournamentweb.azurewebsites.net/api/highSchool/get-all", // Thêm highSchoolsUrl như một props để truyền URL vào
+  highSchoolsUrl = "https://fptbottournamentmanagement-2e9b0b503b66.herokuapp.com/api/highSchool/get-all",
 }) => {
   const [highSchoolIds, setHighSchoolIds] = useState([]);
+  const [alertMessage, setAlertMessage] = useState(null); // Alert state
 
   useEffect(() => {
     const fetchHighSchoolId = async () => {
@@ -21,15 +23,24 @@ const TeamModal = ({
           setHighSchoolIds(data);
         } else {
           console.error("Error fetching high school IDs");
+          showAlert("Failed to fetch high school IDs", "error"); // Show alert on error
         }
       } catch (error) {
         console.error("Error fetching high school IDs:", error.message);
+        showAlert("An error occurred while fetching high school IDs", "error"); // Show alert on error
       }
     };
 
-    // Gọi hàm fetchHighSchoolId khi component được render
     fetchHighSchoolId();
-  }, [highSchoolsUrl]); // Đảm bảo fetch lại dữ liệu khi highSchoolsUrl thay đổi
+  }, [highSchoolsUrl]);
+
+  // Function to show alert
+  const showAlert = (message, severity = "success") => {
+    setAlertMessage({ message, severity });
+    setTimeout(() => {
+      setAlertMessage(null);
+    }, 5000); // Hide the alert after 5 seconds
+  };
 
   if (!show) {
     return null;
@@ -41,6 +52,10 @@ const TeamModal = ({
         <span className="close" onClick={onClose}>
           &times;
         </span>
+        {/* Render alert message if exists */}
+        {alertMessage && (
+          <Alert severity={alertMessage.severity}>{alertMessage.message}</Alert>
+        )}
         {actionType === "update" ? (
           <h2>Update Team</h2>
         ) : actionType === "delete" ? (
